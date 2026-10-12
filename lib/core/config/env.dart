@@ -12,6 +12,12 @@ class Env {
     defaultValue: 'http://localhost:8080/api',
   );
 
+  /// Modalità mock: l'app gira senza backend, con dati finti in memoria.
+  /// Serve per provare UX e UI in locale:
+  ///
+  ///   flutter run --dart-define=USE_MOCK=true
+  static const bool useMock = bool.fromEnvironment('USE_MOCK');
+
   /// Dimensione pagina usata per le liste paginate (il backend accetta 1..100).
   static const int pageSize = 20;
 }

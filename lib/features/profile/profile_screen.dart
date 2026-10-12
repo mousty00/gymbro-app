@@ -138,7 +138,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       _InfoRow(label: 'Email', value: me.email ?? '—'),
                       if (me.birthDate != null) _InfoRow(label: 'Data di nascita', value: formatDate(me.birthDate)),
                       if (me.createdAt != null) _InfoRow(label: 'Iscritto da', value: formatMonthYear(me.createdAt)),
-                      const _InfoRow(label: 'Server', value: Env.apiBaseUrl),
+                      const _InfoRow(label: 'Server', value: Env.useMock ? 'Mock (dati finti)' : Env.apiBaseUrl),
                     ],
                   ),
                 ),

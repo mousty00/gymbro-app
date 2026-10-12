@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/config/env.dart';
 import '../../core/network/api_exception.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/ui.dart';
@@ -53,6 +54,18 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       title: 'Bentornato',
       subtitle: 'Accedi per riprendere i tuoi allenamenti.',
       children: [
+        if (Env.useMock)
+          const Padding(
+            padding: EdgeInsets.only(bottom: 20),
+            child: SoftCard(
+              color: AppColors.lilacSoft,
+              child: Text(
+                'Modalità demo: qualunque username e password funzionano. '
+                'Usa "nonverificato" per provare la verifica email, la password "sbagliata" per l\'errore.',
+                style: TextStyle(color: AppColors.inkSoft, height: 1.4),
+              ),
+            ),
+          ),
         Form(
           key: _form,
           child: AutofillGroup(

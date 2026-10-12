@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../theme/app_theme.dart';
+import 'app_image.dart';
 import 'backgrounds.dart';
 
 /// Card bianca arrotondata con ombra morbida.
@@ -217,7 +218,7 @@ class UserAvatar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final initials = username.isEmpty ? '?' : username.characters.first.toUpperCase();
-    final hasImage = imageUrl != null && imageUrl!.startsWith('http');
+    final hasImage = AppImage.supports(imageUrl);
     final colors = _palette[username.hashCode.abs() % _palette.length];
     return Container(
       width: size,
@@ -235,13 +236,7 @@ class UserAvatar extends StatelessWidget {
         clipBehavior: Clip.antiAlias,
         alignment: Alignment.center,
         child: hasImage
-            ? Image.network(
-                imageUrl!,
-                fit: BoxFit.cover,
-                width: size,
-                height: size,
-                errorBuilder: (_, _, _) => _Initials(initials, size),
-              )
+            ? AppImage(imageUrl!, width: size, height: size, fallback: _Initials(initials, size))
             : _Initials(initials, size),
       ),
     );

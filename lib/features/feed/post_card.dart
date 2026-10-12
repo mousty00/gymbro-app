@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../core/network/api_exception.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/utils/formatters.dart';
+import '../../core/widgets/app_image.dart';
 import '../../core/widgets/ui.dart';
 import '../../data/social_repository.dart';
 import '../../models/social.dart';
@@ -103,20 +104,17 @@ class _PostCardState extends ConsumerState<PostCard> {
               ),
             ),
           ),
-          if (_post.image != null && _post.image!.startsWith('http'))
+          if (AppImage.supports(_post.image))
             ClipRRect(
               borderRadius: BorderRadius.circular(AppRadius.md),
               child: AspectRatio(
                 aspectRatio: 4 / 3.4,
-                child: Image.network(
+                child: AppImage(
                   _post.image!,
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, _, _) => Container(
+                  fallback: Container(
                     color: AppColors.blueSoft,
                     child: const Icon(Icons.image_not_supported_outlined, color: AppColors.muted),
                   ),
-                  loadingBuilder: (c, child, p) =>
-                      p == null ? child : Container(color: AppColors.bg),
                 ),
               ),
             ),
