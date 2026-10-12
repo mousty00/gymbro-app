@@ -1,9 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:gymbro/models/group.dart';
-import 'package:gymbro/models/json.dart';
-import 'package:gymbro/models/page.dart';
-import 'package:gymbro/models/social.dart';
-import 'package:gymbro/models/workout.dart';
+import 'package:gymbro_app/models/group.dart';
+import 'package:gymbro_app/models/json.dart';
+import 'package:gymbro_app/models/page.dart';
+import 'package:gymbro_app/models/social.dart';
+import 'package:gymbro_app/models/workout.dart';
 
 void main() {
   test('Connection del backend → PageResult', () {

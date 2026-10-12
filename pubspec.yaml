@@ -1,4 +1,4 @@
-name: gymbro
+name: gymbro_app
 description: "GymBro: allenati da solo o in gruppo. Client Flutter per gymbro-api."
 publish_to: 'none'
 version: 1.0.0+1
