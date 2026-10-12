@@ -1,0 +1,265 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../../core/network/api_exception.dart';
+import '../../core/theme/app_theme.dart';
+import '../../core/widgets/async_view.dart';
+import '../../core/widgets/ui.dart';
+import '../../data/providers.dart';
+import '../../data/workout_repository.dart';
+import '../../models/workout.dart';
+import '../auth/session.dart';
+
+/// Libreria esercizi: pubblici + creati da me, filtrabili per gruppo muscolare.
+class ExercisesScreen extends ConsumerStatefulWidget {
+  const ExercisesScreen({super.key});
+
+  @override
+  ConsumerState<ExercisesScreen> createState() => _ExercisesScreenState();
+}
+
+class _ExercisesScreenState extends ConsumerState<ExercisesScreen> {
+  String _query = '';
+  String? _group;
+
+  Future<void> _delete(Exercise e) async {
+    if (!await confirm(context, title: 'Eliminare "${e.name}"?', ok: 'Elimina', destructive: true)) return;
+    try {
+      await ref.read(workoutRepositoryProvider).deleteExercise(e.id);
+      ref.invalidate(exercisesProvider);
+    } on ApiException catch (err) {
+      if (mounted) showMessage(context, err.message, error: true);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final me = ref.watch(currentUserProvider);
+    final exercises = ref.watch(exercisesProvider);
+    final groups = {...muscleGroups, ...?exercises.value?.map((e) => e.muscleGroup)}.toList();
+
+    return Scaffold(
+      body: SafeArea(
+        child: Column(
+          children: [
+            TopBar(
+              title: 'Esercizi',
+              actions: [
+                CircleIconButton(
+                  icon: Icons.add_rounded,
+                  dark: true,
+                  size: 44,
+                  tooltip: 'Nuovo esercizio',
+                  onTap: () => showCreateExerciseSheet(context),
+                ),
+              ],
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
+              child: SearchPill(hint: 'Cerca un esercizio', onChanged: (v) => setState(() => _query = v.toLowerCase())),
+            ),
+            SizedBox(
+              height: 40,
+              child: ListView(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                children: [
+                  for (final g in [null, ...groups])
+                    Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: ChoiceChip(
+                        label: Text(g ?? 'Tutti'),
+                        selected: _group == g,
+                        showCheckmark: false,
+                        onSelected: (_) => setState(() => _group = g),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 8),
+            Expanded(
+              child: RefreshIndicator(
+                onRefresh: () => ref.refresh(exercisesProvider.future),
+                child: AsyncView<List<Exercise>>(
+                  value: exercises,
+                  onRetry: () => ref.invalidate(exercisesProvider),
+                  data: (list) {
+                    final filtered = list.where((e) {
+                      final matchQ = _query.isEmpty || e.name.toLowerCase().contains(_query);
+                      final matchG = _group == null || e.muscleGroup.toLowerCase() == _group!.toLowerCase();
+                      return matchQ && matchG;
+                    }).toList();
+                    if (filtered.isEmpty) {
+                      return ListView(children: [
+                        EmptyState(
+                          title: 'Nessun esercizio',
+                          message: 'Crea un esercizio personalizzato da usare nelle tue schede.',
+                          action: 'Crea esercizio',
+                          onAction: () => showCreateExerciseSheet(context),
+                        ),
+                      ]);
+                    }
+                    return ListView.separated(
+                      padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+                      itemCount: filtered.length,
+                      separatorBuilder: (_, _) => const SizedBox(height: 10),
+                      itemBuilder: (_, i) {
+                        final e = filtered[i];
+                        final mine = e.createdBy == me.username;
+                        return SoftCard(
+                          padding: const EdgeInsets.all(14),
+                          radius: AppRadius.md + 2,
+                          child: Row(
+                            children: [
+                              IconChip(icon: _iconFor(e.muscleGroup), color: _colorFor(i)),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(e.name, style: const TextStyle(fontWeight: FontWeight.w700)),
+                                    Text(
+                                      [e.muscleGroup, if (e.description?.isNotEmpty == true) e.description!].join(' · '),
+                                      style: const TextStyle(color: AppColors.inkSoft, fontSize: 13),
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              if (!e.isPublic) const Tag('Privato', color: AppColors.inkSoft),
+                              if (mine)
+                                IconButton(
+                                  icon: const Icon(Icons.delete_outline_rounded, color: AppColors.muted),
+                                  onPressed: () => _delete(e),
+                                ),
+                            ],
+                          ),
+                        );
+                      },
+                    );
+                  },
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  static Color _colorFor(int i) => [AppColors.blue, AppColors.lilac, AppColors.pink, AppColors.mint][i % 4];
+
+  static IconData _iconFor(String group) {
+    final g = group.toLowerCase();
+    if (g.contains('cardio')) return Icons.directions_run_rounded;
+    if (g.contains('gamb') || g.contains('glut')) return Icons.directions_walk_rounded;
+    if (g.contains('addom') || g.contains('core')) return Icons.self_improvement_rounded;
+    return Icons.fitness_center_rounded;
+  }
+}
+
+/// Sheet di creazione esercizio; restituisce l'esercizio creato.
+Future<Exercise?> showCreateExerciseSheet(BuildContext context) {
+  return showModalBottomSheet<Exercise>(
+    context: context,
+    isScrollControlled: true,
+    builder: (_) => const _CreateExerciseSheet(),
+  );
+}
+
+class _CreateExerciseSheet extends ConsumerStatefulWidget {
+  const _CreateExerciseSheet();
+
+  @override
+  ConsumerState<_CreateExerciseSheet> createState() => _CreateExerciseSheetState();
+}
+
+class _CreateExerciseSheetState extends ConsumerState<_CreateExerciseSheet> {
+  final _name = TextEditingController();
+  final _description = TextEditingController();
+  String _group = muscleGroups.first;
+  bool _public = true;
+  bool _loading = false;
+
+  @override
+  void dispose() {
+    _name.dispose();
+    _description.dispose();
+    super.dispose();
+  }
+
+  Future<void> _save() async {
+    if (_name.text.trim().isEmpty) {
+      showMessage(context, 'Dai un nome all\'esercizio', error: true);
+      return;
+    }
+    setState(() => _loading = true);
+    try {
+      final ex = await ref.read(workoutRepositoryProvider).createExercise(
+            name: _name.text.trim(),
+            muscleGroup: _group,
+            description: _description.text.trim().isEmpty ? null : _description.text.trim(),
+            isPublic: _public,
+          );
+      ref.invalidate(exercisesProvider);
+      if (mounted) Navigator.pop(context, ex);
+    } on ApiException catch (e) {
+      if (mounted) showMessage(context, e.message, error: true);
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.fromLTRB(20, 0, 20, MediaQuery.of(context).viewInsets.bottom + 20),
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text('Nuovo esercizio', style: Theme.of(context).textTheme.headlineSmall),
+            const SizedBox(height: 16),
+            TextField(controller: _name, decoration: const InputDecoration(hintText: 'Nome (es. Panca piana)')),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _description,
+              minLines: 2,
+              maxLines: 4,
+              decoration: const InputDecoration(hintText: 'Descrizione (opzionale)'),
+            ),
+            const SizedBox(height: 16),
+            const Text('Gruppo muscolare', style: TextStyle(fontWeight: FontWeight.w600, color: AppColors.inkSoft)),
+            const SizedBox(height: 10),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                for (final g in muscleGroups)
+                  ChoiceChip(
+                    label: Text(g),
+                    selected: _group == g,
+                    showCheckmark: false,
+                    onSelected: (_) => setState(() => _group = g),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            SwitchListTile.adaptive(
+              contentPadding: EdgeInsets.zero,
+              value: _public,
+              onChanged: (v) => setState(() => _public = v),
+              title: const Text('Visibile a tutti', style: TextStyle(fontWeight: FontWeight.w600)),
+              subtitle: const Text('Gli altri utenti potranno usarlo nelle loro schede'),
+            ),
+            const SizedBox(height: 12),
+            PrimaryButton(label: 'Crea esercizio', loading: _loading, onPressed: _save),
+          ],
+        ),
+      ),
+    );
+  }
+}

@@ -1,0 +1,558 @@
+import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+
+import '../theme/app_theme.dart';
+import 'backgrounds.dart';
+
+/// Card bianca arrotondata con ombra morbida.
+class SoftCard extends StatelessWidget {
+  const SoftCard({
+    super.key,
+    required this.child,
+    this.padding = const EdgeInsets.all(18),
+    this.color = AppColors.card,
+    this.gradient,
+    this.onTap,
+    this.radius = AppRadius.lg,
+    this.border = true,
+  });
+
+  final Widget child;
+  final EdgeInsetsGeometry padding;
+  final Color color;
+  final Gradient? gradient;
+  final VoidCallback? onTap;
+  final double radius;
+  final bool border;
+
+  @override
+  Widget build(BuildContext context) {
+    final shape = BorderRadius.circular(radius);
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: gradient == null ? color : null,
+        gradient: gradient,
+        borderRadius: shape,
+        border: border && gradient == null && color == AppColors.card
+            ? Border.all(color: AppColors.stroke.withValues(alpha: 0.7))
+            : null,
+        boxShadow: AppShadows.soft,
+      ),
+      child: Material(
+        type: MaterialType.transparency,
+        child: InkWell(
+          borderRadius: shape,
+          onTap: onTap,
+          child: Padding(padding: padding, child: child),
+        ),
+      ),
+    );
+  }
+}
+
+/// Pulsante circolare bianco (campanella, +, indietro…).
+class CircleIconButton extends StatelessWidget {
+  const CircleIconButton({
+    super.key,
+    required this.icon,
+    this.onTap,
+    this.dark = false,
+    this.size = 48,
+    this.badge = false,
+    this.tooltip,
+  });
+
+  final IconData icon;
+  final VoidCallback? onTap;
+  final bool dark;
+  final double size;
+  final bool badge;
+  final String? tooltip;
+
+  @override
+  Widget build(BuildContext context) {
+    final button = Material(
+      color: dark ? AppColors.ink : Colors.white,
+      shape: const CircleBorder(),
+      elevation: 0,
+      child: InkWell(
+        customBorder: const CircleBorder(),
+        onTap: onTap,
+        child: SizedBox(
+          width: size,
+          height: size,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              Icon(icon, size: size * 0.44, color: dark ? Colors.white : AppColors.ink),
+              if (badge)
+                Positioned(
+                  top: size * 0.24,
+                  right: size * 0.26,
+                  child: Container(
+                    width: 9,
+                    height: 9,
+                    decoration: BoxDecoration(
+                      color: AppColors.blue,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white, width: 1.5),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+    return DecoratedBox(
+      decoration: const BoxDecoration(shape: BoxShape.circle, boxShadow: AppShadows.soft),
+      child: tooltip == null ? button : Tooltip(message: tooltip!, child: button),
+    );
+  }
+}
+
+/// Pulsante a pillola bianco con cerchio scuro a destra ("Inizia  »").
+class PillActionButton extends StatelessWidget {
+  const PillActionButton({
+    super.key,
+    required this.label,
+    required this.onPressed,
+    this.icon = Icons.keyboard_double_arrow_right_rounded,
+    this.loading = false,
+  });
+
+  final String label;
+  final VoidCallback? onPressed;
+  final IconData icon;
+  final bool loading;
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(40),
+        boxShadow: AppShadows.float,
+      ),
+      child: Material(
+        color: Colors.white,
+        shape: const StadiumBorder(),
+        child: InkWell(
+          customBorder: const StadiumBorder(),
+          onTap: loading ? null : onPressed,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(24, 7, 7, 7),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(label, style: Theme.of(context).textTheme.titleMedium),
+                ),
+                Container(
+                  width: 52,
+                  height: 52,
+                  decoration: const BoxDecoration(color: AppColors.ink, shape: BoxShape.circle),
+                  child: loading
+                      ? const Padding(
+                          padding: EdgeInsets.all(16),
+                          child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                        )
+                      : Icon(icon, color: Colors.white),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Pulsante primario scuro a tutta larghezza con stato di caricamento.
+class PrimaryButton extends StatelessWidget {
+  const PrimaryButton({
+    super.key,
+    required this.label,
+    required this.onPressed,
+    this.loading = false,
+    this.icon,
+    this.color,
+  });
+
+  final String label;
+  final VoidCallback? onPressed;
+  final bool loading;
+  final IconData? icon;
+  final Color? color;
+
+  @override
+  Widget build(BuildContext context) {
+    return FilledButton(
+      style: color == null ? null : FilledButton.styleFrom(backgroundColor: color),
+      onPressed: loading ? null : onPressed,
+      child: loading
+          ? const SizedBox(
+              width: 22,
+              height: 22,
+              child: CircularProgressIndicator(strokeWidth: 2.2, color: Colors.white),
+            )
+          : Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (icon != null) ...[Icon(icon, size: 20), const SizedBox(width: 10)],
+                Text(label),
+              ],
+            ),
+    );
+  }
+}
+
+/// Avatar con foto o iniziali su gradiente.
+class UserAvatar extends StatelessWidget {
+  const UserAvatar({super.key, required this.username, this.imageUrl, this.size = 44, this.ring = false});
+
+  final String username;
+  final String? imageUrl;
+  final double size;
+  final bool ring;
+
+  @override
+  Widget build(BuildContext context) {
+    final initials = username.isEmpty ? '?' : username.characters.first.toUpperCase();
+    final hasImage = imageUrl != null && imageUrl!.startsWith('http');
+    final colors = _palette[username.hashCode.abs() % _palette.length];
+    return Container(
+      width: size,
+      height: size,
+      padding: ring ? const EdgeInsets.all(3) : EdgeInsets.zero,
+      decoration: ring
+          ? const BoxDecoration(shape: BoxShape.circle, gradient: AppColors.brandGradient)
+          : null,
+      child: Container(
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          border: ring ? Border.all(color: Colors.white, width: 2.5) : null,
+          gradient: LinearGradient(colors: colors, begin: Alignment.topLeft, end: Alignment.bottomRight),
+        ),
+        clipBehavior: Clip.antiAlias,
+        alignment: Alignment.center,
+        child: hasImage
+            ? Image.network(
+                imageUrl!,
+                fit: BoxFit.cover,
+                width: size,
+                height: size,
+                errorBuilder: (_, _, _) => _Initials(initials, size),
+              )
+            : _Initials(initials, size),
+      ),
+    );
+  }
+
+  static const _palette = [
+    [Color(0xFFBFD3FF), Color(0xFFD9CCFF)],
+    [Color(0xFFFFD1EE), Color(0xFFD9CCFF)],
+    [Color(0xFFC6F0E0), Color(0xFFBFD3FF)],
+    [Color(0xFFFFE2B8), Color(0xFFFFC9DE)],
+  ];
+}
+
+class _Initials extends StatelessWidget {
+  const _Initials(this.text, this.size);
+
+  final String text;
+  final double size;
+
+  @override
+  Widget build(BuildContext context) => Text(
+        text,
+        style: TextStyle(fontSize: size * 0.4, fontWeight: FontWeight.w700, color: AppColors.ink),
+      );
+}
+
+/// Titolo di sezione con azione opzionale ("Vedi tutti").
+class SectionHeader extends StatelessWidget {
+  const SectionHeader(this.title, {super.key, this.action, this.onAction});
+
+  final String title;
+  final String? action;
+  final VoidCallback? onAction;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 8, bottom: 12),
+      child: Row(
+        children: [
+          Expanded(child: Text(title, style: Theme.of(context).textTheme.titleLarge)),
+          if (action != null)
+            GestureDetector(
+              onTap: onAction,
+              child: Text(action!, style: const TextStyle(color: AppColors.muted, fontWeight: FontWeight.w600)),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Piccolo badge colorato (icona su fondo tenue).
+class IconChip extends StatelessWidget {
+  const IconChip({super.key, required this.icon, this.color = AppColors.blue, this.background, this.size = 40});
+
+  final IconData icon;
+  final Color color;
+  final Color? background;
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        color: background ?? color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(size * 0.36),
+      ),
+      child: Icon(icon, color: color, size: size * 0.5),
+    );
+  }
+}
+
+/// Etichetta a pillola.
+class Tag extends StatelessWidget {
+  const Tag(this.label, {super.key, this.color = AppColors.blue, this.icon});
+
+  final String label;
+  final Color color;
+  final IconData? icon;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(30),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (icon != null) ...[Icon(icon, size: 13, color: color), const SizedBox(width: 4)],
+          Text(label, style: TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.w600)),
+        ],
+      ),
+    );
+  }
+}
+
+/// Stato vuoto con sfera iridescente.
+class EmptyState extends StatelessWidget {
+  const EmptyState({super.key, required this.title, this.message, this.action, this.onAction});
+
+  final String title;
+  final String? message;
+  final String? action;
+  final VoidCallback? onAction;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = Theme.of(context).textTheme;
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const GlassOrb(size: 64),
+          const SizedBox(height: 4),
+          Text(title, style: t.titleLarge, textAlign: TextAlign.center),
+          if (message != null) ...[
+            const SizedBox(height: 8),
+            Text(message!, style: t.bodyMedium, textAlign: TextAlign.center),
+          ],
+          if (action != null) ...[
+            const SizedBox(height: 20),
+            SizedBox(
+              width: 220,
+              child: OutlinedButton(onPressed: onAction, child: Text(action!)),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+/// Barre verticali arrotondate (stile "Sleep Level"), una evidenziata.
+class MiniBars extends StatelessWidget {
+  const MiniBars({
+    super.key,
+    required this.values,
+    this.highlight,
+    this.color = Colors.white,
+    this.highlightColor = AppColors.ink,
+    this.height = 64,
+    this.labels,
+  });
+
+  final List<double> values;
+  final int? highlight;
+  final Color color;
+  final Color highlightColor;
+  final double height;
+  final List<String>? labels;
+
+  @override
+  Widget build(BuildContext context) {
+    final max = values.fold<double>(0, (a, b) => b > a ? b : a);
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        for (var i = 0; i < values.length; i++)
+          Expanded(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  height: 10 + (max == 0 ? 0 : (values[i] / max) * (height - 10)),
+                  margin: const EdgeInsets.symmetric(horizontal: 4),
+                  decoration: BoxDecoration(
+                    color: i == highlight ? highlightColor : color,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                ),
+                if (labels != null) ...[
+                  const SizedBox(height: 6),
+                  Text(
+                    labels![i],
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: i == highlight ? FontWeight.w700 : FontWeight.w500,
+                      color: i == highlight ? AppColors.ink : AppColors.inkSoft,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+/// Barra di ricerca a pillola con pulsante circolare.
+class SearchPill extends StatelessWidget {
+  const SearchPill({super.key, this.controller, this.hint = 'Cerca…', this.onChanged, this.onSubmitted});
+
+  final TextEditingController? controller;
+  final String hint;
+  final ValueChanged<String>? onChanged;
+  final ValueChanged<String>? onSubmitted;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(20, 4, 4, 4),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(40),
+        boxShadow: AppShadows.soft,
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: TextField(
+              controller: controller,
+              onChanged: onChanged,
+              onSubmitted: onSubmitted,
+              textInputAction: TextInputAction.search,
+              decoration: InputDecoration(
+                hintText: hint,
+                filled: false,
+                border: InputBorder.none,
+                enabledBorder: InputBorder.none,
+                focusedBorder: InputBorder.none,
+                contentPadding: EdgeInsets.zero,
+              ),
+            ),
+          ),
+          Container(
+            width: 46,
+            height: 46,
+            decoration: const BoxDecoration(color: AppColors.bg, shape: BoxShape.circle),
+            child: const Icon(Icons.search_rounded, color: AppColors.ink),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Barra superiore per le schermate interne: indietro + titolo + azioni.
+class TopBar extends StatelessWidget {
+  const TopBar({super.key, required this.title, this.actions = const [], this.showBack = true});
+
+  final String title;
+  final List<Widget> actions;
+  final bool showBack;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 8, 20, 8),
+      child: Row(
+        children: [
+          if (showBack) ...[
+            CircleIconButton(
+              icon: Icons.arrow_back_rounded,
+              size: 44,
+              // Aperta da deep link senza storia: torna alla home.
+              onTap: () => context.canPop() ? Navigator.of(context).maybePop() : context.go('/home'),
+            ),
+            const SizedBox(width: 14),
+          ],
+          Expanded(
+            child: Text(
+              title,
+              style: Theme.of(context).textTheme.headlineSmall,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          for (final a in actions) ...[const SizedBox(width: 10), a],
+        ],
+      ),
+    );
+  }
+}
+
+void showMessage(BuildContext context, String message, {bool error = false}) {
+  ScaffoldMessenger.of(context)
+    ..hideCurrentSnackBar()
+    ..showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: error ? AppColors.danger : AppColors.ink,
+      ),
+    );
+}
+
+Future<bool> confirm(BuildContext context, {required String title, String? message, String ok = 'Conferma', bool destructive = false}) async {
+  final res = await showDialog<bool>(
+    context: context,
+    builder: (ctx) => AlertDialog(
+      backgroundColor: Colors.white,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.lg)),
+      title: Text(title),
+      content: message == null ? null : Text(message),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(ctx, false),
+          child: const Text('Annulla', style: TextStyle(color: AppColors.inkSoft)),
+        ),
+        TextButton(
+          onPressed: () => Navigator.pop(ctx, true),
+          child: Text(ok, style: TextStyle(color: destructive ? AppColors.danger : AppColors.blue)),
+        ),
+      ],
+    ),
+  );
+  return res ?? false;
+}

@@ -1,0 +1,253 @@
+import 'dart:async';
+
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+
+import '../../core/network/api_exception.dart';
+import '../../core/theme/app_theme.dart';
+import '../../core/utils/formatters.dart';
+import '../../core/widgets/async_view.dart';
+import '../../core/widgets/backgrounds.dart';
+import '../../core/widgets/ui.dart';
+import '../../data/providers.dart';
+import '../../data/workout_repository.dart';
+import '../../models/workout.dart';
+
+/// Sessione live: cronometro, serie da spuntare, recupero, salvataggio nello storico.
+class WorkoutSessionScreen extends ConsumerStatefulWidget {
+  const WorkoutSessionScreen({super.key, required this.workoutId, this.groupId});
+
+  final String workoutId;
+  final String? groupId;
+
+  @override
+  ConsumerState<WorkoutSessionScreen> createState() => _WorkoutSessionScreenState();
+}
+
+class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
+  final DateTime _startedAt = DateTime.now();
+  final _notes = TextEditingController();
+  final Map<String, int> _doneSets = {};
+  Timer? _ticker;
+  Duration _elapsed = Duration.zero;
+  int _restLeft = 0;
+  bool _saving = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _ticker = Timer.periodic(const Duration(seconds: 1), (_) {
+      setState(() {
+        _elapsed = DateTime.now().difference(_startedAt);
+        if (_restLeft > 0) _restLeft--;
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _ticker?.cancel();
+    _notes.dispose();
+    super.dispose();
+  }
+
+  void _toggleSet(WorkoutExercise e, int index) {
+    setState(() {
+      final done = _doneSets[e.id] ?? 0;
+      if (index < done) {
+        _doneSets[e.id] = index;
+      } else {
+        _doneSets[e.id] = index + 1;
+        _restLeft = e.restSeconds;
+      }
+    });
+  }
+
+  Future<void> _finish(Workout w) async {
+    final ok = await confirm(context, title: 'Terminare l\'allenamento?', message: 'La sessione verrà salvata nello storico.', ok: 'Termina');
+    if (!ok) return;
+    setState(() => _saving = true);
+    try {
+      await ref.read(workoutRepositoryProvider).logSession(
+            workoutId: w.id,
+            groupId: widget.groupId,
+            startedAt: _startedAt,
+            completedAt: DateTime.now(),
+            notes: _notes.text.trim().isEmpty ? null : _notes.text.trim(),
+          );
+      ref.invalidate(historyProvider);
+      if (widget.groupId != null) ref.invalidate(groupHistoryProvider(widget.groupId!));
+      if (!mounted) return;
+      showMessage(context, 'Allenamento salvato. Grande! 💪');
+      context.pop();
+    } on ApiException catch (e) {
+      if (mounted) showMessage(context, e.message, error: true);
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final workout = ref.watch(workoutProvider(widget.workoutId));
+    final t = Theme.of(context).textTheme;
+
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) async {
+        if (didPop) return;
+        final leave = await confirm(context, title: 'Abbandonare la sessione?', message: 'I progressi non verranno salvati.', ok: 'Esci', destructive: true);
+        if (leave && context.mounted) context.pop();
+      },
+      child: Scaffold(
+        body: SkyBackground(
+          tint: AppColors.lilacSoft,
+          child: SafeArea(
+            child: AsyncView<Workout>(
+              value: workout,
+              onRetry: () => ref.invalidate(workoutProvider(widget.workoutId)),
+              data: (w) {
+                final totalSets = w.exercises.fold<int>(0, (a, e) => a + e.sets);
+                final doneSets = _doneSets.values.fold<int>(0, (a, b) => a + b);
+                final progress = totalSets == 0 ? 0.0 : doneSets / totalSets;
+                return Column(
+                  children: [
+                    TopBar(title: w.name),
+                    Expanded(
+                      child: ListView(
+                        padding: const EdgeInsets.fromLTRB(20, 4, 20, 20),
+                        children: [
+                          SoftCard(
+                            color: AppColors.ink,
+                            padding: const EdgeInsets.all(22),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Text(widget.groupId != null ? 'Sessione di gruppo' : 'In corso',
+                                        style: TextStyle(color: Colors.white.withValues(alpha: 0.6))),
+                                    const Spacer(),
+                                    if (_restLeft > 0)
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                        decoration: BoxDecoration(color: AppColors.lilac, borderRadius: BorderRadius.circular(20)),
+                                        child: Text('Recupero ${_restLeft}s',
+                                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 12)),
+                                      ),
+                                  ],
+                                ),
+                                const SizedBox(height: 6),
+                                Text(
+                                  formatClock(_elapsed),
+                                  style: t.displayLarge?.copyWith(color: Colors.white, fontFeatures: const [FontFeature.tabularFigures()]),
+                                ),
+                                const SizedBox(height: 16),
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(10),
+                                  child: LinearProgressIndicator(
+                                    value: progress,
+                                    minHeight: 8,
+                                    backgroundColor: Colors.white.withValues(alpha: 0.12),
+                                    color: AppColors.lilac,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                Text('$doneSets / $totalSets serie completate',
+                                    style: TextStyle(color: Colors.white.withValues(alpha: 0.7), fontSize: 13)),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 18),
+                          for (final e in w.exercises)
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 10),
+                              child: SoftCard(
+                                padding: const EdgeInsets.all(16),
+                                radius: AppRadius.md + 2,
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Expanded(
+                                          child: Text(e.exerciseName ?? 'Esercizio', style: t.titleMedium),
+                                        ),
+                                        Text(e.summary, style: const TextStyle(color: AppColors.inkSoft)),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 12),
+                                    Wrap(
+                                      spacing: 8,
+                                      runSpacing: 8,
+                                      children: [
+                                        for (var i = 0; i < e.sets; i++)
+                                          _SetDot(
+                                            index: i + 1,
+                                            done: i < (_doneSets[e.id] ?? 0),
+                                            onTap: () => _toggleSet(e, i),
+                                          ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          const SizedBox(height: 8),
+                          TextField(
+                            controller: _notes,
+                            minLines: 2,
+                            maxLines: 4,
+                            decoration: const InputDecoration(hintText: 'Note sulla sessione (opzionale)'),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+                      child: PillActionButton(
+                        label: 'Termina e salva',
+                        icon: Icons.check_rounded,
+                        loading: _saving,
+                        onPressed: () => _finish(w),
+                      ),
+                    ),
+                  ],
+                );
+              },
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _SetDot extends StatelessWidget {
+  const _SetDot({required this.index, required this.done, required this.onTap});
+
+  final int index;
+  final bool done;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 160),
+        width: 46,
+        height: 46,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: done ? AppColors.mint : AppColors.bg,
+        ),
+        child: done
+            ? const Icon(Icons.check_rounded, color: Colors.white)
+            : Text('$index', style: const TextStyle(fontWeight: FontWeight.w700, color: AppColors.inkSoft)),
+      ),
+    );
+  }
+}

@@ -1,0 +1,158 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+
+import '../../core/theme/app_theme.dart';
+import '../../core/utils/formatters.dart';
+import '../../core/widgets/async_view.dart';
+import '../../core/widgets/backgrounds.dart';
+import '../../core/widgets/ui.dart';
+import '../../data/providers.dart';
+import '../../models/group.dart';
+import '../friends/notifications_screen.dart';
+import '../home/home_screen.dart';
+import '../shell/app_shell.dart';
+
+class GroupsScreen extends ConsumerWidget {
+  const GroupsScreen({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final groups = ref.watch(groupsProvider);
+    final invites = ref.watch(groupInvitesProvider).value ?? const <GroupMember>[];
+
+    return Scaffold(
+      body: SkyBackground(
+        tint: AppColors.mintSoft,
+        child: SafeArea(
+          bottom: false,
+          child: RefreshIndicator(
+            onRefresh: () async {
+              ref.invalidate(groupInvitesProvider);
+              return ref.refresh(groupsProvider.future);
+            },
+            child: CustomScrollView(
+              slivers: [
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
+                  sliver: SliverToBoxAdapter(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Expanded(child: Text('Gruppi', style: Theme.of(context).textTheme.headlineMedium)),
+                            CircleIconButton(
+                              icon: Icons.add_rounded,
+                              dark: true,
+                              tooltip: 'Nuovo gruppo',
+                              onTap: () => context.push('/group/new'),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 6),
+                        Text('Allenarsi insieme è più facile.', style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: AppColors.inkSoft)),
+                        const SizedBox(height: 18),
+                        if (invites.isNotEmpty) ...[
+                          SectionHeader('Inviti · ${invites.length}'),
+                          for (final m in invites)
+                            Padding(padding: const EdgeInsets.only(bottom: 10), child: GroupInviteTile(member: m)),
+                          const SizedBox(height: 10),
+                        ],
+                      ],
+                    ),
+                  ),
+                ),
+                AsyncView<List<WorkoutGroup>>(
+                  value: groups,
+                  sliver: true,
+                  onRetry: () => ref.invalidate(groupsProvider),
+                  data: (list) {
+                    if (list.isEmpty) {
+                      return SliverToBoxAdapter(
+                        child: EmptyState(
+                          title: 'Nessun gruppo',
+                          message: 'Crea un allenamento di gruppo e invita i tuoi amici.',
+                          action: 'Crea gruppo',
+                          onAction: () => context.push('/group/new'),
+                        ),
+                      );
+                    }
+                    final sorted = [...list]..sort((a, b) {
+                        final ad = a.scheduledFor ?? DateTime(2100);
+                        final bd = b.scheduledFor ?? DateTime(2100);
+                        return ad.compareTo(bd);
+                      });
+                    return SliverPadding(
+                      padding: const EdgeInsets.fromLTRB(20, 0, 20, navBarClearance),
+                      sliver: SliverList.separated(
+                        itemCount: sorted.length,
+                        separatorBuilder: (_, _) => const SizedBox(height: 12),
+                        itemBuilder: (_, i) => GroupCard(group: sorted[i], index: i),
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class GroupCard extends StatelessWidget {
+  const GroupCard({super.key, required this.group, this.index = 0});
+
+  final WorkoutGroup group;
+  final int index;
+
+  static const _bgs = [AppColors.blueSoft, AppColors.lilacSoft, AppColors.pinkSoft, AppColors.mintSoft];
+
+  @override
+  Widget build(BuildContext context) {
+    final members = [group.createdBy.username, ...group.acceptedMembers.map((m) => m.user.username)];
+    final past = group.scheduledFor != null && !group.isUpcoming;
+    return SoftCard(
+      color: _bgs[index % _bgs.length],
+      onTap: () => context.push('/group/${group.id}'),
+      padding: const EdgeInsets.all(18),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              if (group.scheduledFor != null)
+                Tag(formatDayTime(group.scheduledFor), color: past ? AppColors.inkSoft : AppColors.ink, icon: Icons.schedule_rounded)
+              else
+                const Tag('Da programmare', color: AppColors.inkSoft),
+              const Spacer(),
+              Container(
+                width: 38,
+                height: 38,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(color: AppColors.ink.withValues(alpha: 0.12)),
+                ),
+                child: const Icon(Icons.north_east_rounded, size: 18),
+              ),
+            ],
+          ),
+          const SizedBox(height: 18),
+          Text(group.name, style: Theme.of(context).textTheme.titleLarge),
+          const SizedBox(height: 2),
+          Text('Scheda: ${group.workoutName}', style: const TextStyle(color: AppColors.inkSoft)),
+          const SizedBox(height: 14),
+          Row(
+            children: [
+              Expanded(child: AvatarStack(usernames: members, size: 32)),
+              Text('${members.length} ${members.length == 1 ? 'persona' : 'persone'}',
+                  style: const TextStyle(fontWeight: FontWeight.w600, color: AppColors.inkSoft, fontSize: 13)),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}

@@ -1,0 +1,62 @@
+# GymBro · Flutter
+
+App mobile (iOS / Android, gira anche sul web) per allenarsi da soli o in gruppo.
+È il client di [gymbro-api](https://github.com/mousty00/gymbro-api) e ne usa le API REST con autenticazione JWT.
+
+![Schermate](docs/screens.png)
+
+## Avvio rapido
+
+```bash
+flutter pub get
+
+# backend locale (context-path /api)
+flutter run --dart-define=API_BASE_URL=http://localhost:8080/api
+
+# emulatore Android → il localhost della macchina è 10.0.2.2
+flutter run --dart-define=API_BASE_URL=http://10.0.2.2:8080/api
+
+# produzione
+flutter run --release --dart-define=API_BASE_URL=https://<tuo-dominio>/api
+```
+
+Requisiti: Flutter 3.38+ (Dart 3.9+). Testato con Flutter 3.47.
+
+> Per il web il backend deve accettare l'origine dell'app in CORS (`CorsConfig`).
+> Su Android, per un backend in `http://` serve `android:usesCleartextTraffic="true"` solo in debug.
+
+## Funzionalità
+
+| Area | Cosa fa | Endpoint |
+|---|---|---|
+| Accesso | Login, registrazione, verifica email con OTP, reinvio codice, reset password, logout, refresh automatico del token | `/auth/*` |
+| Home | Saluto, attività della settimana, statistiche, schede di oggi, prossimi allenamenti di gruppo, post degli amici | vari |
+| Community | Feed amici / esplora, like, commenti, nuovo post con foto, modifica ed eliminazione | `/posts`, `/likes`, `/comments`, `/friendship/posts` |
+| Allenamenti | Le mie schede, schede pubbliche, crea / modifica / elimina, giorni e orario, esercizi con serie, ripetizioni, peso e recupero | `/workouts`, `/workout-exercises` |
+| Sessione live | Cronometro, serie da spuntare, timer di recupero, note, salvataggio nello storico (anche di gruppo) | `/workout-history` |
+| Esercizi | Libreria con ricerca e filtro per gruppo muscolare, esercizi personalizzati pubblici o privati | `/exercises` |
+| Gruppi | Crea un allenamento di gruppo, invita amici, accetta / rifiuta inviti, esci, rimuovi membri, storico del gruppo | `/workout_groups`, `/group_members` |
+| Amici | Cerca utenti, invia / accetta / rifiuta richieste, blocca, profilo pubblico con i post | `/users/search`, `/friendship/*` |
+| Profilo | Foto profilo (upload S3), statistiche, storico, i miei post, eliminazione account | `/users/*`, `/auth/profile` |
+
+## Struttura
+
+```
+lib/
+  core/        config (base URL), client HTTP dio + refresh token, storage sicuro, tema, router, widget comuni
+  models/      modelli che rispecchiano i DTO del backend (parsing manuale, niente code generation)
+  data/        repository per dominio + provider Riverpod condivisi
+  features/    una cartella per area: auth, home, feed, workouts, exercises, groups, friends, profile, shell
+```
+
+- **Stato**: Riverpod 3 (`FutureProvider` per le letture, `AsyncNotifier` per la sessione).
+- **Navigazione**: go_router con `StatefulShellRoute` per le 5 tab e redirect in base alla sessione.
+- **Rete**: dio; ogni richiesta porta `Authorization: Bearer …`, su 401 l'app chiama `/auth/refresh` una sola volta e ripete la richiesta; se fallisce torna al login.
+- **Token**: `flutter_secure_storage` (Keychain / Keystore).
+- **UI**: tema chiaro, gradienti azzurro / lilla, card arrotondate, barra di navigazione flottante a pillola, font Plus Jakarta Sans.
+
+## Note sul backend
+
+- `POST /posts/create` richiede sempre un'immagine (`imageFile` è obbligatorio), quindi l'app chiede una foto per ogni post.
+- Le richieste di amicizia inviate non hanno un endpoint di lettura: l'app mostra solo quelle ricevute.
+- Gli inviti ai gruppi (`/group_members`) espongono solo l'id del gruppo, non il nome.

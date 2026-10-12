@@ -1,0 +1,151 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+
+import '../../features/auth/forgot_password_screen.dart';
+import '../../features/auth/login_screen.dart';
+import '../../features/auth/session.dart';
+import '../../features/auth/signup_screen.dart';
+import '../../features/auth/verify_otp_screen.dart';
+import '../../features/exercises/exercises_screen.dart';
+import '../../features/feed/create_post_screen.dart';
+import '../../features/feed/feed_screen.dart';
+import '../../features/feed/post_detail_screen.dart';
+import '../../features/friends/friends_screen.dart';
+import '../../features/friends/notifications_screen.dart';
+import '../../features/friends/user_profile_screen.dart';
+import '../../features/groups/group_detail_screen.dart';
+import '../../features/groups/group_form_screen.dart';
+import '../../features/groups/groups_screen.dart';
+import '../../features/home/home_screen.dart';
+import '../../features/onboarding/splash_screen.dart';
+import '../../features/onboarding/welcome_screen.dart';
+import '../../features/profile/history_screen.dart';
+import '../../features/profile/profile_screen.dart';
+import '../../features/shell/app_shell.dart';
+import '../../features/workouts/workout_detail_screen.dart';
+import '../../features/workouts/workout_form_screen.dart';
+import '../../features/workouts/workout_session_screen.dart';
+import '../../features/workouts/workouts_screen.dart';
+import '../../models/workout.dart';
+
+final _rootKey = GlobalKey<NavigatorState>();
+
+final routerProvider = Provider<GoRouter>((ref) {
+  final refresh = ValueNotifier<int>(0);
+  ref.listen(sessionProvider, (_, _) => refresh.value++);
+  ref.onDispose(refresh.dispose);
+
+  return GoRouter(
+    navigatorKey: _rootKey,
+    initialLocation: '/home',
+    refreshListenable: refresh,
+    redirect: (context, state) {
+      final session = ref.read(sessionProvider);
+      final loc = state.matchedLocation;
+      final onPublic = loc == '/welcome' || loc.startsWith('/auth');
+
+      if (!session.hasValue) return loc == '/splash' ? null : '/splash';
+
+      final user = session.value;
+      if (user == null) return onPublic ? null : '/welcome';
+      if (onPublic || loc == '/splash') return '/home';
+      return null;
+    },
+    routes: [
+      GoRoute(path: '/splash', builder: (_, _) => const SplashScreen()),
+      GoRoute(path: '/welcome', builder: (_, _) => const WelcomeScreen()),
+      GoRoute(path: '/auth/login', builder: (_, _) => const LoginScreen()),
+      GoRoute(path: '/auth/signup', builder: (_, _) => const SignupScreen()),
+      GoRoute(
+        path: '/auth/verify',
+        builder: (_, s) => VerifyOtpScreen(
+          username: s.uri.queryParameters['username'] ?? '',
+          email: s.uri.queryParameters['email'],
+        ),
+      ),
+      GoRoute(path: '/auth/forgot', builder: (_, _) => const ForgotPasswordScreen()),
+
+      StatefulShellRoute.indexedStack(
+        builder: (_, _, shell) => AppShell(shell: shell),
+        branches: [
+          StatefulShellBranch(routes: [GoRoute(path: '/home', builder: (_, _) => const HomeScreen())]),
+          StatefulShellBranch(routes: [GoRoute(path: '/feed', builder: (_, _) => const FeedScreen())]),
+          StatefulShellBranch(routes: [GoRoute(path: '/workouts', builder: (_, _) => const WorkoutsScreen())]),
+          StatefulShellBranch(routes: [GoRoute(path: '/groups', builder: (_, _) => const GroupsScreen())]),
+          StatefulShellBranch(routes: [GoRoute(path: '/profile', builder: (_, _) => const ProfileScreen())]),
+        ],
+      ),
+
+      // Schermate a tutto schermo sopra le tab.
+      GoRoute(
+        parentNavigatorKey: _rootKey,
+        path: '/posts/new',
+        builder: (_, _) => const CreatePostScreen(),
+      ),
+      GoRoute(
+        parentNavigatorKey: _rootKey,
+        path: '/posts/:id',
+        builder: (_, s) => PostDetailScreen(postId: s.pathParameters['id']!),
+      ),
+      GoRoute(
+        parentNavigatorKey: _rootKey,
+        path: '/workout/new',
+        builder: (_, _) => const WorkoutFormScreen(),
+      ),
+      GoRoute(
+        parentNavigatorKey: _rootKey,
+        path: '/workout/:id',
+        builder: (_, s) => WorkoutDetailScreen(workoutId: s.pathParameters['id']!),
+      ),
+      GoRoute(
+        parentNavigatorKey: _rootKey,
+        path: '/workout/:id/edit',
+        builder: (_, s) => WorkoutFormScreen(initial: s.extra as Workout?),
+      ),
+      GoRoute(
+        parentNavigatorKey: _rootKey,
+        path: '/workout/:id/session',
+        builder: (_, s) => WorkoutSessionScreen(
+          workoutId: s.pathParameters['id']!,
+          groupId: s.uri.queryParameters['group'],
+        ),
+      ),
+      GoRoute(
+        parentNavigatorKey: _rootKey,
+        path: '/exercises',
+        builder: (_, _) => const ExercisesScreen(),
+      ),
+      GoRoute(
+        parentNavigatorKey: _rootKey,
+        path: '/history',
+        builder: (_, _) => const HistoryScreen(),
+      ),
+      GoRoute(
+        parentNavigatorKey: _rootKey,
+        path: '/group/new',
+        builder: (_, s) => GroupFormScreen(workoutId: s.uri.queryParameters['workout']),
+      ),
+      GoRoute(
+        parentNavigatorKey: _rootKey,
+        path: '/group/:id',
+        builder: (_, s) => GroupDetailScreen(groupId: s.pathParameters['id']!),
+      ),
+      GoRoute(
+        parentNavigatorKey: _rootKey,
+        path: '/friends',
+        builder: (_, _) => const FriendsScreen(),
+      ),
+      GoRoute(
+        parentNavigatorKey: _rootKey,
+        path: '/notifications',
+        builder: (_, _) => const NotificationsScreen(),
+      ),
+      GoRoute(
+        parentNavigatorKey: _rootKey,
+        path: '/u/:username',
+        builder: (_, s) => UserProfileScreen(username: s.pathParameters['username']!),
+      ),
+    ],
+  );
+});
