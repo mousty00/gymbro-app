@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../config/env.dart';
+import '../mock/mock_backend.dart';
 import '../storage/token_storage.dart';
 import 'api_exception.dart';
 
@@ -30,6 +31,8 @@ class ApiClient {
         onError: _onError,
       ),
     );
+    // Modalità mock: con Env.useMock le richieste non escono dal dispositivo.
+    dio.interceptors.add(MockBackend());
   }
 
   final TokenStorage _tokens;

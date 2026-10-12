@@ -20,6 +20,29 @@ flutter run --dart-define=API_BASE_URL=http://10.0.2.2:8080/api
 flutter run --release --dart-define=API_BASE_URL=https://<tuo-dominio>/api
 ```
 
+### Modalità mock (senza backend)
+
+Per provare solo UX e UI in locale, l'app può girare con dati finti in memoria, senza nessuna API:
+
+```bash
+flutter run -t lib/main_mock.dart
+
+# equivalente, con il flag
+flutter run --dart-define=USE_MOCK=true
+
+# anche nel browser
+flutter run -d chrome -t lib/main_mock.dart
+```
+
+Da VS Code scegli la configurazione **GymBro (mock)** in Run and Debug; da Android Studio apri `lib/main_mock.dart` e premi Run. Il flag `--dart-define` vale solo da un avvio completo: un hot reload o hot restart non lo applica.
+
+Se avvii l'app normale e il server non risponde, in debug il login mostra il pulsante **Usa dati demo**, che passa ai dati finti senza riavviare. Nelle build di release questo pulsante non c'è e l'app usa sempre l'API vera.
+
+- Qualunque username e password fanno il login come `mousty`, con amici, schede, storico, gruppi e post già pronti.
+- Tutte le azioni funzionano (like, commenti, nuovi post con foto, schede, sessioni, inviti, amicizie) e restano valide finché l'app è aperta. Al riavvio i dati tornano quelli iniziali.
+- Per provare i casi di errore: lo username `nonverificato` simula l'email non verificata, la password `sbagliata` simula credenziali errate, il codice OTP `000000` viene sempre rifiutato.
+- Il backend finto è in `lib/core/mock/mock_backend.dart`: è un interceptor di dio che risponde alle stesse rotte di gymbro-api, quindi repository e schermate non cambiano.
+
 Requisiti: Flutter 3.38+ (Dart 3.9+). Testato con Flutter 3.47.
 
 > Per il web il backend deve accettare l'origine dell'app in CORS (`CorsConfig`).

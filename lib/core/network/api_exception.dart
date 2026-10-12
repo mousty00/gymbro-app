@@ -3,13 +3,16 @@ import 'package:dio/dio.dart';
 /// Errore leggibile ricavato dall'`ErrorResponse` del backend
 /// (`{timestamp, status, error, message, details}`).
 class ApiException implements Exception {
-  ApiException(this.message, {this.statusCode, this.details = const {}});
+  ApiException(this.message, {this.statusCode, this.details = const {}, this.unreachable = false});
 
   final String message;
   final int? statusCode;
   final Map<String, String> details;
 
   bool get isUnauthorized => statusCode == 401;
+
+  /// Nessuna risposta: server spento, URL sbagliato o rete assente.
+  final bool unreachable;
   bool get isEmailNotVerified =>
       statusCode == 403 && message.toLowerCase().contains('not verified');
 
@@ -22,6 +25,7 @@ class ApiException implements Exception {
     if (response == null) {
       return ApiException(
         'Impossibile raggiungere il server. Controlla la connessione.',
+        unreachable: true,
       );
     }
     final data = response.data;

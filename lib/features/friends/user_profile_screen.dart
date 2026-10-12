@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/theme/app_theme.dart';
+import '../../core/widgets/app_image.dart';
 import '../../core/widgets/async_view.dart';
 import '../../core/widgets/backgrounds.dart';
 import '../../core/widgets/ui.dart';
@@ -139,12 +140,8 @@ class PostGrid extends StatelessWidget {
           onTap: () => context.push('/posts/${p.id}'),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(AppRadius.sm + 2),
-            child: p.image != null && p.image!.startsWith('http')
-                ? Image.network(
-                    p.image!,
-                    fit: BoxFit.cover,
-                    errorBuilder: (_, _, _) => _TextTile(text: p.content),
-                  )
+            child: AppImage.supports(p.image)
+                ? AppImage(p.image!, fallback: _TextTile(text: p.content))
                 : _TextTile(text: p.content),
           ),
         );
