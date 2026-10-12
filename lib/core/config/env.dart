@@ -13,10 +13,14 @@ class Env {
   );
 
   /// Modalità mock: l'app gira senza backend, con dati finti in memoria.
-  /// Serve per provare UX e UI in locale:
+  /// Serve per provare UX e UI in locale, in uno di questi modi:
   ///
+  ///   flutter run -t lib/main_mock.dart
   ///   flutter run --dart-define=USE_MOCK=true
-  static const bool useMock = bool.fromEnvironment('USE_MOCK');
+  ///
+  /// Nelle build di debug si attiva anche dal login ("Usa dati demo")
+  /// quando il server non risponde.
+  static bool useMock = const bool.fromEnvironment('USE_MOCK');
 
   /// Dimensione pagina usata per le liste paginate (il backend accetta 1..100).
   static const int pageSize = 20;

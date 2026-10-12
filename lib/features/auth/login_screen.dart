@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -22,6 +23,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _password = TextEditingController();
   bool _loading = false;
 
+  /// Il server non ha risposto all'ultimo tentativo.
+  bool _unreachable = false;
+
   @override
   void dispose() {
     _username.dispose();
@@ -37,7 +41,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       // il router porta in home
     } on ApiException catch (e) {
       if (!mounted) return;
-      if (e.isEmailNotVerified) {
+      if (e.unreachable) {
+        setState(() => _unreachable = true);
+        showMessage(context, 'Server non raggiungibile (${Env.apiBaseUrl})', error: true);
+      } else if (e.isEmailNotVerified) {
         showMessage(context, 'Verifica prima la tua email con il codice che ti abbiamo inviato.');
         context.push('/auth/verify?username=${Uri.encodeComponent(_username.text.trim())}');
       } else {
@@ -46,6 +53,17 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     } finally {
       if (mounted) setState(() => _loading = false);
     }
+  }
+
+  /// Passa ai dati finti senza riavviare l'app (solo build di debug).
+  void _useDemo() {
+    setState(() {
+      Env.useMock = true;
+      _unreachable = false;
+    });
+    if (_username.text.trim().isEmpty) _username.text = 'mousty';
+    if (_password.text.isEmpty) _password.text = 'password';
+    _submit();
   }
 
   @override
@@ -63,6 +81,25 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 'Modalità demo: qualunque username e password funzionano. '
                 'Usa "nonverificato" per provare la verifica email, la password "sbagliata" per l\'errore.',
                 style: TextStyle(color: AppColors.inkSoft, height: 1.4),
+              ),
+            ),
+          ),
+        if (_unreachable && kDebugMode && !Env.useMock)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 20),
+            child: SoftCard(
+              color: AppColors.lilacSoft,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Non riesco a contattare ${Env.apiBaseUrl}. '
+                    'Vuoi provare l\'app con i dati demo?',
+                    style: TextStyle(color: AppColors.inkSoft, height: 1.4),
+                  ),
+                  const SizedBox(height: 12),
+                  PillActionButton(icon: Icons.science_rounded, label: 'Usa dati demo', onPressed: _useDemo),
+                ],
               ),
             ),
           ),

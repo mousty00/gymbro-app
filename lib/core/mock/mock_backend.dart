@@ -3,7 +3,10 @@ import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
 
-/// Backend finto in memoria, attivo con `--dart-define=USE_MOCK=true`.
+import '../config/env.dart';
+
+/// Backend finto in memoria, attivo quando `Env.useMock` è vero
+/// (`flutter run -t lib/main_mock.dart` o `--dart-define=USE_MOCK=true`).
 ///
 /// È un interceptor di dio: risponde alle stesse rotte di gymbro-api con le
 /// stesse forme JSON, così repository, modelli e schermate restano identici.
@@ -16,11 +19,15 @@ import 'package:dio/dio.dart';
 /// - la password `sbagliata` simula credenziali errate (401);
 /// - il codice OTP `000000` è sempre rifiutato, gli altri sono accettati.
 class MockBackend extends Interceptor {
-  MockBackend({this.latency = const Duration(milliseconds: 350)}) {
+  MockBackend({this.latency = const Duration(milliseconds: 350), bool Function()? enabled})
+      : enabled = enabled ?? (() => Env.useMock) {
     _seed();
   }
 
   final Duration latency;
+
+  /// Se falso le richieste passano al server vero.
+  final bool Function() enabled;
 
   /// Immagini caricate dall'app in modalità mock, lette da `AppImage`.
   static final Map<String, Uint8List> uploads = {};
@@ -29,23 +36,31 @@ class MockBackend extends Interceptor {
 
   @override
   Future<void> onRequest(RequestOptions options, RequestInterceptorHandler handler) async {
+    if (!enabled()) return handler.next(options);
     await Future<void>.delayed(latency);
     try {
       final data = await _route(options);
       handler.resolve(Response<dynamic>(requestOptions: options, statusCode: 200, data: data));
     } on _MockError catch (e) {
-      handler.reject(
-        DioException(
-          requestOptions: options,
-          type: DioExceptionType.badResponse,
-          response: Response<dynamic>(
-            requestOptions: options,
-            statusCode: e.status,
-            data: {'status': e.status, 'message': e.message, 'timestamp': _iso(DateTime.now())},
-          ),
-        ),
-      );
+      _reject(options, handler, e.status, e.message);
+    } catch (e) {
+      // Un bug del mock non deve lasciare la richiesta appesa.
+      _reject(options, handler, 500, 'Mock: $e');
     }
+  }
+
+  void _reject(RequestOptions options, RequestInterceptorHandler handler, int status, String message) {
+    handler.reject(
+      DioException(
+        requestOptions: options,
+        type: DioExceptionType.badResponse,
+        response: Response<dynamic>(
+          requestOptions: options,
+          statusCode: status,
+          data: {'status': status, 'message': message, 'timestamp': _iso(DateTime.now())},
+        ),
+      ),
+    );
   }
 
   // ---------------------------------------------------------------- dati

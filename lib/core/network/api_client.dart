@@ -31,8 +31,8 @@ class ApiClient {
         onError: _onError,
       ),
     );
-    // Modalità mock: le richieste non escono dal dispositivo.
-    if (Env.useMock) dio.interceptors.add(MockBackend());
+    // Modalità mock: con Env.useMock le richieste non escono dal dispositivo.
+    dio.interceptors.add(MockBackend());
   }
 
   final TokenStorage _tokens;

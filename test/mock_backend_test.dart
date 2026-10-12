@@ -11,7 +11,7 @@ void main() {
   late Dio dio;
 
   setUp(() {
-    dio = Dio(BaseOptions(baseUrl: 'http://mock/api'))..interceptors.add(MockBackend(latency: Duration.zero));
+    dio = Dio(BaseOptions(baseUrl: 'http://mock/api'))..interceptors.add(MockBackend(latency: Duration.zero, enabled: () => true));
   });
 
   Future<dynamic> get(String path, [Map<String, dynamic>? q]) async => (await dio.get<dynamic>(path, queryParameters: q)).data;
