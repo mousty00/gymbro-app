@@ -30,7 +30,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
   Future<void> _changeAvatar() async {
     final file = await ImagePicker().pickImage(source: ImageSource.gallery, maxWidth: 1024, imageQuality: 85);
-    if (file == null) return;
+    if (file == null || !mounted) return;
     setState(() => _uploading = true);
     try {
       await ref.read(userRepositoryProvider).updateProfileImage(await file.readAsBytes(), file.name);

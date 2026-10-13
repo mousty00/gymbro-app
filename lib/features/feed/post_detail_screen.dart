@@ -72,7 +72,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
           children: [
             Text('Modifica post', style: Theme.of(ctx).textTheme.headlineSmall),
             const SizedBox(height: 16),
-            TextField(controller: controller, maxLines: 5, minLines: 3, autofocus: true),
+            TextField(controller: controller, maxLines: 5, minLines: 3, maxLength: 2000, autofocus: true),
             const SizedBox(height: 16),
             PrimaryButton(label: 'Salva', onPressed: () => Navigator.pop(ctx, controller.text.trim())),
           ],
@@ -256,6 +256,9 @@ class _CommentComposer extends StatelessWidget {
                 controller: controller,
                 minLines: 1,
                 maxLines: 4,
+                // limite del backend
+                maxLength: 1000,
+                buildCounter: (_, {required currentLength, required isFocused, maxLength}) => null,
                 textInputAction: TextInputAction.send,
                 onSubmitted: (_) => onSend(),
                 decoration: const InputDecoration(

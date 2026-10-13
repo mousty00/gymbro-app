@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 
 import '../../core/theme/app_theme.dart';
@@ -164,5 +166,7 @@ String? validEmail(String? v) {
 String? validPassword(String? v) {
   if (v == null || v.isEmpty) return 'Inserisci una password';
   if (v.length < 8) return 'Almeno 8 caratteri';
+  // bcrypt usa solo i primi 72 byte: il backend rifiuta password più lunghe
+  if (utf8.encode(v).length > 72) return 'Massimo 72 caratteri';
   return null;
 }

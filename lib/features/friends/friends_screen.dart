@@ -242,7 +242,7 @@ class _AddFriendButtonState extends ConsumerState<AddFriendButton> {
     setState(() => _busy = true);
     try {
       await ref.read(friendshipRepositoryProvider).add(widget.username);
-      setState(() => _sent = true);
+      if (mounted) setState(() => _sent = true);
       if (mounted) showMessage(context, 'Richiesta inviata a @${widget.username}');
     } on ApiException catch (e) {
       if (mounted) showMessage(context, e.message, error: true);

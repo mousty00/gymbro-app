@@ -93,6 +93,13 @@ class ApiClient {
       await _tokens.save(access: access, refresh: newRefresh);
       await _retry(options, access, handler, err);
       return;
+    } on DioException catch (e) {
+      // Senza risposta (rete assente, timeout) il refresh token è ancora valido:
+      // non buttare via la sessione, la prossima richiesta riproverà.
+      if (e.response == null) return handler.next(err);
+      await _tokens.clear();
+      _sessionExpired.add(null);
+      return handler.next(err);
     } catch (_) {
       await _tokens.clear();
       _sessionExpired.add(null);
