@@ -151,7 +151,8 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                       for (final c in comments)
                         _CommentTile(
                           comment: c,
-                          canDelete: c.username == me.username || p.user.username == me.username,
+                          // il backend lascia eliminare un commento solo a chi l'ha scritto
+                          canDelete: c.username == me.username,
                           onDelete: () => _deleteComment(c),
                         ),
                     ],

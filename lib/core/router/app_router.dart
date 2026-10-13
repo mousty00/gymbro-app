@@ -101,7 +101,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         parentNavigatorKey: _rootKey,
         path: '/workout/:id/edit',
-        builder: (_, s) => WorkoutFormScreen(initial: s.extra as Workout?),
+        builder: (_, s) => WorkoutEditScreen(workoutId: s.pathParameters['id']!, initial: s.extra as Workout?),
       ),
       GoRoute(
         parentNavigatorKey: _rootKey,

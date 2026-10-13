@@ -45,8 +45,23 @@ Se avvii l'app normale e il server non risponde, in debug il login mostra il pul
 
 Requisiti: Flutter 3.38+ (Dart 3.9+). Testato con Flutter 3.47.
 
-> Per il web il backend deve accettare l'origine dell'app in CORS (`CorsConfig`).
-> Su Android, per un backend in `http://` serve `android:usesCleartextTraffic="true"` solo in debug.
+> Per il web il backend deve accettare l'origine dell'app in CORS (`app.cors.allowed-origins`, il default `http://localhost:*` va bene per `flutter run -d chrome`).
+> Le build debug e profile accettano `http://` verso il backend locale (Android: `usesCleartextTraffic` nei manifest debug/profile; iOS: `NSAllowsLocalNetworking`). La release usa solo `https://`.
+> Da un telefono vero `localhost` è il telefono stesso: usa l'IP della macchina, es. `--dart-define=API_BASE_URL=http://192.168.1.20:8080/api`.
+
+### Test end to end contro l'API
+
+`test/e2e/api_e2e_test.dart` usa i repository dell'app contro un gymbro-api vero e prova tutti i flussi: registrazione con OTP, login (anche email non verificata e password errata), refresh del token, utenti e foto profilo, esercizi, schede, storico, amicizie, post con foto, like e commenti, gruppi e inviti, password dimenticata, logout ed eliminazione account.
+
+Serve gymbro-api avviato con un server SMTP di sviluppo che salva le email in un file, perché il test legge da lì gli OTP. Lo storage S3 può essere un S3 compatibile in locale. Poi:
+
+```bash
+flutter test test/e2e/api_e2e_test.dart \
+  --dart-define=E2E_API=http://localhost:8080/api \
+  --dart-define=E2E_MAILS=/percorso/mails.log
+```
+
+Senza i due `--dart-define` il test viene saltato, quindi un normale `flutter test` resta veloce e non ha bisogno del backend.
 
 ## Funzionalità
 
@@ -82,4 +97,6 @@ lib/
 
 - `POST /posts/create` richiede sempre un'immagine (`imageFile` è obbligatorio), quindi l'app chiede una foto per ogni post.
 - Le richieste di amicizia inviate non hanno un endpoint di lettura: l'app mostra solo quelle ricevute.
-- Gli inviti ai gruppi (`/group_members`) espongono solo l'id del gruppo, non il nome.
+- Chi è solo invitato non può leggere il gruppo: l'invito porta con sé nome, creatore e data (`groupName`, `groupCreatedBy`, `groupScheduledFor`, da gymbro-api PR #14). Con un backend più vecchio l'app mostra un testo generico.
+- Un commento lo può eliminare solo chi l'ha scritto, anche sui propri post.
+- Le rotte `/auth/**` hanno un rate limit di 20 richieste al minuto per IP: l'app mostra "Troppi tentativi" invece dell'errore 429.

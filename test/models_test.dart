@@ -1,4 +1,6 @@
+import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:gymbro_app/core/network/api_exception.dart';
 import 'package:gymbro_app/models/group.dart';
 import 'package:gymbro_app/models/json.dart';
 import 'package:gymbro_app/models/page.dart';
@@ -81,5 +83,37 @@ void main() {
     expect(g.workoutName, 'Gambe');
     expect(g.acceptedMembers.single.user.username, 'giulia');
     expect(formatLocalDate(DateTime(1998, 5, 2)), '1998-05-02');
+  });
+
+  test('errori del backend → messaggi leggibili', () {
+    ApiException from(int status, Object? data) {
+      final req = RequestOptions(path: '/x');
+      return ApiException.fromDio(DioException(
+        requestOptions: req,
+        response: Response<dynamic>(requestOptions: req, statusCode: status, data: data),
+      ));
+    }
+
+    expect(from(429, {'error': 'Too many requests'}).message, contains('Troppi tentativi'));
+    expect(from(500, null).message, contains('server'));
+    expect(from(409, {'message': 'Username already taken'}).message, 'Username already taken');
+    expect(from(400, {'message': 'Validation failed', 'details': {'name': 'obbligatorio'}}).message, 'obbligatorio');
+    final offline = ApiException.fromDio(DioException(requestOptions: RequestOptions(path: '/x')));
+    expect(offline.unreachable, isTrue);
+  });
+
+  test('invito a un gruppo con il riepilogo del gruppo', () {
+    final m = GroupMember.fromJson({
+      'id': 'm1',
+      'workoutGroupId': 'g1',
+      'user': {'id': 'u1', 'username': 'mousty'},
+      'status': 'invited',
+      'groupName': 'Push con Marco',
+      'groupCreatedBy': 'marco_lifts',
+      'groupScheduledFor': '2026-10-15T07:00:00Z',
+    });
+    expect(m.groupName, 'Push con Marco');
+    expect(m.groupCreatedBy, 'marco_lifts');
+    expect(m.groupScheduledFor!.toUtc().hour, 7);
   });
 }

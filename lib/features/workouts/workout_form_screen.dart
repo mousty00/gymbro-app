@@ -4,12 +4,39 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/network/api_exception.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/widgets/async_view.dart';
+import '../../core/widgets/backgrounds.dart';
 import '../../core/widgets/ui.dart';
 import '../../data/providers.dart';
 import '../../data/workout_repository.dart';
 import '../../models/json.dart';
 import '../../models/workout.dart';
 import '../auth/auth_widgets.dart';
+
+/// Modifica di una scheda aperta da URL (link, ricarica sul web): senza la
+/// scheda passata come `extra` la carica dal server.
+class WorkoutEditScreen extends ConsumerWidget {
+  const WorkoutEditScreen({super.key, required this.workoutId, this.initial});
+
+  final String workoutId;
+  final Workout? initial;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    if (initial != null) return WorkoutFormScreen(initial: initial);
+    return Scaffold(
+      body: SkyBackground(
+        child: SafeArea(
+          child: AsyncView<Workout>(
+            value: ref.watch(workoutProvider(workoutId)),
+            onRetry: () => ref.invalidate(workoutProvider(workoutId)),
+            data: (w) => WorkoutFormScreen(initial: w),
+          ),
+        ),
+      ),
+    );
+  }
+}
 
 /// Crea o modifica una scheda (nome, descrizione, giorni, orario, visibilità).
 class WorkoutFormScreen extends ConsumerStatefulWidget {

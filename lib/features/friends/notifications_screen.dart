@@ -169,8 +169,18 @@ class _GroupInviteTileState extends ConsumerState<GroupInviteTile> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Invito a un allenamento di gruppo', style: TextStyle(fontWeight: FontWeight.w700)),
-                Text(timeAgo(widget.member.createdAt), style: const TextStyle(color: AppColors.inkSoft, fontSize: 13)),
+                Text(
+                  widget.member.groupName ?? 'Invito a un allenamento di gruppo',
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(fontWeight: FontWeight.w700),
+                ),
+                Text(
+                  _subtitle(widget.member),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(color: AppColors.inkSoft, fontSize: 13),
+                ),
               ],
             ),
           ),
@@ -185,4 +195,14 @@ class _GroupInviteTileState extends ConsumerState<GroupInviteTile> {
       ),
     );
   }
+}
+
+/// "da @marco · sab 17 ott alle 09:00", o quando è arrivato l'invito se il
+/// backend non manda il riepilogo del gruppo.
+String _subtitle(GroupMember m) {
+  final parts = [
+    if (m.groupCreatedBy != null) 'da @${m.groupCreatedBy}',
+    if (m.groupScheduledFor != null) formatDayTime(m.groupScheduledFor),
+  ];
+  return parts.isEmpty ? timeAgo(m.createdAt) : parts.join(' · ');
 }
