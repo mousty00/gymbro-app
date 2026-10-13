@@ -42,6 +42,13 @@ class ApiException implements Exception {
     if (details.isNotEmpty) {
       message = details.values.join('\n');
     }
+    final status = response.statusCode ?? 0;
+    if (status == 429) {
+      // rate limit sulle rotte /auth (20 richieste al minuto per IP)
+      message = 'Troppi tentativi. Aspetta un minuto e riprova.';
+    } else if (status >= 500 && details.isEmpty) {
+      message = 'Il server ha avuto un problema. Riprova tra poco.';
+    }
     return ApiException(message, statusCode: response.statusCode, details: details);
   }
 

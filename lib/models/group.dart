@@ -54,6 +54,9 @@ class GroupMember {
     required this.user,
     required this.status,
     this.createdAt,
+    this.groupName,
+    this.groupCreatedBy,
+    this.groupScheduledFor,
   });
 
   final String id;
@@ -61,6 +64,12 @@ class GroupMember {
   final SimpleUser user;
   final GroupMemberStatus status;
   final DateTime? createdAt;
+
+  /// Riepilogo del gruppo: chi è solo invitato non può leggere il gruppo
+  /// finché non accetta, quindi il backend lo allega all'invito.
+  final String? groupName;
+  final String? groupCreatedBy;
+  final DateTime? groupScheduledFor;
 
   factory GroupMember.fromJson(Json j) => GroupMember(
         id: '${j['id']}',
@@ -73,5 +82,8 @@ class GroupMember {
           _ => GroupMemberStatus.unknown,
         },
         createdAt: parseInstant(j['createdAt']),
+        groupName: j['groupName'] as String?,
+        groupCreatedBy: j['groupCreatedBy'] as String?,
+        groupScheduledFor: parseInstant(j['groupScheduledFor']),
       );
 }

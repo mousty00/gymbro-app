@@ -258,6 +258,14 @@ class MockBackend extends Interceptor {
 
   // ---------------------------------------------------------------- viste JSON
 
+  /// Membro con il riepilogo del gruppo, come `GroupMemberDTO` del backend.
+  Map<String, dynamic> _withGroup(Map<String, dynamic> m, Map<String, dynamic> g) => {
+        ...m,
+        'groupName': g['name'],
+        'groupCreatedBy': (g['createdBy'] as Map)['username'],
+        'groupScheduledFor': g['scheduledFor'],
+      };
+
   String get _meName => _me['username'] as String;
 
   Map<String, dynamic> _page(List<dynamic> items) => {
@@ -587,7 +595,7 @@ class MockBackend extends Interceptor {
       return _page([
         for (final g in _groups)
           for (final m in g['groupMembers'] as List)
-            if ((m['user'] as Map)['username'] == _meName) m,
+            if ((m['user'] as Map)['username'] == _meName) _withGroup(m as Map<String, dynamic>, g),
       ]);
     }
     if (match('POST', '/group_members/create')) {
@@ -605,7 +613,7 @@ class MockBackend extends Interceptor {
         'createdAt': _iso(DateTime.now()),
       };
       members.add(m);
-      return {'message': 'Invited', 'result': m};
+      return {'message': 'Invited', 'result': _withGroup(m, g)};
     }
     if (match('POST', '/group_members/accept-invitation/:id')) {
       _memberById(last)['status'] = 'accepted';

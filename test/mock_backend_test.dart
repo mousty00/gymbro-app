@@ -67,6 +67,7 @@ void main() {
         .results
         .where((m) => m.status == GroupMemberStatus.invited)
         .toList();
+    expect(invites.single.groupName, isNotNull);
     await post('/group_members/accept-invitation/${invites.single.id}');
     final groups = PageResult.fromJson(await get('/workout_groups') as Map<String, dynamic>, WorkoutGroup.fromJson).results;
     expect(groups.any((g) => g.id == invites.single.groupId), isTrue);
