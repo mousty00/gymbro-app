@@ -25,5 +25,5 @@ Future<void> shareGpx(BuildContext context, Future<String> Function() load, Stri
 /// Nome file leggibile: "Giro del parco" → "giro-del-parco".
 String gpxFileName(String name) {
   final slug = name.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]+'), '-').replaceAll(RegExp(r'^-|-$'), '');
-  return slug.isEmpty ? 'gymbro' : slug;
+  return slug.isEmpty ? 'repbirds' : slug;
 }

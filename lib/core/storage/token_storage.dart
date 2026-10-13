@@ -8,8 +8,8 @@ class TokenStorage {
 
   final FlutterSecureStorage _storage;
 
-  static const _accessKey = 'gymbro.access_token';
-  static const _refreshKey = 'gymbro.refresh_token';
+  static const _accessKey = 'repbirds.access_token';
+  static const _refreshKey = 'repbirds.refresh_token';
 
   // Cache in memoria per non leggere il keychain a ogni richiesta.
   String? _access;

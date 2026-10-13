@@ -2,13 +2,13 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "GymBro (mock)",
+      "name": "RepBirds (mock)",
       "request": "launch",
       "type": "dart",
       "program": "lib/main_mock.dart"
     },
     {
-      "name": "GymBro (API locale)",
+      "name": "RepBirds (API locale)",
       "request": "launch",
       "type": "dart",
       "program": "lib/main.dart"

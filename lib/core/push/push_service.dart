@@ -26,7 +26,7 @@ final scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
 class PushService {
   PushService(this._ref);
 
-  static const _channel = MethodChannel('gymbro/push');
+  static const _channel = MethodChannel('repbirds/push');
 
   final Ref _ref;
   String? _token;

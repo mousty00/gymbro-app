@@ -51,7 +51,7 @@ class GpsLocation implements LocationSource {
     }
     if (permission == LocationPermission.deniedForever) {
       throw const LocationUnavailable(
-        'GymBro non ha accesso alla posizione. Consentilo nelle impostazioni per registrare la corsa.',
+        'RepBirds non ha accesso alla posizione. Consentilo nelle impostazioni per registrare la corsa.',
         openSettings: true,
       );
     }
@@ -79,7 +79,7 @@ class GpsLocation implements LocationSource {
           distanceFilter: 3,
           intervalDuration: const Duration(seconds: 1),
           foregroundNotificationConfig: const ForegroundNotificationConfig(
-            notificationTitle: 'GymBro sta registrando la corsa',
+            notificationTitle: 'RepBirds sta registrando la corsa',
             notificationText: 'Tocca per tornare alla corsa',
             notificationChannelName: 'Corsa',
             enableWakeLock: true,

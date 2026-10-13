@@ -23,16 +23,16 @@ Future<void> main() async {
     if (user != null && previous?.value?.id != user.id) push.onLogin();
   }, fireImmediately: true);
 
-  runApp(UncontrolledProviderScope(container: container, child: const GymBroApp()));
+  runApp(UncontrolledProviderScope(container: container, child: const RepBirdsApp()));
 }
 
-class GymBroApp extends ConsumerWidget {
-  const GymBroApp({super.key});
+class RepBirdsApp extends ConsumerWidget {
+  const RepBirdsApp({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return MaterialApp.router(
-      title: 'GymBro',
+      title: 'RepBirds',
       debugShowCheckedModeBanner: false,
       theme: buildAppTheme(),
       routerConfig: ref.watch(routerProvider),
