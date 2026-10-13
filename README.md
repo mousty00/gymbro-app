@@ -1,7 +1,7 @@
-# gymbro-app
+# RepBirds App
 
 **RepBirds**: app mobile (iOS / Android, gira anche sul web) per allenarsi da soli o in gruppo.
-È il client di [gymbro-api](https://github.com/mousty00/gymbro-api) e ne usa le API REST con autenticazione JWT.
+È il client di [repbirds-api](https://github.com/mousty00/repbirds-api) e ne usa le API REST con autenticazione JWT.
 
 ![Schermate](docs/screens.png)
 
