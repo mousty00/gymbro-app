@@ -16,7 +16,7 @@ Future<void> main() async {
 
   final container = ProviderContainer();
   final push = container.read(pushServiceProvider);
-  await push.init();
+  push.init();
   // Registra il dispositivo per le push a ogni login (e all'avvio con sessione valida).
   container.listen(sessionProvider, (previous, next) {
     final user = next.value;

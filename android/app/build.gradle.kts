@@ -4,6 +4,13 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
+// Push on Android goes through FCM: download google-services.json from the Firebase console
+// (Android app only, iOS uses APNs directly) into android/app/. Without it the app builds
+// the same and simply gets no push token.
+if (file("google-services.json").exists()) {
+    apply(plugin = "com.google.gms.google-services")
+}
+
 android {
     namespace = "com.mousty.gymbro"
     compileSdk = flutter.compileSdkVersion
@@ -46,4 +53,9 @@ kotlin {
 
 flutter {
     source = "../.."
+}
+
+dependencies {
+    implementation(platform("com.google.firebase:firebase-bom:34.19.0"))
+    implementation("com.google.firebase:firebase-messaging")
 }

@@ -1,9 +1,8 @@
 import 'dart:async';
 
-import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/notification_repository.dart';
@@ -16,67 +15,54 @@ import '../router/app_router.dart';
 /// Per mostrare le push arrivate con l'app aperta (il sistema le mostra solo in background).
 final scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
 
-/// Push via Firebase Cloud Messaging (Android, e iOS tramite APNs).
+/// Push native, senza plugin: su iOS il token APNs (l'API scrive direttamente ad
+/// Apple, niente Firebase), su Android il token FCM (`MainActivity.kt`, attivo solo
+/// se c'è `android/app/google-services.json`).
 ///
-/// Dopo il login chiede il permesso e registra il token del dispositivo su
-/// `POST /devices`; al logout lo cancella. Con l'app aperta una push ricarica le
-/// notifiche e mostra un avviso; il tap su una push apre la schermata giusta.
-/// Senza configurazione Firebase (vedi [Env]) o in modalità mock non fa nulla.
+/// Dopo il login chiede il permesso e registra il token su `POST /devices`; al
+/// logout lo cancella. Con l'app aperta una push ricarica le notifiche e mostra un
+/// avviso; il tap su una push apre la schermata giusta. In modalità mock, sul web o
+/// senza configurazione non fa nulla.
 class PushService {
   PushService(this._ref);
 
-  final Ref _ref;
-  bool _ready = false;
-  String? _token;
-  final _subs = <StreamSubscription<Object?>>[];
+  static const _channel = MethodChannel('gymbro/push');
 
-  static FirebaseOptions? get _options {
-    if (kIsWeb || Env.firebaseProjectId.isEmpty || Env.firebaseSenderId.isEmpty) return null;
-    final ios = defaultTargetPlatform == TargetPlatform.iOS;
-    final apiKey = ios ? Env.firebaseIosApiKey : Env.firebaseAndroidApiKey;
-    final appId = ios ? Env.firebaseIosAppId : Env.firebaseAndroidAppId;
-    if (apiKey.isEmpty || appId.isEmpty) return null;
-    return FirebaseOptions(
-      apiKey: apiKey,
-      appId: appId,
-      messagingSenderId: Env.firebaseSenderId,
-      projectId: Env.firebaseProjectId,
-    );
-  }
+  final Ref _ref;
+  String? _token;
+
+  static bool get _supported =>
+      !kIsWeb && (defaultTargetPlatform == TargetPlatform.iOS || defaultTargetPlatform == TargetPlatform.android);
 
   static String get _platform => defaultTargetPlatform == TargetPlatform.iOS ? 'IOS' : 'ANDROID';
 
-  /// Da chiamare una volta all'avvio, prima di `runApp`.
-  Future<void> init() async {
-    final options = _options;
-    if (options == null) return;
-    try {
-      await Firebase.initializeApp(options: options);
-      _ready = true;
-    } catch (e) {
-      debugPrint('Push disattivate: Firebase non inizializzato ($e)');
-      return;
-    }
-    final messaging = FirebaseMessaging.instance;
-    await messaging.setForegroundNotificationPresentationOptions(alert: false, badge: true, sound: false);
-    _subs
-      ..add(FirebaseMessaging.onMessage.listen(_onForeground))
-      ..add(FirebaseMessaging.onMessageOpenedApp.listen(_open))
-      ..add(messaging.onTokenRefresh.listen(_register));
-  }
+  bool get _active => _supported && !Env.useMock;
 
-  bool get _active => _ready && !Env.useMock;
+  /// Da chiamare una volta all'avvio: riceve gli eventi dal codice nativo.
+  void init() {
+    if (!_supported) return;
+    _channel.setMethodCallHandler((call) async {
+      final args = call.arguments;
+      switch (call.method) {
+        case 'onToken':
+          if (args is String) await _register(args);
+        case 'onMessage':
+          if (args is Map) _onForeground(args);
+        case 'onOpened':
+          if (args is Map) _open(args);
+      }
+    });
+  }
 
   /// Dopo il login (e a ogni avvio con sessione valida).
   Future<void> onLogin() async {
     if (!_active) return;
     try {
-      final messaging = FirebaseMessaging.instance;
-      final settings = await messaging.requestPermission();
-      if (settings.authorizationStatus == AuthorizationStatus.denied) return;
-      final token = await messaging.getToken();
+      final granted = await _channel.invokeMethod<bool>('requestPermission') ?? false;
+      if (!granted) return;
+      final token = await _channel.invokeMethod<String>('getToken');
       if (token != null) await _register(token);
-      final initial = await messaging.getInitialMessage();
+      final initial = await _channel.invokeMethod<Map<dynamic, dynamic>>('getInitialMessage');
       if (initial != null) _open(initial);
     } catch (e) {
       debugPrint('Registrazione push non riuscita: $e');
@@ -91,7 +77,7 @@ class PushService {
     try {
       await _ref.read(notificationRepositoryProvider).unregisterDevice(token);
     } catch (_) {
-      // Il backend scarta comunque i token che FCM rifiuta.
+      // Il backend scarta comunque i token che APNs/FCM rifiutano.
     }
   }
 
@@ -101,10 +87,10 @@ class PushService {
     await _ref.read(notificationRepositoryProvider).registerDevice(token, _platform);
   }
 
-  void _onForeground(RemoteMessage message) {
+  /// `{title, body, data: {type, referenceId, notificationId}}` dal codice nativo.
+  void _onForeground(Map<dynamic, dynamic> message) {
     refreshNotifications(_ref.invalidate);
-    final n = message.notification;
-    final text = [n?.title, n?.body].whereType<String>().join(' · ');
+    final text = [message['title'], message['body']].whereType<String>().where((s) => s.isNotEmpty).join(' · ');
     if (text.isEmpty) return;
     final route = _routeOf(message);
     scaffoldMessengerKey.currentState
@@ -118,30 +104,26 @@ class PushService {
       ));
   }
 
-  void _open(RemoteMessage message) {
+  void _open(Map<dynamic, dynamic> message) {
     refreshNotifications(_ref.invalidate);
-    final id = message.data['notificationId'];
-    if (id is String) {
+    final id = _data(message)['notificationId'];
+    if (id != null) {
       _ref.read(notificationRepositoryProvider).markRead(id).catchError((_) {});
     }
     final route = _routeOf(message);
     if (route != null) _ref.read(routerProvider).push(route);
   }
 
-  static String? _routeOf(RemoteMessage message) => AppNotification.routeFor(
-        NotificationKind.parse(message.data['type']),
-        message.data['referenceId'] as String?,
-      );
+  static Map<String, String> _data(Map<dynamic, dynamic> message) {
+    final data = message['data'];
+    if (data is! Map) return const {};
+    return {for (final e in data.entries) '${e.key}': '${e.value}'};
+  }
 
-  void dispose() {
-    for (final s in _subs) {
-      s.cancel();
-    }
+  static String? _routeOf(Map<dynamic, dynamic> message) {
+    final data = _data(message);
+    return AppNotification.routeFor(NotificationKind.parse(data['type']), data['referenceId']);
   }
 }
 
-final pushServiceProvider = Provider<PushService>((ref) {
-  final service = PushService(ref);
-  ref.onDispose(service.dispose);
-  return service;
-});
+final pushServiceProvider = Provider<PushService>(PushService.new);

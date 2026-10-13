@@ -65,21 +65,18 @@ Senza i due `--dart-define` il test viene saltato, quindi un normale `flutter te
 
 ### Notifiche push
 
-Le push passano da Firebase Cloud Messaging (Android, e iOS tramite APNs). La
-configurazione Firebase si passa a build time, senza file nel repo:
+Niente plugin Firebase: il codice nativo passa a Dart il token del dispositivo
+(canale `gymbro/push`, vedi `lib/core/push/push_service.dart`), che dopo il login
+lo registra su `POST /devices` e al logout lo cancella.
 
-```bash
-flutter run --dart-define-from-file=firebase.json
-```
+- **iOS:** APNs direttamente, senza Firebase (`ios/Runner/AppDelegate.swift`). Serve
+  la capability Push Notifications sull'App ID (l'entitlement è già in
+  `ios/Runner/Runner.entitlements`); la chiave APNs (.p8) va solo sull'API.
+- **Android:** FCM, l'unico canale per le push ad app chiusa sui telefoni con Play
+  Store. Scarica `google-services.json` dal progetto Firebase (solo l'app Android)
+  in `android/app/`. Senza quel file l'app si compila uguale e non riceve push.
 
-con `firebase.json` (fuori dal repo) contenente `FIREBASE_PROJECT_ID`,
-`FIREBASE_SENDER_ID`, `FIREBASE_ANDROID_API_KEY`, `FIREBASE_ANDROID_APP_ID`,
-`FIREBASE_IOS_API_KEY`, `FIREBASE_IOS_APP_ID` (dalla console Firebase,
-Impostazioni progetto → Le tue app). Senza questi valori l'app funziona uguale e
-le notifiche si vedono solo nella schermata Notifiche. Dopo il login l'app chiede
-il permesso e registra il token su `POST /devices`; al logout lo cancella.
-Su iOS serve anche la capability Push Notifications sul team Apple (l'entitlement
-è già in `ios/Runner/Runner.entitlements`) e la chiave APNs caricata su Firebase.
+In ogni caso le notifiche restano visibili nella schermata Notifiche.
 
 ## Funzionalità
 
