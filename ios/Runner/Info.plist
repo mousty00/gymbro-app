@@ -35,6 +35,8 @@
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>remote-notification</string>
+		<!-- Corsa: la registrazione GPS continua a schermo spento (indicatore blu) -->
+		<string>location</string>
 	</array>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
@@ -80,5 +82,9 @@
 	<string>Serve per scegliere le foto dei post e del profilo.</string>
 	<key>NSCameraUsageDescription</key>
 	<string>Serve per scattare le foto dei tuoi allenamenti.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Serve per mostrarti sulla mappa mentre disegni un percorso e per registrare distanza, passo e tracciato delle tue corse, anche a schermo spento finché la corsa è in corso.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>GymBro usa la posizione solo durante una corsa che hai avviato, per registrarne distanza, passo e tracciato anche a schermo spento.</string>
 </dict>
 </plist>

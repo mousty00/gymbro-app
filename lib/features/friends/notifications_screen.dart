@@ -108,6 +108,8 @@ class ActivityTile extends StatelessWidget {
         NotificationKind.postLiked => Icons.favorite_rounded,
         NotificationKind.postCommented => Icons.chat_bubble_rounded,
         NotificationKind.groupInvite || NotificationKind.groupInviteAccepted => Icons.groups_rounded,
+        NotificationKind.runInvite || NotificationKind.runInviteAccepted => Icons.directions_run_rounded,
+        NotificationKind.routeSaved => Icons.bookmark_added_rounded,
         _ => Icons.person_add_alt_1_rounded,
       };
 

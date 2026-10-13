@@ -27,6 +27,24 @@ points to `http://localhost:8080/api`, which release builds can't even reach (th
 
 Release builds never use the mock backend: the "Usa dati demo" button only exists in debug.
 
+### Map tiles (running)
+
+The running maps use [flutter_map](https://pub.dev/packages/flutter_map) with raster tiles. The
+default is the public OpenStreetMap server, which is fine for development but **forbids
+published-app traffic** ([tile usage policy](https://operations.osmfoundation.org/policies/tiles/)).
+For release, take a free key from a tile provider and pass its URL and attribution:
+
+```bash
+# MapTiler (free tier: 100k tiles/month)
+--dart-define=MAP_TILE_URL=https://api.maptiler.com/maps/streets-v2/256/{z}/{x}/{y}.png?key=<key>
+--dart-define=MAP_ATTRIBUTION="© MapTiler © OpenStreetMap contributors"
+```
+
+Stadia Maps or Thunderforest work the same way. Restrict the key to the app's bundle id /
+package name in the provider's dashboard, since it ships inside the app. Snapping routes to
+streets is done by the API (`ROUTING_ORS_API_KEY`, see the API's `DEPLOY.md`): no routing key in
+the app.
+
 ### Version
 
 `pubspec.yaml` → `version: 1.0.0+1` is `<name>+<build>`. The name is what users see; the build
@@ -97,8 +115,15 @@ On the app's version page fill in:
   currently supports iPad orientations in `Info.plist`, so App Store Connect will ask for iPad
   screenshots too unless you remove iPad from the target's supported destinations.
 - Description, keywords, support URL, **privacy policy URL** (required).
-- **App Privacy**: the app collects email, username, photos, workout data and a device push token,
-  all linked to the user and not used for tracking.
+- **App Privacy**: the app collects email, username, photos, workout data, **precise location**
+  (only while recording a run, saved as the run's track) and a device push token, all linked to
+  the user and not used for tracking.
+- **Location in background**: the app declares the `location` background mode so a run keeps
+  recording with the screen off. It only asks for "While Using" permission and starts updates
+  from a visible screen, with the blue indicator on. In the review notes, say: "Location is used
+  only while the user records a run they started from the Run screen, to measure distance and
+  pace and save the route; it keeps working with the screen locked until the user taps Fine."
+  A short screen recording of starting a run helps.
 - Age rating questionnaire. The app has user-generated content (posts, comments).
 - **Sign-In Information**: login is required, so give the reviewer a working demo account
   (username and password). Signup needs an OTP by email, which the reviewer can't receive.
@@ -196,8 +221,14 @@ Free. Then work through **Dashboard → Set up your app**:
 - Ads: no.
 - Content rating questionnaire (mention user-generated content).
 - Target audience.
-- **Data safety**: email, username, photos, fitness data, device id (push token); collected,
-  encrypted in transit, not shared, deletable by the user.
+- **Data safety**: email, username, photos, fitness data, **precise location** (run tracks),
+  device id (push token); collected, encrypted in transit, not shared, deletable by the user.
+- **Location / foreground service**: the app uses a `location` foreground service (from
+  geolocator) only while a run is recording, with a persistent notification. Play Console asks
+  you to declare `FOREGROUND_SERVICE_LOCATION` under **App content → Foreground service
+  permissions**: choose the user-initiated location task and attach a short video of starting a
+  run. No `ACCESS_BACKGROUND_LOCATION` is requested, so there's no background location
+  declaration.
 - **Account deletion**: Play also asks for a **web link** where users can request deletion
   without the app. In-app deletion alone isn't enough; a simple page with a contact form or
   email address works.
@@ -229,6 +260,8 @@ Upload `build/app/outputs/bundle/release/app-release.aab` in Play Console → **
       push channels enabled
 - [ ] Version and build number bumped in `pubspec.yaml`
 - [ ] Built with `--dart-define=API_BASE_URL=https://api.<domain>/api`
+- [ ] Built with `MAP_TILE_URL` / `MAP_ATTRIBUTION` of a tile provider with a key (not the public OSM server)
+- [ ] `ROUTING_ORS_API_KEY` set on the API, so routes follow the streets
 - [ ] Android: signed with the upload key, `google-services.json` in `android/app/`
 - [ ] iOS: Push Notifications capability on, `ITSAppUsesNonExemptEncryption` set
 - [ ] Privacy policy URL and (for Play) account-deletion URL online

@@ -2,8 +2,12 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
+import 'package:latlong2/latlong.dart';
 
+import '../../features/running/geo.dart';
 import '../config/env.dart';
+
+part 'mock_running.dart';
 
 /// Backend finto in memoria, attivo quando `Env.useMock` è vero
 /// (`flutter run -t lib/main_mock.dart` o `--dart-define=USE_MOCK=true`).
@@ -78,6 +82,9 @@ class MockBackend extends Interceptor {
   final _posts = <Map<String, dynamic>>[];
   final _friendships = <Map<String, dynamic>>[];
   final _notifications = <Map<String, dynamic>>[];
+  final _runRoutes = <Map<String, dynamic>>[];
+  final _runEvents = <Map<String, dynamic>>[];
+  final _runs = <Map<String, dynamic>>[];
   final devices = <String>{};
 
   static String _iso(DateTime d) => d.toUtc().toIso8601String();
@@ -246,6 +253,7 @@ class MockBackend extends Interceptor {
       notification('POST_LIKED', marco, myPost, 26, read: true),
       notification('FRIEND_ACCEPTED', giulia, 'f1', 48, read: true),
     ]);
+    _seedRunning(giulia, marco, sara);
   }
 
   Map<String, dynamic> _workout(String id, Map<String, dynamic> owner, String name, String? description, bool isPublic,
@@ -671,6 +679,10 @@ class MockBackend extends Interceptor {
       devices.remove('${q['token']}');
       return _ok('Device unregistered');
     }
+
+    // Corsa
+    final running = _running(match, last, seg, body);
+    if (!identical(running, _unhandled)) return running;
 
     throw _MockError(404, 'Mock: rotta non gestita $method $path');
   }

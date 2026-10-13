@@ -9,6 +9,9 @@ enum NotificationKind {
   groupInviteAccepted('GROUP_INVITE_ACCEPTED'),
   postLiked('POST_LIKED'),
   postCommented('POST_COMMENTED'),
+  runInvite('RUN_INVITE'),
+  runInviteAccepted('RUN_INVITE_ACCEPTED'),
+  routeSaved('ROUTE_SAVED'),
   unknown('');
 
   const NotificationKind(this.wire);
@@ -58,6 +61,9 @@ class AppNotification {
         NotificationKind.groupInviteAccepted => 'è entrato${detail != null ? ' in $detail' : ' nel tuo gruppo'}',
         NotificationKind.postLiked => 'ha messo mi piace al tuo post',
         NotificationKind.postCommented => 'ha commentato: ${detail ?? ''}',
+        NotificationKind.runInvite => 'ti ha invitato a correre${detail != null ? ': $detail' : ''}',
+        NotificationKind.runInviteAccepted => 'parteciperà${detail != null ? ' a $detail' : ' alla tua corsa'}',
+        NotificationKind.routeSaved => 'ha salvato il tuo percorso${detail != null ? ' $detail' : ''}',
         NotificationKind.unknown => 'ha interagito con te',
       };
 
@@ -71,6 +77,11 @@ class AppNotification {
         return referenceId != null ? '/posts/$referenceId' : null;
       case NotificationKind.groupInviteAccepted:
         return referenceId != null ? '/group/$referenceId' : null;
+      case NotificationKind.runInvite:
+      case NotificationKind.runInviteAccepted:
+        return referenceId != null ? '/running/event/$referenceId' : '/running?tab=2';
+      case NotificationKind.routeSaved:
+        return referenceId != null ? '/running/route/$referenceId' : '/running';
       case NotificationKind.friendAccepted:
         return actorUsername != null ? '/u/$actorUsername' : '/friends';
       case NotificationKind.friendRequest:

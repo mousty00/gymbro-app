@@ -84,6 +84,7 @@ class HomeScreen extends ConsumerWidget {
                 const _StatsGrid(),
                 const SizedBox(height: 24),
                 const _TodaySection(),
+                const _RunningCard(),
                 const _UpcomingGroups(),
                 const _FriendsActivity(),
               ],
@@ -379,6 +380,52 @@ class TodayWorkoutCard extends StatelessWidget {
   }
 }
 
+/// Accesso alla corsa: percorsi, corse di gruppo, prossima corsa in programma.
+class _RunningCard extends ConsumerWidget {
+  const _RunningCard();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final events = ref.watch(runEventsProvider).value ?? const [];
+    final next = events.where((e) => e.isUpcoming && e.startsAt != null).toList()
+      ..sort((a, b) => a.startsAt!.compareTo(b.startsAt!));
+    final invites = events.where((e) => e.isInvited && e.isUpcoming).length;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 24),
+      child: SoftCard(
+        gradient: AppColors.brandGradient,
+        onTap: () => context.push(invites > 0 ? '/running?tab=2' : '/running'),
+        child: Row(
+          children: [
+            const IconChip(icon: Icons.directions_run_rounded, color: Colors.white, background: Color(0x33FFFFFF), size: 48),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('Corsa', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w700)),
+                  const SizedBox(height: 2),
+                  Text(
+                    invites > 0
+                        ? '$invites ${invites == 1 ? 'invito' : 'inviti'} a correre'
+                        : next.isNotEmpty
+                            ? '${next.first.title} · ${formatDayTime(next.first.startsAt)}'
+                            : 'Percorsi, corse con gli amici e allenamenti in solitaria',
+                    style: const TextStyle(color: Colors.white70),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+            const Icon(Icons.chevron_right_rounded, color: Colors.white),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class _UpcomingGroups extends ConsumerWidget {
   const _UpcomingGroups();
 
@@ -542,6 +589,7 @@ void showQuickCreate(BuildContext context) {
               item(Icons.photo_camera_rounded, AppColors.pink, 'Nuovo post', 'Condividi il tuo allenamento', '/posts/new'),
               item(Icons.fitness_center_rounded, AppColors.blue, 'Nuova scheda', 'Esercizi, giorni e orario', '/workout/new'),
               item(Icons.groups_rounded, AppColors.lilac, 'Allenamento di gruppo', 'Invita i tuoi amici', '/group/new'),
+              item(Icons.add_road_rounded, AppColors.blue, 'Percorso di corsa', 'Disegnalo sulla mappa', '/running/route/new'),
               item(Icons.sports_gymnastics_rounded, AppColors.mint, 'Libreria esercizi', 'Crea o cerca esercizi', '/exercises'),
             ],
           ),

@@ -4,6 +4,7 @@ import 'package:gymbro_app/core/mock/mock_backend.dart';
 import 'package:gymbro_app/models/group.dart';
 import 'package:gymbro_app/models/notification.dart';
 import 'package:gymbro_app/models/page.dart';
+import 'package:gymbro_app/models/running.dart';
 import 'package:gymbro_app/models/social.dart';
 import 'package:gymbro_app/models/user.dart';
 import 'package:gymbro_app/models/workout.dart';
@@ -98,5 +99,74 @@ void main() {
 
     await post('/devices', {'token': 'tok', 'platform': 'ANDROID'});
     await dio.delete<dynamic>('/devices', queryParameters: {'token': 'tok'});
+  });
+
+  test('corsa: percorso salvato, percorso pubblico di un amico salvato, corsa di gruppo e corsa registrata', () async {
+    final plan = RoutePlan.fromJson(await post('/routes/plan', {
+      'waypoints': [
+        [45.46, 9.19],
+        [45.47, 9.18],
+      ],
+    }) as Map<String, dynamic>);
+    expect(plan.distanceM, greaterThan(1000));
+
+    final created = await post('/routes/create', {
+      'name': 'Giro test',
+      'isPublic': false,
+      'waypoints': [
+        [45.46, 9.19],
+        [45.47, 9.18],
+      ],
+      'points': plan.rawPoints,
+    });
+    final route = RunRoute.fromJson(Map<String, dynamic>.from(created['result'] as Map));
+    final mine = PageResult.fromJson(await get('/routes') as Map<String, dynamic>, RunRoute.fromJson).results;
+    expect(mine.first.id, route.id);
+
+    // il percorso pubblico di giulia (amica) si salva come copia privata, una volta sola
+    final friends = PageResult.fromJson(await get('/routes/friends') as Map<String, dynamic>, RunRoute.fromJson).results;
+    final hers = friends.single;
+    expect(hers.owner.username, 'giulia.fit');
+    final copy = RunRoute.fromJson(Map<String, dynamic>.from((await post('/routes/${hers.id}/save'))['result'] as Map));
+    expect(copy.originalAuthor?.username, 'giulia.fit');
+    expect(copy.isPublic, isFalse);
+    await expectLater(
+      post('/routes/${hers.id}/save'),
+      throwsA(isA<DioException>().having((e) => e.response?.statusCode, 'status', 409)),
+    );
+
+    // invito di giulia: accetto e registro la corsa per l'evento
+    final events = PageResult.fromJson(await get('/run-events') as Map<String, dynamic>, RunEvent.fromJson).results;
+    final invite = events.firstWhere((e) => e.isInvited);
+    await post('/run-events/${invite.id}/accept');
+    final accepted = RunEvent.fromJson(await get('/run-events/${invite.id}') as Map<String, dynamic>);
+    expect(accepted.canRun, isTrue);
+
+    final now = DateTime.now().toUtc();
+    final saved = await post('/runs/create', {
+      'eventId': invite.id,
+      'startedAt': now.subtract(const Duration(minutes: 10)).toIso8601String(),
+      'completedAt': now.toIso8601String(),
+      'durationS': 600,
+      'track': [
+        [45.46, 9.19, null, 0.0],
+        [45.47, 9.18, null, 600.0],
+      ],
+    });
+    final run = RunActivity.fromJson(Map<String, dynamic>.from(saved['result'] as Map));
+    expect(run.routeId, invite.route.id);
+    expect(run.paceSPerKm, isNotNull);
+    final results = (await get('/run-events/${invite.id}/runs') as List).map((e) => RunActivity.fromJson(e as Map<String, dynamic>));
+    expect(results.map((r) => r.id), contains(run.id));
+
+    final created2 = await post('/run-events/create', {
+      'routeId': route.id,
+      'title': 'Uscita',
+      'startsAt': now.add(const Duration(days: 1)).toIso8601String(),
+      'invitedUsernames': ['marco_lifts'],
+    });
+    final event = RunEvent.fromJson(Map<String, dynamic>.from(created2['result'] as Map));
+    expect(event.isOwner, isTrue);
+    expect(event.participants.single.status, RunParticipantStatus.invited);
   });
 }

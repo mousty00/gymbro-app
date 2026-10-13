@@ -63,6 +63,25 @@ flutter test test/e2e/api_e2e_test.dart \
 
 Senza i due `--dart-define` il test viene saltato, quindi un normale `flutter test` resta veloce e non ha bisogno del backend.
 
+### Corsa
+
+Dalla Home (card **Corsa**) o dal **+**:
+
+- **Percorsi**: disegni il giro toccando la mappa; l'API aggancia i punti a strade e sentieri
+  (OpenRouteService, se configurato sul server) e calcola distanza e dislivello. I percorsi restano
+  salvati per rifarli. Se lo rendi **pubblico**, i tuoi amici lo vedono nella scheda *Amici* e
+  possono salvarne una copia per correrlo da soli.
+- **Di gruppo**: da un tuo percorso organizzi una corsa con giorno, ora, punto di ritrovo e amici
+  invitati (ricevono la notifica, accettano o rifiutano). Ognuno registra la sua corsa e i tempi
+  compaiono nei risultati.
+- **Registrazione**: GPS con tempo, distanza, passo attuale e medio, pausa, avviso se esci dal
+  tracciato; continua a schermo spento. Ogni corsa e ogni percorso si esportano in GPX.
+
+Le mappe usano [flutter_map](https://pub.dev/packages/flutter_map) con le tile di OpenStreetMap,
+configurabili con `--dart-define=MAP_TILE_URL=...` e `MAP_ATTRIBUTION` (in produzione serve un
+provider con chiave, vedi `DEPLOY.md`). In modalità mock la corsa è simulata lungo il percorso a
+5'30"/km, così il flusso si prova anche sul simulatore o nel browser.
+
 ### Notifiche push
 
 Niente plugin Firebase: il codice nativo passa a Dart il token del dispositivo
