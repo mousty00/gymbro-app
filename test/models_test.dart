@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:gymbro_app/models/notification.dart';
 import 'package:gymbro_app/core/network/api_exception.dart';
 import 'package:gymbro_app/models/group.dart';
 import 'package:gymbro_app/models/json.dart';
@@ -115,5 +116,24 @@ void main() {
     expect(m.groupName, 'Push con Marco');
     expect(m.groupCreatedBy, 'marco_lifts');
     expect(m.groupScheduledFor!.toUtc().hour, 7);
+  });
+
+  test('AppNotification dal JSON del backend', () {
+    final n = AppNotification.fromJson({
+      'id': 'n1',
+      'type': 'GROUP_INVITE_ACCEPTED',
+      'actor': {'id': 'u1', 'username': 'giulia'},
+      'referenceId': 'g1',
+      'detail': 'Morning crew',
+      'read': false,
+      'createdAt': '2026-10-13T08:00:00Z',
+    });
+    expect(n.kind, NotificationKind.groupInviteAccepted);
+    expect(n.text, 'è entrato in Morning crew');
+    expect(n.route, '/group/g1');
+    expect(n.read, isFalse);
+
+    expect(AppNotification.fromJson({'id': 'n2', 'type': 'NUOVO_TIPO'}).kind, NotificationKind.unknown);
+    expect(AppNotification.routeFor(NotificationKind.friendAccepted, 'f1'), '/friends');
   });
 }

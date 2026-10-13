@@ -1,10 +1,13 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/misc.dart' show ProviderOrFamily;
 
 import '../features/auth/session.dart';
 import '../models/group.dart';
+import '../models/notification.dart';
 import '../models/social.dart';
 import '../models/user.dart';
 import '../models/workout.dart';
+import 'notification_repository.dart';
 import 'social_repository.dart';
 import 'user_repository.dart';
 import 'workout_repository.dart';
@@ -98,12 +101,40 @@ final userProfileProvider = FutureProvider.autoDispose.family<User, String>(
   (ref, username) => ref.watch(userRepositoryProvider).byUsername(username),
 );
 
-/// Numero di notifiche (richieste di amicizia + inviti ai gruppi).
+// Notifiche
+
+/// Attività recenti (like, commenti, richieste, inviti), più recenti prima.
+final activityProvider = FutureProvider<List<AppNotification>>((ref) async {
+  ref.watch(userKeyProvider);
+  return (await ref.watch(notificationRepositoryProvider).all()).results;
+});
+
+/// Attività non ancora lette; 0 se il backend non risponde.
+final unreadActivityProvider = FutureProvider<int>((ref) async {
+  ref.watch(userKeyProvider);
+  try {
+    return await ref.watch(notificationRepositoryProvider).unreadCount();
+  } catch (_) {
+    return 0;
+  }
+});
+
+/// Numero per il badge: richieste di amicizia + inviti ai gruppi + attività non lette.
 final notificationCountProvider = Provider<int>((ref) {
   final requests = ref.watch(friendRequestsProvider).value?.length ?? 0;
   final invites = ref.watch(groupInvitesProvider).value?.length ?? 0;
-  return requests + invites;
+  final unread = ref.watch(unreadActivityProvider).value ?? 0;
+  return requests + invites + unread;
 });
+
+/// Ricarica tutto quello che una nuova notifica può cambiare (es. all'arrivo di
+/// una push). Riceve `ref.invalidate` così va bene sia con `Ref` sia con `WidgetRef`.
+void refreshNotifications(void Function(ProviderOrFamily provider) invalidate) {
+  invalidate(activityProvider);
+  invalidate(unreadActivityProvider);
+  invalidate(friendRequestsProvider);
+  invalidate(groupInvitesProvider);
+}
 
 /// Invalida i feed dei post (dopo like, commenti, nuovi post).
 void refreshPosts(WidgetRef ref) {

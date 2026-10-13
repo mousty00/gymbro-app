@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gymbro_app/core/mock/mock_backend.dart';
 import 'package:gymbro_app/models/group.dart';
+import 'package:gymbro_app/models/notification.dart';
 import 'package:gymbro_app/models/page.dart';
 import 'package:gymbro_app/models/social.dart';
 import 'package:gymbro_app/models/user.dart';
@@ -81,5 +82,21 @@ void main() {
     final p = Post.fromJson(res['result'] as Map<String, dynamic>);
     expect(p.image, startsWith(MockBackend.uploadScheme));
     expect(MockBackend.uploads[p.image!.substring(MockBackend.uploadScheme.length)], [1, 2, 3]);
+  });
+
+  test('notifiche: lista, badge, lettura e registrazione dispositivo', () async {
+    final page = PageResult.fromJson(await get('/notifications') as Map<String, dynamic>, AppNotification.fromJson);
+    expect(page.results, isNotEmpty);
+    expect(page.results.first.actor, isNotNull);
+    final commented = page.results.firstWhere((n) => n.kind == NotificationKind.postCommented);
+    expect(commented.route, startsWith('/posts/'));
+
+    expect((await get('/notifications/unread-count'))['count'], greaterThan(0));
+    await post('/notifications/${commented.id}/read');
+    await post('/notifications/read-all');
+    expect((await get('/notifications/unread-count'))['count'], 0);
+
+    await post('/devices', {'token': 'tok', 'platform': 'ANDROID'});
+    await dio.delete<dynamic>('/devices', queryParameters: {'token': 'tok'});
   });
 }

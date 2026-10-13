@@ -6,23 +6,52 @@ import '../../core/network/api_exception.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/utils/formatters.dart';
 import '../../core/widgets/ui.dart';
+import '../../data/notification_repository.dart';
 import '../../data/providers.dart';
 import '../../data/social_repository.dart';
 import '../../data/workout_repository.dart';
 import '../../models/group.dart';
+import '../../models/notification.dart';
 import '../../models/social.dart';
 
-/// Richieste di amicizia e inviti ai gruppi.
-class NotificationsScreen extends ConsumerWidget {
+/// Richieste di amicizia, inviti ai gruppi e attività recenti (like, commenti...).
+class NotificationsScreen extends ConsumerStatefulWidget {
   const NotificationsScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<NotificationsScreen> createState() => _NotificationsScreenState();
+}
+
+class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
+  @override
+  void initState() {
+    super.initState();
+    _markAllRead();
+  }
+
+  // Aprire la schermata vale come lettura: la lista mostra ancora quali erano nuove.
+  Future<void> _markAllRead() async {
+    try {
+      await ref.read(activityProvider.future);
+      await ref.read(notificationRepositoryProvider).markAllRead();
+      ref.invalidate(unreadActivityProvider);
+    } catch (_) {
+      // il badge resta com'è
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final requests = ref.watch(friendRequestsProvider);
     final invites = ref.watch(groupInvitesProvider);
-    final loading = requests.isLoading || invites.isLoading;
+    final activity = ref.watch(activityProvider);
+    final loading = requests.isLoading || invites.isLoading || activity.isLoading;
     final r = requests.value ?? const <Friendship>[];
     final i = invites.value ?? const <GroupMember>[];
+    // richieste e inviti ancora aperti hanno già la loro riga con i bottoni
+    final a = (activity.value ?? const <AppNotification>[])
+        .where((n) => n.kind != NotificationKind.friendRequest && n.kind != NotificationKind.groupInvite)
+        .toList();
 
     return Scaffold(
       body: SafeArea(
@@ -32,16 +61,16 @@ class NotificationsScreen extends ConsumerWidget {
             Expanded(
               child: RefreshIndicator(
                 onRefresh: () async {
-                  ref.invalidate(groupInvitesProvider);
+                  refreshNotifications(ref.invalidate);
                   return ref.refresh(friendRequestsProvider.future);
                 },
                 child: ListView(
                   padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
                   children: [
-                    if (loading && r.isEmpty && i.isEmpty)
+                    if (loading && r.isEmpty && i.isEmpty && a.isEmpty)
                       const Padding(padding: EdgeInsets.all(40), child: Center(child: CircularProgressIndicator()))
-                    else if (r.isEmpty && i.isEmpty)
-                      const EmptyState(title: 'Tutto tranquillo', message: 'Nessuna richiesta o invito in sospeso.')
+                    else if (r.isEmpty && i.isEmpty && a.isEmpty)
+                      const EmptyState(title: 'Tutto tranquillo', message: 'Nessuna richiesta, invito o attività.')
                     else ...[
                       if (r.isNotEmpty) ...[
                         SectionHeader('Richieste di amicizia · ${r.length}'),
@@ -51,6 +80,11 @@ class NotificationsScreen extends ConsumerWidget {
                       if (i.isNotEmpty) ...[
                         SectionHeader('Inviti ai gruppi · ${i.length}'),
                         for (final m in i) Padding(padding: const EdgeInsets.only(bottom: 10), child: GroupInviteTile(member: m)),
+                        const SizedBox(height: 12),
+                      ],
+                      if (a.isNotEmpty) ...[
+                        const SectionHeader('Attività'),
+                        for (final n in a) Padding(padding: const EdgeInsets.only(bottom: 10), child: ActivityTile(notification: n)),
                       ],
                     ],
                   ],
@@ -59,6 +93,61 @@ class NotificationsScreen extends ConsumerWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// Una riga di attività: chi, cosa, quando. Il tap apre il post, il gruppo o il profilo.
+class ActivityTile extends StatelessWidget {
+  const ActivityTile({super.key, required this.notification});
+
+  final AppNotification notification;
+
+  IconData get _icon => switch (notification.kind) {
+        NotificationKind.postLiked => Icons.favorite_rounded,
+        NotificationKind.postCommented => Icons.chat_bubble_rounded,
+        NotificationKind.groupInvite || NotificationKind.groupInviteAccepted => Icons.groups_rounded,
+        _ => Icons.person_add_alt_1_rounded,
+      };
+
+  @override
+  Widget build(BuildContext context) {
+    final n = notification;
+    final actor = n.actor;
+    final route = n.route;
+    return SoftCard(
+      padding: const EdgeInsets.all(14),
+      radius: AppRadius.md + 2,
+      onTap: route == null ? null : () => context.push(route),
+      child: Row(
+        children: [
+          if (actor != null)
+            UserAvatar(username: actor.username, imageUrl: actor.image, size: 42)
+          else
+            const CircleAvatar(radius: 21, child: Icon(Icons.notifications_rounded)),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text.rich(
+                  TextSpan(children: [
+                    if (actor != null)
+                      TextSpan(text: '@${actor.username} ', style: const TextStyle(fontWeight: FontWeight.w700)),
+                    TextSpan(text: n.text),
+                  ]),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(fontWeight: n.read ? FontWeight.w400 : FontWeight.w600),
+                ),
+                Text(timeAgo(n.createdAt), style: const TextStyle(color: AppColors.inkSoft, fontSize: 13)),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          Icon(_icon, size: 20, color: n.read ? AppColors.inkSoft : Theme.of(context).colorScheme.primary),
+        ],
       ),
     );
   }

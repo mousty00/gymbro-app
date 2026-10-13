@@ -63,6 +63,21 @@ flutter test test/e2e/api_e2e_test.dart \
 
 Senza i due `--dart-define` il test viene saltato, quindi un normale `flutter test` resta veloce e non ha bisogno del backend.
 
+### Notifiche push
+
+Niente plugin Firebase: il codice nativo passa a Dart il token del dispositivo
+(canale `gymbro/push`, vedi `lib/core/push/push_service.dart`), che dopo il login
+lo registra su `POST /devices` e al logout lo cancella.
+
+- **iOS:** APNs direttamente, senza Firebase (`ios/Runner/AppDelegate.swift`). Serve
+  la capability Push Notifications sull'App ID (l'entitlement è già in
+  `ios/Runner/Runner.entitlements`); la chiave APNs (.p8) va solo sull'API.
+- **Android:** FCM, l'unico canale per le push ad app chiusa sui telefoni con Play
+  Store. Scarica `google-services.json` dal progetto Firebase (solo l'app Android)
+  in `android/app/`. Senza quel file l'app si compila uguale e non riceve push.
+
+In ogni caso le notifiche restano visibili nella schermata Notifiche.
+
 ## Funzionalità
 
 | Area | Cosa fa | Endpoint |
