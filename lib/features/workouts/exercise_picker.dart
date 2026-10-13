@@ -7,6 +7,7 @@ import '../../core/widgets/ui.dart';
 import '../../data/providers.dart';
 import '../../models/workout.dart';
 import '../exercises/exercises_screen.dart';
+import '../../core/widgets/skeleton.dart';
 
 /// Sheet per aggiungere/modificare un esercizio della scheda.
 Future<WorkoutExerciseInput?> showExerciseEditor(
@@ -107,6 +108,11 @@ class _ExerciseEditorState extends ConsumerState<_ExerciseEditor> {
               child: AsyncView<List<Exercise>>(
                 value: exercises,
                 onRetry: () => ref.invalidate(exercisesProvider),
+                loading: const SkeletonList(
+                  item: SkeletonTile(leading: 0),
+                  spacing: 8,
+                  padding: EdgeInsets.symmetric(horizontal: 20, vertical: 6),
+                ),
                 data: (list) {
                   final filtered = list
                       .where((e) => _query.isEmpty || e.name.toLowerCase().contains(_query) || e.muscleGroup.toLowerCase().contains(_query))

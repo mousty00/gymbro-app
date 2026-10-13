@@ -7,6 +7,7 @@ import '../../core/theme/app_theme.dart';
 import '../../core/utils/formatters.dart';
 import '../../core/widgets/async_view.dart';
 import '../../core/widgets/backgrounds.dart';
+import '../../core/widgets/skeleton.dart';
 import '../../core/widgets/ui.dart';
 import '../../data/providers.dart';
 import '../../data/running_repository.dart';
@@ -61,6 +62,7 @@ class RunEventDetailScreen extends ConsumerWidget {
           child: AsyncView<RunEvent>(
             value: ref.watch(runEventProvider(eventId)),
             onRetry: () => ref.invalidate(runEventProvider(eventId)),
+            loading: const SkeletonDetail(),
             data: (event) {
               final mine = event.participants.where((p) => p.user.username == me).firstOrNull;
               final runs = ref.watch(eventRunsProvider(event.id));
@@ -201,7 +203,7 @@ class RunEventDetailScreen extends ConsumerWidget {
                           const SectionHeader('Risultati'),
                           AsyncView<List<RunActivity>>(
                             value: runs,
-                            loading: const LoadingBlock(height: 80),
+                            loading: const SkeletonList(item: SkeletonTile(trailing: true), count: 2, spacing: 8, padding: EdgeInsets.zero),
                             onRetry: () => ref.invalidate(eventRunsProvider(event.id)),
                             data: (list) => list.isEmpty
                                 ? const Text('Nessuno ha ancora registrato la corsa.', style: TextStyle(color: AppColors.muted))

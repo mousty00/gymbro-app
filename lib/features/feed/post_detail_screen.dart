@@ -12,6 +12,7 @@ import '../../data/social_repository.dart';
 import '../../models/social.dart';
 import '../auth/session.dart';
 import 'post_card.dart';
+import '../../core/widgets/skeleton.dart';
 
 class PostDetailScreen extends ConsumerStatefulWidget {
   const PostDetailScreen({super.key, required this.postId});
@@ -134,6 +135,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
               child: AsyncView<Post>(
                 value: post,
                 onRetry: () => ref.invalidate(postProvider(widget.postId)),
+                loading: const SkeletonList(item: SkeletonPost(), count: 1),
                 data: (p) {
                   final comments = [...p.comments]
                     ..sort((a, b) => (a.createdAt ?? DateTime(0)).compareTo(b.createdAt ?? DateTime(0)));

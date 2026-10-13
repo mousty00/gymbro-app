@@ -14,6 +14,7 @@ import '../../models/group.dart';
 import '../../models/social.dart';
 import '../../models/workout.dart';
 import '../auth/session.dart';
+import '../../core/widgets/skeleton.dart';
 
 class GroupDetailScreen extends ConsumerWidget {
   const GroupDetailScreen({super.key, required this.groupId});
@@ -85,6 +86,7 @@ class GroupDetailScreen extends ConsumerWidget {
           child: AsyncView<WorkoutGroup>(
             value: group,
             onRetry: () => ref.invalidate(groupProvider(groupId)),
+            loading: const SkeletonDetail(),
             data: (g) {
               final isOwner = g.createdBy.username == me.username;
               final myMembership = g.members.where((m) => m.user.username == me.username).firstOrNull;
@@ -167,7 +169,7 @@ class GroupDetailScreen extends ConsumerWidget {
                           const SectionHeader('Sessioni del gruppo'),
                           AsyncView<List<WorkoutHistory>>(
                             value: history,
-                            loading: const LoadingBlock(height: 80),
+                            loading: const SkeletonList(item: SkeletonTile(leading: 34), count: 2, spacing: 8, padding: EdgeInsets.zero),
                             onRetry: () => ref.invalidate(groupHistoryProvider(g.id)),
                             data: (list) => list.isEmpty
                                 ? const Padding(
@@ -309,6 +311,7 @@ class _InviteSheetState extends ConsumerState<_InviteSheet> {
               child: AsyncView<List<Friendship>>(
                 value: friends,
                 onRetry: () => ref.invalidate(friendsProvider),
+                loading: const SkeletonList(item: SkeletonTile(circle: true), count: 4, padding: EdgeInsets.zero),
                 data: (list) {
                   final candidates = list.map((f) => f.other(me.username)).where((u) => !already.contains(u.username)).toList();
                   if (candidates.isEmpty) {

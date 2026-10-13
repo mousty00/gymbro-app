@@ -7,6 +7,7 @@ import '../../core/theme/app_theme.dart';
 import '../../core/utils/formatters.dart';
 import '../../core/widgets/async_view.dart';
 import '../../core/widgets/backgrounds.dart';
+import '../../core/widgets/skeleton.dart';
 import '../../core/widgets/ui.dart';
 import '../../data/providers.dart';
 import '../../data/running_repository.dart';
@@ -32,6 +33,7 @@ class RunDetailScreen extends ConsumerWidget {
           child: AsyncView<RunActivity>(
             value: ref.watch(runProvider(runId)),
             onRetry: () => ref.invalidate(runProvider(runId)),
+            loading: const SkeletonDetail(),
             data: (run) {
               final mine = run.user.username == me;
               return Column(

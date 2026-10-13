@@ -16,6 +16,7 @@ import '../../models/user.dart';
 import '../auth/session.dart';
 import '../feed/feed_screen.dart';
 import 'notifications_screen.dart';
+import '../../core/widgets/skeleton.dart';
 
 /// Amici, richieste ricevute e ricerca utenti.
 class FriendsScreen extends ConsumerStatefulWidget {
@@ -98,6 +99,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
                         child: AsyncView<List<Friendship>>(
                           value: friends,
                           onRetry: () => ref.invalidate(friendsProvider),
+                          loading: const SkeletonList(item: SkeletonTile(leading: 44, circle: true, padding: EdgeInsets.symmetric(horizontal: 14, vertical: 10)), padding: EdgeInsets.fromLTRB(20, 0, 20, 24)),
                           data: (list) => list.isEmpty
                               ? ListView(children: const [
                                   EmptyState(
@@ -131,6 +133,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
                         child: AsyncView<List<Friendship>>(
                           value: requests,
                           onRetry: () => ref.invalidate(friendRequestsProvider),
+                          loading: const SkeletonList(item: SkeletonTile(leading: 44, circle: true, trailing: true, padding: EdgeInsets.symmetric(horizontal: 14, vertical: 10)), padding: EdgeInsets.fromLTRB(20, 0, 20, 24)),
                           data: (list) => list.isEmpty
                               ? ListView(children: const [EmptyState(title: 'Nessuna richiesta in attesa')])
                               : ListView.separated(
@@ -164,7 +167,7 @@ class _SearchResults extends ConsumerWidget {
     return FutureBuilder<List<SimpleUser>>(
       future: future,
       builder: (context, snap) {
-        if (snap.connectionState != ConnectionState.done) return const LoadingBlock();
+        if (snap.connectionState != ConnectionState.done) return const SkeletonList(item: SkeletonTile(leading: 44, circle: true, padding: EdgeInsets.symmetric(horizontal: 14, vertical: 10)), padding: EdgeInsets.fromLTRB(20, 0, 20, 24));
         if (snap.hasError) return ErrorBlock(message: '${snap.error}');
         final users = (snap.data ?? const []).where((u) => u.username != me).toList();
         if (users.isEmpty) {

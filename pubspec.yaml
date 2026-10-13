@@ -27,8 +27,21 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
+  flutter_native_splash: ^2.4.8
 
 flutter:
   uses-material-design: true
   assets:
     - assets/mock/
+
+# Splash nativo (iOS + Android, incluso Android 12+). Dopo ogni modifica:
+#   dart run flutter_native_splash:create
+# Colore = centro dello SkyBackground dello splash in-app, così il passaggio è morbido.
+flutter_native_splash:
+  color: "#EAE7FB"
+  image: assets/splash/logo.png
+  android_12:
+    color: "#EAE7FB"
+    image: assets/splash/logo_android12.png
+  fullscreen: false
+  web: false

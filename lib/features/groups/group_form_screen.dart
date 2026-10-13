@@ -11,6 +11,7 @@ import '../../data/providers.dart';
 import '../../data/workout_repository.dart';
 import '../../models/workout.dart';
 import '../auth/auth_widgets.dart';
+import '../../core/widgets/skeleton.dart';
 
 /// Nuovo allenamento di gruppo: nome, scheda, data e ora.
 class GroupFormScreen extends ConsumerStatefulWidget {
@@ -113,6 +114,7 @@ class _GroupFormScreenState extends ConsumerState<GroupFormScreen> {
                     AsyncView<List<Workout>>(
                       value: workouts,
                       onRetry: () => ref.invalidate(myWorkoutsProvider),
+                      loading: const SkeletonList(item: SkeletonTile(leading: 0), count: 3, spacing: 8, padding: EdgeInsets.zero),
                       data: (list) {
                         if (list.isEmpty) {
                           return EmptyState(

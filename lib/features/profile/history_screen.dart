@@ -9,6 +9,7 @@ import '../../core/widgets/ui.dart';
 import '../../data/providers.dart';
 import '../../data/workout_repository.dart';
 import '../../models/workout.dart';
+import '../../core/widgets/skeleton.dart';
 
 /// Storico delle sessioni completate.
 class HistoryScreen extends ConsumerWidget {
@@ -30,6 +31,7 @@ class HistoryScreen extends ConsumerWidget {
                 child: AsyncView<List<WorkoutHistory>>(
                   value: history,
                   onRetry: () => ref.invalidate(historyProvider),
+                  loading: const SkeletonList(item: SkeletonTile(leading: 48)),
                   data: (list) {
                     if (list.isEmpty) {
                       return ListView(children: const [

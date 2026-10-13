@@ -109,7 +109,7 @@ class MockBackend extends Interceptor {
       _users.firstWhere((u) => u['username'] == username, orElse: () => throw _MockError(404, 'Utente non trovato'));
 
   void _seed() {
-    _me = _user('u1', 'mousty', 'Moustapha', 'D.', 140);
+    _me = _user('u1', 'mousty', 'Mousty', 'D.', 140);
     final giulia = _user('u2', 'giulia.fit', 'Giulia', 'Rossi', 300);
     final marco = _user('u3', 'marco_lifts', 'Marco', 'Bianchi', 200);
     final sara = _user('u4', 'sara.runs', 'Sara', 'Verdi', 90);

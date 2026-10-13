@@ -6,6 +6,7 @@ import '../../core/network/api_exception.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/async_view.dart';
 import '../../core/widgets/backgrounds.dart';
+import '../../core/widgets/skeleton.dart';
 import '../../core/widgets/ui.dart';
 import '../../data/providers.dart';
 import '../../data/running_repository.dart';
@@ -72,6 +73,7 @@ class _RouteDetailScreenState extends ConsumerState<RouteDetailScreen> {
           child: AsyncView<RunRoute>(
             value: value,
             onRetry: () => ref.invalidate(runRouteProvider(widget.routeId)),
+            loading: const SkeletonDetail(),
             data: (route) {
               final mine = route.isMine(me);
               return Column(

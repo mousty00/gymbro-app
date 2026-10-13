@@ -11,6 +11,7 @@ import '../../models/workout.dart';
 import '../auth/session.dart';
 import '../feed/feed_screen.dart';
 import '../shell/app_shell.dart';
+import '../../core/widgets/skeleton.dart';
 
 class WorkoutsScreen extends ConsumerStatefulWidget {
   const WorkoutsScreen({super.key});
@@ -96,6 +97,12 @@ class _WorkoutsScreenState extends ConsumerState<WorkoutsScreen> {
                   value: workouts,
                   sliver: true,
                   onRetry: () => ref.invalidate(provider),
+                  loading: const SkeletonList(
+                    item: SkeletonTile(leading: 56, trailing: true, padding: EdgeInsets.all(18), radius: AppRadius.lg),
+                    count: 4,
+                    spacing: 12,
+                    padding: EdgeInsets.symmetric(horizontal: 20),
+                  ),
                   data: (list) {
                     final shown = _tab == 0 ? list : list.where((w) => w.user?.username != me.username).toList();
                     if (shown.isEmpty) {

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../theme/app_theme.dart';
+import 'skeleton.dart';
 import 'ui.dart';
 
 /// Rende un [AsyncValue] con caricamento / errore con "Riprova" / dati.
@@ -31,22 +32,10 @@ class AsyncView<T> extends StatelessWidget {
       skipLoadingOnRefresh: true,
       skipLoadingOnReload: true,
       data: data,
-      loading: () => wrap(loading ?? const LoadingBlock()),
+      loading: () => wrap(loading ?? const SkeletonList()),
       error: (e, _) => wrap(ErrorBlock(message: '$e', onRetry: onRetry)),
     );
   }
-}
-
-class LoadingBlock extends StatelessWidget {
-  const LoadingBlock({super.key, this.height = 160});
-
-  final double height;
-
-  @override
-  Widget build(BuildContext context) => SizedBox(
-        height: height,
-        child: const Center(child: CircularProgressIndicator(strokeWidth: 2.4)),
-      );
 }
 
 class ErrorBlock extends StatelessWidget {

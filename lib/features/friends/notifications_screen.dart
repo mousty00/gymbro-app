@@ -13,6 +13,7 @@ import '../../data/workout_repository.dart';
 import '../../models/group.dart';
 import '../../models/notification.dart';
 import '../../models/social.dart';
+import '../../core/widgets/skeleton.dart';
 
 /// Richieste di amicizia, inviti ai gruppi e attività recenti (like, commenti...).
 class NotificationsScreen extends ConsumerStatefulWidget {
@@ -68,7 +69,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                   padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
                   children: [
                     if (loading && r.isEmpty && i.isEmpty && a.isEmpty)
-                      const Padding(padding: EdgeInsets.all(40), child: Center(child: CircularProgressIndicator()))
+                      const SkeletonList(item: SkeletonTile(leading: 44, circle: true, trailing: true), count: 3, padding: EdgeInsets.zero)
                     else if (r.isEmpty && i.isEmpty && a.isEmpty)
                       const EmptyState(title: 'Tutto tranquillo', message: 'Nessuna richiesta, invito o attività.')
                     else ...[

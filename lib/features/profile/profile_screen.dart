@@ -17,6 +17,7 @@ import '../auth/session.dart';
 import '../friends/user_profile_screen.dart';
 import '../home/home_screen.dart';
 import '../shell/app_shell.dart';
+import '../../core/widgets/skeleton.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
@@ -147,6 +148,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 AsyncView<List<Post>>(
                   value: posts,
                   onRetry: () => ref.invalidate(userPostsProvider(me.username)),
+                  loading: const SkeletonGrid(),
                   data: (list) => PostGrid(posts: list),
                 ),
                 const SizedBox(height: 28),

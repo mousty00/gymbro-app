@@ -12,6 +12,7 @@ import '../../data/workout_repository.dart';
 import '../../models/workout.dart';
 import '../auth/session.dart';
 import 'exercise_picker.dart';
+import '../../core/widgets/skeleton.dart';
 
 class WorkoutDetailScreen extends ConsumerWidget {
   const WorkoutDetailScreen({super.key, required this.workoutId});
@@ -81,6 +82,7 @@ class WorkoutDetailScreen extends ConsumerWidget {
           child: AsyncView<Workout>(
             value: workout,
             onRetry: () => ref.invalidate(workoutProvider(workoutId)),
+            loading: const SkeletonDetail(),
             data: (w) {
               final mine = w.user?.username == me.username;
               final totalSets = w.exercises.fold<int>(0, (a, e) => a + e.sets);

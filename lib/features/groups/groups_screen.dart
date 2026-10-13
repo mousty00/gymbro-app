@@ -12,6 +12,7 @@ import '../../models/group.dart';
 import '../friends/notifications_screen.dart';
 import '../home/home_screen.dart';
 import '../shell/app_shell.dart';
+import '../../core/widgets/skeleton.dart';
 
 class GroupsScreen extends ConsumerWidget {
   const GroupsScreen({super.key});
@@ -67,6 +68,12 @@ class GroupsScreen extends ConsumerWidget {
                   value: groups,
                   sliver: true,
                   onRetry: () => ref.invalidate(groupsProvider),
+                  loading: const SkeletonList(
+                    item: SkeletonGroupCard(),
+                    count: 3,
+                    spacing: 12,
+                    padding: EdgeInsets.symmetric(horizontal: 20),
+                  ),
                   data: (list) {
                     if (list.isEmpty) {
                       return SliverToBoxAdapter(

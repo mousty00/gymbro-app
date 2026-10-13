@@ -10,6 +10,7 @@ import '../../data/providers.dart';
 import '../../models/social.dart';
 import '../shell/app_shell.dart';
 import 'post_card.dart';
+import '../../core/widgets/skeleton.dart';
 
 /// Community: post degli amici o di tutti.
 class FeedScreen extends ConsumerStatefulWidget {
@@ -76,7 +77,12 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
                   value: posts,
                   onRetry: () => ref.invalidate(_provider),
                   sliver: true,
-                  loading: const LoadingBlock(height: 300),
+                  loading: const SkeletonList(
+                    item: SkeletonPost(),
+                    count: 2,
+                    spacing: 14,
+                    padding: EdgeInsets.symmetric(horizontal: 20),
+                  ),
                   data: (list) {
                     if (list.isEmpty) {
                       return SliverToBoxAdapter(

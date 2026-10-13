@@ -9,6 +9,7 @@ import '../../data/providers.dart';
 import '../../data/workout_repository.dart';
 import '../../models/workout.dart';
 import '../auth/session.dart';
+import '../../core/widgets/skeleton.dart';
 
 /// Libreria esercizi: pubblici + creati da me, filtrabili per gruppo muscolare.
 class ExercisesScreen extends ConsumerStatefulWidget {
@@ -84,6 +85,7 @@ class _ExercisesScreenState extends ConsumerState<ExercisesScreen> {
                 child: AsyncView<List<Exercise>>(
                   value: exercises,
                   onRetry: () => ref.invalidate(exercisesProvider),
+                  loading: const SkeletonList(),
                   data: (list) {
                     final filtered = list.where((e) {
                       final matchQ = _query.isEmpty || e.name.toLowerCase().contains(_query);

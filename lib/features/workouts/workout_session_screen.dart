@@ -13,6 +13,7 @@ import '../../core/widgets/ui.dart';
 import '../../data/providers.dart';
 import '../../data/workout_repository.dart';
 import '../../models/workout.dart';
+import '../../core/widgets/skeleton.dart';
 
 /// Sessione live: cronometro, serie da spuntare, recupero, salvataggio nello storico.
 class WorkoutSessionScreen extends ConsumerStatefulWidget {
@@ -107,6 +108,7 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
             child: AsyncView<Workout>(
               value: workout,
               onRetry: () => ref.invalidate(workoutProvider(widget.workoutId)),
+              loading: const SkeletonDetail(),
               data: (w) {
                 final totalSets = w.exercises.fold<int>(0, (a, e) => a + e.sets);
                 final doneSets = _doneSets.values.fold<int>(0, (a, b) => a + b);

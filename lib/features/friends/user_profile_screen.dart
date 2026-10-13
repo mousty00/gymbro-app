@@ -12,6 +12,7 @@ import '../../models/social.dart';
 import '../../models/user.dart';
 import '../auth/session.dart';
 import 'friends_screen.dart';
+import '../../core/widgets/skeleton.dart';
 
 /// Profilo pubblico di un altro utente con i suoi post.
 class UserProfileScreen extends ConsumerWidget {
@@ -43,6 +44,7 @@ class UserProfileScreen extends ConsumerWidget {
                 child: AsyncView<User>(
                   value: user,
                   onRetry: () => ref.invalidate(userProfileProvider(username)),
+                  loading: const SkeletonProfile(),
                   data: (u) => ListView(
                     padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
                     children: [
@@ -57,6 +59,7 @@ class UserProfileScreen extends ConsumerWidget {
                       AsyncView<List<Post>>(
                         value: posts,
                         onRetry: () => ref.invalidate(userPostsProvider(username)),
+                        loading: const SkeletonGrid(),
                         data: (list) => PostGrid(posts: list),
                       ),
                     ],
