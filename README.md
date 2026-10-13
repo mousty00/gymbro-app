@@ -63,6 +63,24 @@ flutter test test/e2e/api_e2e_test.dart \
 
 Senza i due `--dart-define` il test viene saltato, quindi un normale `flutter test` resta veloce e non ha bisogno del backend.
 
+### Notifiche push
+
+Le push passano da Firebase Cloud Messaging (Android, e iOS tramite APNs). La
+configurazione Firebase si passa a build time, senza file nel repo:
+
+```bash
+flutter run --dart-define-from-file=firebase.json
+```
+
+con `firebase.json` (fuori dal repo) contenente `FIREBASE_PROJECT_ID`,
+`FIREBASE_SENDER_ID`, `FIREBASE_ANDROID_API_KEY`, `FIREBASE_ANDROID_APP_ID`,
+`FIREBASE_IOS_API_KEY`, `FIREBASE_IOS_APP_ID` (dalla console Firebase,
+Impostazioni progetto → Le tue app). Senza questi valori l'app funziona uguale e
+le notifiche si vedono solo nella schermata Notifiche. Dopo il login l'app chiede
+il permesso e registra il token su `POST /devices`; al logout lo cancella.
+Su iOS serve anche la capability Push Notifications sul team Apple (l'entitlement
+è già in `ios/Runner/Runner.entitlements`) e la chiave APNs caricata su Firebase.
+
 ## Funzionalità
 
 | Area | Cosa fa | Endpoint |

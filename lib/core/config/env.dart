@@ -24,4 +24,20 @@ class Env {
 
   /// Dimensione pagina usata per le liste paginate (il backend accetta 1..100).
   static const int pageSize = 20;
+
+  // Firebase (push). Valori dal progetto Firebase, passati a build time:
+  //
+  //   --dart-define=FIREBASE_PROJECT_ID=gymbro-xxxx
+  //   --dart-define=FIREBASE_SENDER_ID=1234567890
+  //   --dart-define=FIREBASE_ANDROID_API_KEY=...  --dart-define=FIREBASE_ANDROID_APP_ID=1:...:android:...
+  //   --dart-define=FIREBASE_IOS_API_KEY=...      --dart-define=FIREBASE_IOS_APP_ID=1:...:ios:...
+  //
+  // (oppure tutti in un file con --dart-define-from-file=firebase.json).
+  // Senza, l'app funziona uguale ma non riceve push.
+  static const String firebaseProjectId = String.fromEnvironment('FIREBASE_PROJECT_ID');
+  static const String firebaseSenderId = String.fromEnvironment('FIREBASE_SENDER_ID');
+  static const String firebaseAndroidApiKey = String.fromEnvironment('FIREBASE_ANDROID_API_KEY');
+  static const String firebaseAndroidAppId = String.fromEnvironment('FIREBASE_ANDROID_APP_ID');
+  static const String firebaseIosApiKey = String.fromEnvironment('FIREBASE_IOS_API_KEY');
+  static const String firebaseIosAppId = String.fromEnvironment('FIREBASE_IOS_APP_ID');
 }

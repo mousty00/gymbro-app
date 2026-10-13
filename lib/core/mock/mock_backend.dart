@@ -77,6 +77,8 @@ class MockBackend extends Interceptor {
   final _groups = <Map<String, dynamic>>[];
   final _posts = <Map<String, dynamic>>[];
   final _friendships = <Map<String, dynamic>>[];
+  final _notifications = <Map<String, dynamic>>[];
+  final devices = <String>{};
 
   static String _iso(DateTime d) => d.toUtc().toIso8601String();
 
@@ -224,6 +226,25 @@ class MockBackend extends Interceptor {
         'status': 'pending',
         'createdAt': _iso(_now.subtract(const Duration(hours: 3))),
       },
+    ]);
+
+    final myPost = _posts.firstWhere((p) => p['user'] == _me)['id'];
+    Map<String, dynamic> notification(String type, Map<String, dynamic> actor, Object? ref, int hoursAgo,
+            {String? detail, bool read = false}) =>
+        {
+          'id': _id('n'),
+          'type': type,
+          'actor': _simple(actor),
+          'referenceId': ref,
+          'detail': detail,
+          'read': read,
+          'createdAt': _iso(_now.subtract(Duration(hours: hoursAgo))),
+        };
+    _notifications.addAll([
+      notification('FRIEND_REQUEST', sara, 'f3', 3),
+      notification('POST_COMMENTED', giulia, myPost, 5, detail: 'Che macchina! 🔥'),
+      notification('POST_LIKED', marco, myPost, 26, read: true),
+      notification('FRIEND_ACCEPTED', giulia, 'f1', 48, read: true),
     ]);
   }
 
@@ -624,6 +645,31 @@ class MockBackend extends Interceptor {
         (g['groupMembers'] as List).removeWhere((m) => m['id'] == last);
       }
       return _ok('Removed');
+    }
+
+    // Notifiche
+    if (match('GET', '/notifications')) return _page(_notifications);
+    if (match('GET', '/notifications/unread-count')) {
+      return {'count': _notifications.where((n) => n['read'] != true).length};
+    }
+    if (match('POST', '/notifications/read-all')) {
+      for (final n in _notifications) {
+        n['read'] = true;
+      }
+      return _ok('Notifications marked as read');
+    }
+    if (match('POST', '/notifications/:id/read')) {
+      final id = seg[1];
+      _notifications.firstWhere((n) => n['id'] == id, orElse: () => throw _MockError(404, 'Notifica non trovata'))['read'] = true;
+      return _ok('Notification marked as read');
+    }
+    if (match('POST', '/devices')) {
+      devices.add('${body['token']}');
+      return _ok('Device registered');
+    }
+    if (match('DELETE', '/devices')) {
+      devices.remove('${q['token']}');
+      return _ok('Device unregistered');
     }
 
     throw _MockError(404, 'Mock: rotta non gestita $method $path');

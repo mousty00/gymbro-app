@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/network/api_client.dart';
 import '../../core/network/api_exception.dart';
+import '../../core/push/push_service.dart';
 import '../../data/auth_repository.dart';
 import '../../models/user.dart';
 
@@ -43,6 +44,8 @@ class SessionController extends AsyncNotifier<User?> {
   }
 
   Future<void> logout() async {
+    // prima del logout: serve ancora la sessione per cancellare il token push
+    await ref.read(pushServiceProvider).onLogout();
     await _repo.logout();
     state = const AsyncData(null);
   }
