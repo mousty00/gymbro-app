@@ -22,6 +22,13 @@ import '../../features/onboarding/splash_screen.dart';
 import '../../features/onboarding/welcome_screen.dart';
 import '../../features/profile/history_screen.dart';
 import '../../features/profile/profile_screen.dart';
+import '../../features/running/route_detail_screen.dart';
+import '../../features/running/route_editor_screen.dart';
+import '../../features/running/run_detail_screen.dart';
+import '../../features/running/run_event_detail_screen.dart';
+import '../../features/running/run_event_form_screen.dart';
+import '../../features/running/run_tracker_screen.dart';
+import '../../features/running/running_screen.dart';
 import '../../features/shell/app_shell.dart';
 import '../../features/workouts/workout_detail_screen.dart';
 import '../../features/workouts/workout_form_screen.dart';
@@ -130,6 +137,49 @@ final routerProvider = Provider<GoRouter>((ref) {
         parentNavigatorKey: _rootKey,
         path: '/group/:id',
         builder: (_, s) => GroupDetailScreen(groupId: s.pathParameters['id']!),
+      ),
+      GoRoute(
+        parentNavigatorKey: _rootKey,
+        path: '/running',
+        builder: (_, s) => RunningScreen(initialTab: int.tryParse(s.uri.queryParameters['tab'] ?? '') ?? 0),
+      ),
+      GoRoute(
+        parentNavigatorKey: _rootKey,
+        path: '/running/route/new',
+        builder: (_, _) => const RouteEditorScreen(),
+      ),
+      GoRoute(
+        parentNavigatorKey: _rootKey,
+        path: '/running/route/:id',
+        builder: (_, s) => RouteDetailScreen(routeId: s.pathParameters['id']!),
+      ),
+      GoRoute(
+        parentNavigatorKey: _rootKey,
+        path: '/running/route/:id/edit',
+        builder: (_, s) => RouteEditorScreen(routeId: s.pathParameters['id']!),
+      ),
+      GoRoute(
+        parentNavigatorKey: _rootKey,
+        path: '/running/event/new',
+        builder: (_, s) => RunEventFormScreen(routeId: s.uri.queryParameters['route']),
+      ),
+      GoRoute(
+        parentNavigatorKey: _rootKey,
+        path: '/running/event/:id',
+        builder: (_, s) => RunEventDetailScreen(eventId: s.pathParameters['id']!),
+      ),
+      GoRoute(
+        parentNavigatorKey: _rootKey,
+        path: '/running/run',
+        builder: (_, s) => RunTrackerScreen(
+          routeId: s.uri.queryParameters['route'],
+          eventId: s.uri.queryParameters['event'],
+        ),
+      ),
+      GoRoute(
+        parentNavigatorKey: _rootKey,
+        path: '/running/runs/:id',
+        builder: (_, s) => RunDetailScreen(runId: s.pathParameters['id']!),
       ),
       GoRoute(
         parentNavigatorKey: _rootKey,

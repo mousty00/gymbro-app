@@ -1,0 +1,143 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+
+import '../../core/network/api_exception.dart';
+import '../../core/theme/app_theme.dart';
+import '../../core/utils/formatters.dart';
+import '../../core/widgets/async_view.dart';
+import '../../core/widgets/backgrounds.dart';
+import '../../core/widgets/ui.dart';
+import '../../data/providers.dart';
+import '../../data/running_repository.dart';
+import '../../models/running.dart';
+import '../auth/session.dart';
+import 'geo.dart';
+import 'gpx_share.dart';
+import 'route_map.dart';
+
+class RunDetailScreen extends ConsumerWidget {
+  const RunDetailScreen({super.key, required this.runId});
+
+  final String runId;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final me = ref.watch(currentUserProvider).username;
+    final repo = ref.read(runningRepositoryProvider);
+    return Scaffold(
+      body: SkyBackground(
+        tint: AppColors.pinkSoft,
+        child: SafeArea(
+          child: AsyncView<RunActivity>(
+            value: ref.watch(runProvider(runId)),
+            onRetry: () => ref.invalidate(runProvider(runId)),
+            data: (run) {
+              final mine = run.user.username == me;
+              return Column(
+                children: [
+                  TopBar(
+                    title: '',
+                    actions: [
+                      Builder(
+                        builder: (ctx) => CircleIconButton(
+                          icon: Icons.ios_share_rounded,
+                          size: 44,
+                          tooltip: 'Esporta GPX',
+                          onTap: () => shareGpx(ctx, () => repo.runGpx(run.id), gpxFileName('${run.title} ${formatDate(run.startedAt)}')),
+                        ),
+                      ),
+                      if (mine)
+                        CircleIconButton(
+                          icon: Icons.delete_outline_rounded,
+                          size: 44,
+                          tooltip: 'Elimina',
+                          onTap: () async {
+                            if (!await confirm(context, title: 'Eliminare la corsa?', ok: 'Elimina', destructive: true)) return;
+                            try {
+                              await repo.deleteRun(run.id);
+                              ref.invalidate(myRunsProvider);
+                              if (run.eventId != null) ref.invalidate(eventRunsProvider(run.eventId!));
+                              if (context.mounted) context.pop();
+                            } on ApiException catch (e) {
+                              if (context.mounted) showMessage(context, e.message, error: true);
+                            }
+                          },
+                        ),
+                    ],
+                  ),
+                  Expanded(
+                    child: ListView(
+                      padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+                      children: [
+                        Text(run.title, style: Theme.of(context).textTheme.displaySmall),
+                        const SizedBox(height: 6),
+                        Text(
+                          '${mine ? '' : '@${run.user.username} · '}${formatDayTime(run.startedAt)}',
+                          style: const TextStyle(color: AppColors.inkSoft),
+                        ),
+                        const SizedBox(height: 18),
+                        RouteMap(track: run.track, height: 300),
+                        const SizedBox(height: 18),
+                        SoftCard(
+                          child: Column(
+                            children: [
+                              Row(
+                                children: [
+                                  _Big(label: 'Distanza', value: formatDistance(run.distanceM)),
+                                  _Big(label: 'Tempo', value: formatSeconds(run.durationS)),
+                                ],
+                              ),
+                              const SizedBox(height: 14),
+                              Row(
+                                children: [
+                                  _Big(label: 'Passo medio', value: '${formatPace(run.paceSPerKm)} /km'),
+                                  _Big(label: 'Dislivello', value: run.elevationGainM == null ? '–' : '+${run.elevationGainM} m'),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 14),
+                        if (run.eventId != null)
+                          OutlinedButton.icon(
+                            onPressed: () => context.push('/running/event/${run.eventId}'),
+                            icon: const Icon(Icons.groups_rounded),
+                            label: const Text('Vedi la corsa di gruppo'),
+                          )
+                        else if (run.routeId != null)
+                          OutlinedButton.icon(
+                            onPressed: () => context.push('/running/route/${run.routeId}'),
+                            icon: const Icon(Icons.route_rounded),
+                            label: const Text('Vedi il percorso'),
+                          ),
+                      ],
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _Big extends StatelessWidget {
+  const _Big({required this.label, required this.value});
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) => Expanded(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(value, style: Theme.of(context).textTheme.headlineSmall),
+            Text(label, style: const TextStyle(color: AppColors.muted, fontSize: 13)),
+          ],
+        ),
+      );
+}

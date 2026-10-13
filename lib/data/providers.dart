@@ -4,10 +4,12 @@ import 'package:flutter_riverpod/misc.dart' show ProviderOrFamily;
 import '../features/auth/session.dart';
 import '../models/group.dart';
 import '../models/notification.dart';
+import '../models/running.dart';
 import '../models/social.dart';
 import '../models/user.dart';
 import '../models/workout.dart';
 import 'notification_repository.dart';
+import 'running_repository.dart';
 import 'social_repository.dart';
 import 'user_repository.dart';
 import 'workout_repository.dart';
@@ -66,6 +68,45 @@ final groupInvitesProvider = FutureProvider<List<GroupMember>>((ref) async {
   final all = await ref.watch(groupRepositoryProvider).myMemberships();
   return all.where((m) => m.status == GroupMemberStatus.invited).toList();
 });
+
+// Corsa
+
+final myRoutesProvider = FutureProvider<List<RunRoute>>((ref) {
+  ref.watch(userKeyProvider);
+  return ref.watch(runningRepositoryProvider).myRoutes();
+});
+
+/// Percorsi pubblici degli amici.
+final friendsRoutesProvider = FutureProvider<List<RunRoute>>((ref) {
+  ref.watch(userKeyProvider);
+  return ref.watch(runningRepositoryProvider).friendsRoutes();
+});
+
+final runRouteProvider = FutureProvider.autoDispose.family<RunRoute, String>(
+  (ref, id) => ref.watch(runningRepositoryProvider).route(id),
+);
+
+final runEventsProvider = FutureProvider<List<RunEvent>>((ref) {
+  ref.watch(userKeyProvider);
+  return ref.watch(runningRepositoryProvider).events();
+});
+
+final runEventProvider = FutureProvider.autoDispose.family<RunEvent, String>(
+  (ref, id) => ref.watch(runningRepositoryProvider).event(id),
+);
+
+final eventRunsProvider = FutureProvider.autoDispose.family<List<RunActivity>, String>(
+  (ref, id) => ref.watch(runningRepositoryProvider).eventRuns(id),
+);
+
+final myRunsProvider = FutureProvider<List<RunActivity>>((ref) {
+  ref.watch(userKeyProvider);
+  return ref.watch(runningRepositoryProvider).myRuns();
+});
+
+final runProvider = FutureProvider.autoDispose.family<RunActivity, String>(
+  (ref, id) => ref.watch(runningRepositoryProvider).run(id),
+);
 
 // Social
 
