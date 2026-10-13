@@ -1,13 +1,13 @@
 # Deploy
 
-How to build GymBro for release and publish it on the App Store and Google Play.
+How to build RepBirds for release and publish it on the App Store and Google Play.
 
 The app talks to [gymbro-api](https://github.com/mousty00/gymbro-api); deploy that first (see
 its `DEPLOY.md`) so you have an HTTPS base URL like `https://api.<domain>/api`.
 
 | | iOS | Android |
 |---|---|---|
-| App id | `com.mousty.gymbro` | `com.mousty.gymbro` |
+| App id | `com.mousty.repbirds` | `com.mousty.repbirds` |
 | Minimum OS | iOS 15.0 | Flutter's default `minSdk` |
 | Push | APNs directly, no Firebase | FCM (`google-services.json`) |
 | Release artifact | `.ipa` | `.aab` (App Bundle) |
@@ -63,7 +63,7 @@ Requires a Mac with Xcode and an Apple Developer Program membership.
 ### One-time setup
 
 1. **App ID.** [developer.apple.com](https://developer.apple.com/account/resources/identifiers/list)
-   → Identifiers → **+** → App IDs → bundle id `com.mousty.gymbro`, enable the
+   → Identifiers → **+** → App IDs → bundle id `com.mousty.repbirds`, enable the
    **Push Notifications** capability.
 2. **APNs key** for the API: Keys → **+** → Apple Push Notifications service. The `.p8` goes only
    on the server (`APNS_KEY_P8`, `APNS_KEY_ID`, `APNS_TEAM_ID`, see the API's `DEPLOY.md`), never
@@ -74,7 +74,7 @@ Requires a Mac with Xcode and an Apple Developer Program membership.
    in `ios/Runner/Runner.entitlements`). It says `aps-environment = development`; that's correct,
    Xcode switches it to production when it signs the build for App Store distribution.
 4. **App record.** [App Store Connect](https://appstoreconnect.apple.com) → Apps → **+** → New
-   App: platform iOS, name, primary language, bundle id `com.mousty.gymbro`, a SKU of your choice.
+   App: platform iOS, name, primary language, bundle id `com.mousty.repbirds`, a SKU of your choice.
 5. **Export compliance.** The app only uses standard HTTPS. To skip the encryption question on
    every upload, add this to `ios/Runner/Info.plist`:
 
@@ -149,7 +149,7 @@ release builds with the **debug** key, which Play rejects.
    upload key reset):
 
    ```bash
-   keytool -genkey -v -keystore ~/gymbro-upload.jks -keyalg RSA -keysize 2048 \
+   keytool -genkey -v -keystore ~/repbirds-upload.jks -keyalg RSA -keysize 2048 \
      -validity 10000 -alias upload
    ```
 
@@ -159,7 +159,7 @@ release builds with the **debug** key, which Play rejects.
    storePassword=<store password>
    keyPassword=<key password>
    keyAlias=upload
-   storeFile=/Users/<you>/gymbro-upload.jks
+   storeFile=/Users/<you>/repbirds-upload.jks
    ```
 
 3. In `android/app/build.gradle.kts`, load it and use it for release builds. Keep the debug
@@ -202,7 +202,7 @@ On the first upload, accept **Play App Signing**: Google keeps the app signing k
 #### Push (FCM)
 
 1. [Firebase console](https://console.firebase.google.com) → create a project → add an
-   **Android** app with package `com.mousty.gymbro` (no iOS app: iOS uses APNs directly).
+   **Android** app with package `com.mousty.repbirds` (no iOS app: iOS uses APNs directly).
 2. Download `google-services.json` into `android/app/`. The Gradle build applies the Google
    Services plugin only when that file exists, so without it the app builds the same and just
    never gets a push token.

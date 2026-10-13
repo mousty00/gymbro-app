@@ -1,6 +1,6 @@
 # gymbro-app
 
-App mobile (iOS / Android, gira anche sul web) per allenarsi da soli o in gruppo.
+**RepBirds**: app mobile (iOS / Android, gira anche sul web) per allenarsi da soli o in gruppo.
 È il client di [gymbro-api](https://github.com/mousty00/gymbro-api) e ne usa le API REST con autenticazione JWT.
 
 ![Schermate](docs/screens.png)
@@ -34,7 +34,7 @@ flutter run --dart-define=USE_MOCK=true
 flutter run -d chrome -t lib/main_mock.dart
 ```
 
-Da VS Code scegli la configurazione **GymBro (mock)** in Run and Debug; da Android Studio apri `lib/main_mock.dart` e premi Run. Il flag `--dart-define` vale solo da un avvio completo: un hot reload o hot restart non lo applica.
+Da VS Code scegli la configurazione **RepBirds (mock)** in Run and Debug; da Android Studio apri `lib/main_mock.dart` e premi Run. Il flag `--dart-define` vale solo da un avvio completo: un hot reload o hot restart non lo applica.
 
 Se avvii l'app normale e il server non risponde, in debug il login mostra il pulsante **Usa dati demo**, che passa ai dati finti senza riavviare. Nelle build di release questo pulsante non c'è e l'app usa sempre l'API vera.
 
@@ -85,7 +85,7 @@ provider con chiave, vedi `DEPLOY.md`). In modalità mock la corsa è simulata l
 ### Notifiche push
 
 Niente plugin Firebase: il codice nativo passa a Dart il token del dispositivo
-(canale `gymbro/push`, vedi `lib/core/push/push_service.dart`), che dopo il login
+(canale `repbirds/push`, vedi `lib/core/push/push_service.dart`), che dopo il login
 lo registra su `POST /devices` e al logout lo cancella.
 
 - **iOS:** APNs direttamente, senza Firebase (`ios/Runner/AppDelegate.swift`). Serve

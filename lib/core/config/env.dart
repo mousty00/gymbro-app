@@ -1,6 +1,6 @@
 /// Configurazione dell'app, passata a build time:
 ///
-///   flutter run --dart-define=API_BASE_URL=https://api.gymbro.app/api
+///   flutter run --dart-define=API_BASE_URL=https://api.repbirds.app/api
 ///
 /// Il default punta al backend locale (context-path `/api`). Su emulatore
 /// Android usa `http://10.0.2.2:8080/api`, su iOS simulator `http://localhost:8080/api`.

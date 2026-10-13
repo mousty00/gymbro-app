@@ -13,7 +13,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>GymBro</string>
+	<string>RepBirds</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -21,7 +21,7 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>gymbro</string>
+	<string>repbirds</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
@@ -85,6 +85,6 @@
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Serve per mostrarti sulla mappa mentre disegni un percorso e per registrare distanza, passo e tracciato delle tue corse, anche a schermo spento finché la corsa è in corso.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>GymBro usa la posizione solo durante una corsa che hai avviato, per registrarne distanza, passo e tracciato anche a schermo spento.</string>
+	<string>RepBirds usa la posizione solo durante una corsa che hai avviato, per registrarne distanza, passo e tracciato anche a schermo spento.</string>
 </dict>
 </plist>

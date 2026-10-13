@@ -42,7 +42,7 @@ class ApiClient {
   final _sessionExpired = StreamController<void>.broadcast();
   Stream<void> get sessionExpired => _sessionExpired.stream;
 
-  static const _retriedKey = 'gymbro.retried';
+  static const _retriedKey = 'repbirds.retried';
 
   static bool _isAuthPath(String path) =>
       path.startsWith('/auth/') && !path.startsWith('/auth/profile');

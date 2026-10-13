@@ -15,7 +15,7 @@ import UserNotifications
 
   func didInitializeImplicitFlutterEngine(_ engineBridge: FlutterImplicitEngineBridge) {
     GeneratedPluginRegistrant.register(with: engineBridge.pluginRegistry)
-    if let registrar = engineBridge.pluginRegistry.registrar(forPlugin: "GymbroPush") {
+    if let registrar = engineBridge.pluginRegistry.registrar(forPlugin: "RepBirdsPush") {
       PushChannel.shared.attach(messenger: registrar.messenger())
     }
   }
@@ -37,7 +37,7 @@ import UserNotifications
   }
 }
 
-/// Push via APNs, without Firebase: hands the device token to Dart (`gymbro/push`, see
+/// Push via APNs, without Firebase: hands the device token to Dart (`repbirds/push`, see
 /// lib/core/push/push_service.dart) and forwards incoming and tapped notifications.
 final class PushChannel: NSObject, UNUserNotificationCenterDelegate {
   static let shared = PushChannel()
@@ -50,7 +50,7 @@ final class PushChannel: NSObject, UNUserNotificationCenterDelegate {
   private var dartReady = false
 
   func attach(messenger: FlutterBinaryMessenger) {
-    let channel = FlutterMethodChannel(name: "gymbro/push", binaryMessenger: messenger)
+    let channel = FlutterMethodChannel(name: "repbirds/push", binaryMessenger: messenger)
     channel.setMethodCallHandler { [weak self] call, result in self?.handle(call, result: result) }
     self.channel = channel
   }

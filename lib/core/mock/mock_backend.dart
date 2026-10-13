@@ -92,7 +92,7 @@ class MockBackend extends Interceptor {
   Map<String, dynamic> _user(String id, String username, String first, String last, int ageDays) => {
         'id': id,
         'username': username,
-        'email': '$username@gymbro.it',
+        'email': '$username@repbirds.app',
         'firstName': first,
         'lastName': last,
         'birthDate': '1998-05-12',

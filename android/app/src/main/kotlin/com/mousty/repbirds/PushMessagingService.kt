@@ -1,4 +1,4 @@
-package com.mousty.gymbro
+package com.mousty.repbirds
 
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage

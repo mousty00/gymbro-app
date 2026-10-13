@@ -9,7 +9,7 @@ import '../../core/theme/app_theme.dart';
 List<Widget> baseMapLayers() => [
       TileLayer(
         urlTemplate: Env.mapTileUrl,
-        userAgentPackageName: 'com.mousty.gymbro',
+        userAgentPackageName: 'com.mousty.repbirds',
         maxZoom: 19,
       ),
     ];

@@ -280,7 +280,7 @@ extension _MockRunning on MockBackend {
     }
     if (match('GET', '/runs/:id/gpx')) {
       final run = _runs.firstWhere((r) => r['id'] == seg[1], orElse: () => throw _MockError(404, 'Corsa non trovata'));
-      return _gpx('${run['routeName'] ?? 'Corsa GymBro'}', run['track'] as List);
+      return _gpx('${run['routeName'] ?? 'Corsa RepBirds'}', run['track'] as List);
     }
     if (match('GET', '/runs/:id')) {
       return _runs.firstWhere((r) => r['id'] == last, orElse: () => throw _MockError(404, 'Corsa non trovata'));
@@ -290,7 +290,7 @@ extension _MockRunning on MockBackend {
 
   String _gpx(String name, List<dynamic> points) => [
         '<?xml version="1.0" encoding="UTF-8"?>',
-        '<gpx version="1.1" creator="GymBro" xmlns="http://www.topografix.com/GPX/1/1">',
+        '<gpx version="1.1" creator="RepBirds" xmlns="http://www.topografix.com/GPX/1/1">',
         '  <trk><name>$name</name><trkseg>',
         for (final p in points) '    <trkpt lat="${(p as List)[0]}" lon="${p[1]}"></trkpt>',
         '  </trkseg></trk>',

@@ -1,4 +1,4 @@
-package com.mousty.gymbro
+package com.mousty.repbirds
 
 import android.Manifest
 import android.content.Intent
@@ -13,7 +13,7 @@ import io.flutter.plugin.common.MethodChannel
 
 /**
  * Push via FCM, without the Firebase Flutter plugins: hands the token to Dart
- * (`gymbro/push`, see lib/core/push/push_service.dart) and forwards tapped notifications.
+ * (`repbirds/push`, see lib/core/push/push_service.dart) and forwards tapped notifications.
  * Firebase only starts when android/app/google-services.json was present at build time.
  */
 class MainActivity : FlutterActivity() {
@@ -31,7 +31,7 @@ class MainActivity : FlutterActivity() {
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
-        val channel = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "gymbro/push")
+        val channel = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "repbirds/push")
         channel.setMethodCallHandler { call, result ->
             when (call.method) {
                 "requestPermission" -> requestPermission(result)

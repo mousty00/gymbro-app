@@ -20,7 +20,7 @@ class SplashScreen extends ConsumerWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               const GlassOrb(size: 96),
-              Text('GymBro', style: t.headlineMedium),
+              Text('RepBirds', style: t.headlineMedium),
               const SizedBox(height: 24),
               if (session.hasError) ...[
                 Text('Non riesco a contattare il server.', style: t.bodyMedium),
