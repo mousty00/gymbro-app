@@ -151,6 +151,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                             controller: _text,
                             minLines: 4,
                             maxLines: 8,
+                            maxLength: 2000,
                             decoration: const InputDecoration(
                               hintText: 'Com\'è andato l\'allenamento?',
                               filled: false,

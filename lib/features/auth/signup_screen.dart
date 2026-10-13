@@ -94,9 +94,13 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                   hint: 'es. mario_lifts',
                   autofillHints: const [AutofillHints.newUsername],
                   validator: (v) {
-                    if (v == null || v.trim().isEmpty) return 'Scegli uno username';
-                    if (v.trim().length > 50) return 'Massimo 50 caratteri';
-                    if (v.contains(' ')) return 'Niente spazi';
+                    final u = v?.trim() ?? '';
+                    if (u.isEmpty) return 'Scegli uno username';
+                    if (u.length < 3 || u.length > 50) return 'Da 3 a 50 caratteri';
+                    // stessa regola del backend: finisce in URL e chiavi di storage
+                    if (!RegExp(r'^[A-Za-z0-9._-]+$').hasMatch(u)) {
+                      return 'Solo lettere, numeri, punto, trattino e underscore';
+                    }
                     return null;
                   },
                 ),
