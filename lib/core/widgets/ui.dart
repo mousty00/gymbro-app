@@ -226,24 +226,28 @@ class UserAvatar extends ConsumerWidget {
     final initials = username.isEmpty ? '?' : username.characters.first.toUpperCase();
     final hasImage = AppImage.supports(imageUrl);
     final colors = _palette[username.hashCode.abs() % _palette.length];
+    final initialsView = DecoratedBox(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(colors: colors, begin: Alignment.topLeft, end: Alignment.bottomRight),
+      ),
+      child: Center(child: _Initials(initials, size)),
+    );
+    // La foto riempie tutto il cerchio (cover + ritaglio tondo), anche dentro l'anello.
     return Container(
       width: size,
       height: size,
       padding: ring ? const EdgeInsets.all(3) : EdgeInsets.zero,
-      decoration: ring
-          ? const BoxDecoration(shape: BoxShape.circle, gradient: AppColors.brandGradient)
-          : null,
+      decoration: ring ? const BoxDecoration(shape: BoxShape.circle, gradient: AppColors.brandGradient) : null,
       child: Container(
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          border: ring ? Border.all(color: Colors.white, width: 2.5) : null,
-          gradient: LinearGradient(colors: colors, begin: Alignment.topLeft, end: Alignment.bottomRight),
+        padding: ring ? const EdgeInsets.all(2.5) : EdgeInsets.zero,
+        decoration: ring ? const BoxDecoration(shape: BoxShape.circle, color: Colors.white) : null,
+        child: ClipOval(
+          child: SizedBox.expand(
+            child: hasImage
+                ? AppImage(imageUrl!, width: double.infinity, height: double.infinity, fallback: initialsView)
+                : initialsView,
+          ),
         ),
-        clipBehavior: Clip.antiAlias,
-        alignment: Alignment.center,
-        child: hasImage
-            ? AppImage(imageUrl!, width: size, height: size, fallback: _Initials(initials, size))
-            : _Initials(initials, size),
       ),
     );
   }
