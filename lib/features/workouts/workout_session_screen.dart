@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -32,7 +33,10 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
   final Map<String, int> _doneSets = {};
   Timer? _ticker;
   Duration _elapsed = Duration.zero;
+  /// Recupero tra una serie e l'altra: conto alla rovescia separato dalla
+  /// durata dell'allenamento, che invece continua a scorrere.
   int _restLeft = 0;
+  int _restTotal = 0;
   bool _saving = false;
 
   @override
@@ -41,7 +45,10 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
     _ticker = Timer.periodic(const Duration(seconds: 1), (_) {
       setState(() {
         _elapsed = DateTime.now().difference(_startedAt);
-        if (_restLeft > 0) _restLeft--;
+        if (_restLeft > 0) {
+          _restLeft--;
+          if (_restLeft == 0) HapticFeedback.heavyImpact();
+        }
       });
     });
   }
@@ -60,10 +67,17 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
         _doneSets[e.id] = index;
       } else {
         _doneSets[e.id] = index + 1;
-        _restLeft = e.restSeconds;
+        _restLeft = _restTotal = e.restSeconds;
       }
     });
   }
+
+  void _addRest(int seconds) => setState(() {
+        _restLeft += seconds;
+        _restTotal += seconds;
+      });
+
+  void _skipRest() => setState(() => _restLeft = 0);
 
   Future<void> _finish(Workout w) async {
     final ok = await confirm(context, title: 'Terminare l\'allenamento?', message: 'La sessione verrà salvata nello storico.', ok: 'Termina');
@@ -128,16 +142,10 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
                               children: [
                                 Row(
                                   children: [
-                                    Text(widget.groupId != null ? 'Sessione di gruppo' : 'In corso',
+                                    Icon(Icons.timer_outlined, size: 16, color: Colors.white.withValues(alpha: 0.6)),
+                                    const SizedBox(width: 6),
+                                    Text(widget.groupId != null ? 'Durata sessione di gruppo' : 'Durata allenamento',
                                         style: TextStyle(color: Colors.white.withValues(alpha: 0.6))),
-                                    const Spacer(),
-                                    if (_restLeft > 0)
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                                        decoration: BoxDecoration(color: AppColors.lilac, borderRadius: BorderRadius.circular(20)),
-                                        child: Text('Recupero ${_restLeft}s',
-                                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 12)),
-                                      ),
                                   ],
                                 ),
                                 const SizedBox(height: 6),
@@ -160,6 +168,13 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
                                     style: TextStyle(color: Colors.white.withValues(alpha: 0.7), fontSize: 13)),
                               ],
                             ),
+                          ),
+                          const SizedBox(height: 12),
+                          _RestCard(
+                            left: _restLeft,
+                            total: _restTotal,
+                            onAdd: () => _addRest(15),
+                            onSkip: _skipRest,
                           ),
                           const SizedBox(height: 18),
                           for (final e in w.exercises)
@@ -249,6 +264,93 @@ class _SetDot extends StatelessWidget {
         child: done
             ? const Icon(Icons.check_rounded, color: Colors.white)
             : Text('$index', style: const TextStyle(fontWeight: FontWeight.w700, color: AppColors.inkSoft)),
+      ),
+    );
+  }
+}
+
+/// Recupero tra le serie: parte da solo quando spunti una serie e conta alla
+/// rovescia i secondi impostati nella scheda. Non ferma la durata
+/// dell'allenamento.
+class _RestCard extends StatelessWidget {
+  const _RestCard({required this.left, required this.total, required this.onAdd, required this.onSkip});
+
+  final int left;
+  final int total;
+  final VoidCallback onAdd;
+  final VoidCallback onSkip;
+
+  @override
+  Widget build(BuildContext context) {
+    final resting = left > 0;
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 200),
+      padding: const EdgeInsets.fromLTRB(18, 14, 12, 14),
+      decoration: BoxDecoration(
+        color: resting ? AppColors.lilac : Colors.white.withValues(alpha: 0.7),
+        borderRadius: BorderRadius.circular(AppRadius.md + 2),
+      ),
+      child: Row(
+        children: [
+          SizedBox(
+            width: 44,
+            height: 44,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                CircularProgressIndicator(
+                  value: resting && total > 0 ? left / total : 0,
+                  strokeWidth: 4,
+                  color: Colors.white,
+                  backgroundColor: resting ? Colors.white.withValues(alpha: 0.25) : AppColors.bg,
+                ),
+                Icon(Icons.hourglass_bottom_rounded, size: 20, color: resting ? Colors.white : AppColors.muted),
+              ],
+            ),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  resting ? 'Recupero tra le serie' : 'Recupero',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w700,
+                    color: resting ? Colors.white : AppColors.ink,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  resting ? 'Riposa, poi fai la prossima serie' : 'Parte da solo quando spunti una serie',
+                  style: TextStyle(fontSize: 12, color: resting ? Colors.white70 : AppColors.muted),
+                ),
+              ],
+            ),
+          ),
+          if (resting) ...[
+            Text(
+              formatClock(Duration(seconds: left)),
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 26,
+                fontWeight: FontWeight.w700,
+                fontFeatures: [FontFeature.tabularFigures()],
+              ),
+            ),
+            const SizedBox(width: 4),
+            IconButton(
+              tooltip: '+15 secondi',
+              onPressed: onAdd,
+              icon: const Icon(Icons.add_rounded, color: Colors.white),
+            ),
+            IconButton(
+              tooltip: 'Salta recupero',
+              onPressed: onSkip,
+              icon: const Icon(Icons.skip_next_rounded, color: Colors.white),
+            ),
+          ],
+        ],
       ),
     );
   }

@@ -37,6 +37,25 @@ class AppShell extends StatelessWidget {
   }
 }
 
+/// Radice di una tab diversa dalla Home: il gesto/tasto indietro di sistema
+/// riporta alla Home invece di chiudere l'app.
+class BackToHome extends StatelessWidget {
+  const BackToHome({super.key, required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) context.go('/home');
+      },
+      child: child,
+    );
+  }
+}
+
 class FloatingNavBar extends StatelessWidget {
   const FloatingNavBar({super.key, required this.index, required this.items, required this.onTap});
 

@@ -23,6 +23,7 @@ class HomeScreen extends ConsumerWidget {
     ref.invalidate(friendsPostsProvider);
     ref.invalidate(friendRequestsProvider);
     ref.invalidate(groupInvitesProvider);
+    ref.invalidate(runEventsProvider);
     await ref.read(historyProvider.future).catchError((_) => <WorkoutHistory>[]);
   }
 
@@ -77,13 +78,13 @@ class HomeScreen extends ConsumerWidget {
                   ],
                 ),
                 const SizedBox(height: 26),
-                Text('Pronto ad\nallenarti oggi?', style: t.displaySmall),
-                const SizedBox(height: 22),
+                // Prima l'attività di oggi, poi andamento e dashboard.
+                const _TodaySection(),
+                const SectionHeader('Il tuo andamento'),
                 const _WeekCard(),
                 const SizedBox(height: 14),
                 const _StatsGrid(),
                 const SizedBox(height: 24),
-                const _TodaySection(),
                 const _RunningCard(),
                 const _UpcomingGroups(),
                 const _FriendsActivity(),
@@ -279,20 +280,84 @@ class StatTile extends StatelessWidget {
   }
 }
 
+/// In cima alla home: cosa c'è da fare oggi (schede in programma, gruppi,
+/// corse) e cosa hai già fatto.
 class _TodaySection extends ConsumerWidget {
   const _TodaySection();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final now = DateTime.now();
+    final t = Theme.of(context).textTheme;
     final workouts = ref.watch(myWorkoutsProvider).value ?? const <Workout>[];
-    final today = workouts.where((w) => w.isScheduledOn(DateTime.now())).toList()
+    final history = ref.watch(historyProvider).value ?? const <WorkoutHistory>[];
+    final groups = ref.watch(groupsProvider).value ?? const <WorkoutGroup>[];
+    final events = ref.watch(runEventsProvider).value ?? const [];
+
+    final today = workouts.where((w) => w.isScheduledOn(now)).toList()
       ..sort((a, b) => (a.startTime?.label ?? '').compareTo(b.startTime?.label ?? ''));
+    final doneToday = history.where((h) => h.startedAt != null && isSameDay(h.startedAt!.toLocal(), now)).toList();
+    final doneIds = doneToday.map((h) => h.workoutId).toSet();
+    final minutesToday = doneToday.fold<int>(0, (a, h) => a + (h.duration?.inMinutes ?? 0));
+    final groupsToday = groups.where((g) => g.scheduledFor != null && isSameDay(g.scheduledFor!.toLocal(), now)).toList()
+      ..sort((a, b) => a.scheduledFor!.compareTo(b.scheduledFor!));
+    final runsToday = events
+        .where((e) => e.canRun && e.startsAt != null && isSameDay(e.startsAt!.toLocal(), now))
+        .toList()
+      ..sort((a, b) => a.startsAt!.compareTo(b.startsAt!));
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        SectionHeader('Oggi', action: 'Tutte le schede', onAction: () => context.go('/workouts')),
-        if (today.isEmpty)
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(formatDay(now), style: t.bodyMedium),
+                  Text('Oggi', style: t.displaySmall),
+                ],
+              ),
+            ),
+            GestureDetector(
+              onTap: () => context.go('/workouts'),
+              child: const Padding(
+                padding: EdgeInsets.only(bottom: 8),
+                child: Text('Tutte le schede', style: TextStyle(color: AppColors.muted, fontWeight: FontWeight.w600)),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 14),
+        if (doneToday.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: SoftCard(
+              color: AppColors.mintSoft,
+              onTap: () => context.push('/history'),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              child: Row(
+                children: [
+                  const IconChip(icon: Icons.check_rounded, color: AppColors.mint, background: Colors.white, size: 34),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      doneToday.length == 1
+                          ? 'Allenamento fatto oggi'
+                          : '${doneToday.length} allenamenti fatti oggi',
+                      style: const TextStyle(fontWeight: FontWeight.w700),
+                    ),
+                  ),
+                  if (minutesToday > 0)
+                    Text(formatDuration(Duration(minutes: minutesToday)),
+                        style: const TextStyle(color: AppColors.inkSoft, fontWeight: FontWeight.w600)),
+                ],
+              ),
+            ),
+          ),
+        if (today.isEmpty && groupsToday.isEmpty && runsToday.isEmpty)
           SoftCard(
             onTap: () => context.go('/workouts'),
             child: Row(
@@ -309,24 +374,80 @@ class _TodaySection extends ConsumerWidget {
                 CircleIconButton(icon: Icons.arrow_forward_rounded, size: 40, onTap: () => context.go('/workouts')),
               ],
             ),
-          )
-        else
-          for (final w in today)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: TodayWorkoutCard(workout: w),
-            ),
+          ),
+        for (final w in today)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: TodayWorkoutCard(workout: w, done: doneIds.contains(w.id)),
+          ),
+        for (final g in groupsToday)
+          _TodayRow(
+            icon: Icons.groups_rounded,
+            color: AppColors.lilac,
+            title: g.name,
+            subtitle: 'Di gruppo · alle ${formatTime(g.scheduledFor!.toLocal())} · ${g.workoutName}',
+            onTap: () => context.push('/group/${g.id}'),
+          ),
+        for (final e in runsToday)
+          _TodayRow(
+            icon: Icons.directions_run_rounded,
+            color: AppColors.blue,
+            title: e.title,
+            subtitle: 'Corsa · alle ${formatTime(e.startsAt!.toLocal())}',
+            onTap: () => context.push('/running/event/${e.id}'),
+          ),
         const SizedBox(height: 16),
       ],
     );
   }
 }
 
+class _TodayRow extends StatelessWidget {
+  const _TodayRow({required this.icon, required this.color, required this.title, required this.subtitle, required this.onTap});
+
+  final IconData icon;
+  final Color color;
+  final String title;
+  final String subtitle;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: SoftCard(
+        onTap: onTap,
+        padding: const EdgeInsets.all(14),
+        child: Row(
+          children: [
+            IconChip(icon: icon, color: color),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title, style: const TextStyle(fontWeight: FontWeight.w700), maxLines: 1, overflow: TextOverflow.ellipsis),
+                  Text(subtitle,
+                      style: const TextStyle(color: AppColors.muted, fontSize: 13), maxLines: 1, overflow: TextOverflow.ellipsis),
+                ],
+              ),
+            ),
+            const Icon(Icons.chevron_right_rounded, color: AppColors.muted),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 /// Card scura della scheda di oggi con pulsante play.
 class TodayWorkoutCard extends StatelessWidget {
-  const TodayWorkoutCard({super.key, required this.workout});
+  const TodayWorkoutCard({super.key, required this.workout, this.done = false});
 
   final Workout workout;
+
+  /// Già fatta oggi (c'è una sessione nello storico).
+  final bool done;
 
   @override
   Widget build(BuildContext context) {
@@ -341,7 +462,11 @@ class TodayWorkoutCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  workout.startTime != null ? 'Alle ${workout.startTime!.label}' : 'Scheda di oggi',
+                  done
+                      ? 'Fatta oggi ✓'
+                      : workout.startTime != null
+                          ? 'Alle ${workout.startTime!.label}'
+                          : 'Scheda di oggi',
                   style: TextStyle(color: Colors.white.withValues(alpha: 0.6), fontSize: 13),
                 ),
                 const SizedBox(height: 4),
@@ -431,7 +556,11 @@ class _UpcomingGroups extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final groups = (ref.watch(groupsProvider).value ?? const <WorkoutGroup>[]).where((g) => g.isUpcoming).toList()
+    // Quelli di oggi sono già in cima, nella sezione "Oggi".
+    final now = DateTime.now();
+    final groups = (ref.watch(groupsProvider).value ?? const <WorkoutGroup>[])
+        .where((g) => g.isUpcoming && !isSameDay(g.scheduledFor!.toLocal(), now))
+        .toList()
       ..sort((a, b) => a.scheduledFor!.compareTo(b.scheduledFor!));
     if (groups.isEmpty) return const SizedBox.shrink();
 

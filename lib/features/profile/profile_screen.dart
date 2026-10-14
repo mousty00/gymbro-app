@@ -132,7 +132,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         color: AppColors.blue,
                         label: 'Le mie schede',
                         trailing: '${workouts.length}',
-                        onTap: () => context.go('/workouts'),
+                        onTap: () => context.push('/profile/workouts'),
                       ),
                       _MenuRow(icon: Icons.sports_gymnastics_rounded, color: AppColors.mint, label: 'Libreria esercizi', onTap: () => context.push('/exercises')),
                       _MenuRow(
@@ -154,7 +154,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       _InfoRow(label: 'Email', value: me.email ?? '—'),
                       if (me.birthDate != null) _InfoRow(label: 'Data di nascita', value: formatDate(me.birthDate)),
                       if (me.createdAt != null) _InfoRow(label: 'Iscritto da', value: formatMonthYear(me.createdAt)),
-                      _InfoRow(label: 'Server', value: Env.useMock ? 'Mock (dati finti)' : Env.apiBaseUrl),
+                      if (Env.serverLabel != null) _InfoRow(label: 'Server', value: Env.serverLabel!),
                     ],
                   ),
                 ),

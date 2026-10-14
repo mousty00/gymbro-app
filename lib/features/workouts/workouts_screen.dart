@@ -14,7 +14,10 @@ import '../shell/app_shell.dart';
 import '../../core/widgets/skeleton.dart';
 
 class WorkoutsScreen extends ConsumerStatefulWidget {
-  const WorkoutsScreen({super.key});
+  const WorkoutsScreen({super.key, this.showBack = false});
+
+  /// Aperta dal profilo ("Le mie schede"): freccia indietro che riporta lì.
+  final bool showBack;
 
   @override
   ConsumerState<WorkoutsScreen> createState() => _WorkoutsScreenState();
@@ -45,8 +48,18 @@ class _WorkoutsScreenState extends ConsumerState<WorkoutsScreen> {
                       children: [
                         Row(
                           children: [
+                            if (widget.showBack) ...[
+                              CircleIconButton(
+                                icon: Icons.arrow_back_rounded,
+                                size: 44,
+                                tooltip: 'Indietro',
+                                onTap: () => context.canPop() ? context.pop() : context.go('/profile'),
+                              ),
+                              const SizedBox(width: 14),
+                            ],
                             Expanded(
-                              child: Text('Allenamenti', style: Theme.of(context).textTheme.headlineMedium),
+                              child: Text(widget.showBack ? 'Le mie schede' : 'Allenamenti',
+                                  style: Theme.of(context).textTheme.headlineMedium),
                             ),
                             CircleIconButton(
                               icon: Icons.add_rounded,
