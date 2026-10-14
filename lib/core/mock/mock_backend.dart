@@ -309,8 +309,16 @@ class MockBackend extends Interceptor {
         'totalCount': items.length,
       };
 
+  /// Foto profilo attuale di un utente (come l'URL firmato dell'API).
+  String? _imageOf(String username) =>
+      _users.firstWhere((u) => u['username'] == username, orElse: () => const {})['image'] as String?;
+
   Map<String, dynamic> _postView(Map<String, dynamic> p) => {
         ...p,
+        'user': {...p['user'] as Map, 'image': _imageOf('${(p['user'] as Map)['username']}')},
+        'comments': [
+          for (final c in p['comments'] as List) {...c as Map, 'userImage': _imageOf('${c['username']}')},
+        ],
         'numLikes': (p['likes'] as List).length,
         'numComments': (p['comments'] as List).length,
       };

@@ -66,6 +66,7 @@ class SimpleComment {
     required this.postId,
     required this.username,
     required this.content,
+    this.userImage,
     this.createdAt,
   });
 
@@ -73,6 +74,9 @@ class SimpleComment {
   final String postId;
   final String username;
   final String content;
+
+  /// Foto profilo dell'autore (null se non ne ha una).
+  final String? userImage;
   final DateTime? createdAt;
 
   factory SimpleComment.fromJson(Json j) => SimpleComment(
@@ -80,6 +84,7 @@ class SimpleComment {
         postId: '${j['postId']}',
         username: j['username'] as String? ?? '',
         content: j['content'] as String? ?? '',
+        userImage: j['userImage'] as String?,
         createdAt: parseInstant(j['createdAt']),
       );
 
@@ -89,6 +94,7 @@ class SimpleComment {
         postId: '${j['postId']}',
         username: (j['user'] as Map?)?['username'] as String? ?? '',
         content: j['content'] as String? ?? '',
+        userImage: (j['user'] as Map?)?['image'] as String?,
         createdAt: parseInstant(j['createdAt']),
       );
 }
