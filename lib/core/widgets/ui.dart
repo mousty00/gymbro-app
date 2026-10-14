@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../features/auth/session.dart';
 import '../theme/app_theme.dart';
 import 'app_image.dart';
 import 'backgrounds.dart';
@@ -206,8 +208,10 @@ class PrimaryButton extends StatelessWidget {
   }
 }
 
-/// Avatar con foto o iniziali su gradiente.
-class UserAvatar extends StatelessWidget {
+/// Avatar con foto o iniziali su gradiente. Per l'utente loggato usa sempre
+/// la sua foto profilo attuale, anche dove il dato arriva senza immagine o con
+/// quella vecchia (i suoi post, i commenti, gli avatar di gruppo).
+class UserAvatar extends ConsumerWidget {
   const UserAvatar({super.key, required this.username, this.imageUrl, this.size = 44, this.ring = false});
 
   final String username;
@@ -216,7 +220,9 @@ class UserAvatar extends StatelessWidget {
   final bool ring;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final me = ref.watch(sessionProvider.select((s) => s.value));
+    final imageUrl = me != null && me.username == username && AppImage.supports(me.image) ? me.image : this.imageUrl;
     final initials = username.isEmpty ? '?' : username.characters.first.toUpperCase();
     final hasImage = AppImage.supports(imageUrl);
     final colors = _palette[username.hashCode.abs() % _palette.length];

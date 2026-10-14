@@ -22,6 +22,20 @@ class Env {
   /// quando il server non risponde.
   static bool useMock = const bool.fromEnvironment('USE_MOCK');
 
+  /// Etichetta dell'ambiente da mostrare all'utente: `MOCK` con i dati finti,
+  /// `TEST` quando l'app punta a un server di test/staging o locale.
+  /// In produzione è `null` e l'indicatore non si vede.
+  static String? get serverLabel {
+    if (useMock) return 'MOCK';
+    final host = Uri.tryParse(apiBaseUrl)?.host ?? '';
+    final isTest = host.contains('test') ||
+        host.contains('staging') ||
+        host == 'localhost' ||
+        host == '10.0.2.2' ||
+        RegExp(r'^\d+\.\d+\.\d+\.\d+$').hasMatch(host);
+    return isTest ? 'TEST' : null;
+  }
+
   /// Tile della mappa (percorsi di corsa), formato `{z}/{x}/{y}`. Il default
   /// sono i server pubblici di OpenStreetMap, che vanno bene per sviluppo e
   /// test ma non ammettono il traffico di un'app pubblicata: in produzione usa

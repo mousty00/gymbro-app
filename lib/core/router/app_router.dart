@@ -80,7 +80,16 @@ final routerProvider = Provider<GoRouter>((ref) {
           StatefulShellBranch(routes: [GoRoute(path: '/feed', builder: (_, _) => const FeedScreen())]),
           StatefulShellBranch(routes: [GoRoute(path: '/workouts', builder: (_, _) => const WorkoutsScreen())]),
           StatefulShellBranch(routes: [GoRoute(path: '/groups', builder: (_, _) => const GroupsScreen())]),
-          StatefulShellBranch(routes: [GoRoute(path: '/profile', builder: (_, _) => const ProfileScreen())]),
+          StatefulShellBranch(routes: [
+            GoRoute(
+              path: '/profile',
+              builder: (_, _) => const ProfileScreen(),
+              routes: [
+                // "Le mie schede" dal profilo: resta nella tab Profilo, così indietro torna lì.
+                GoRoute(path: 'workouts', builder: (_, _) => const WorkoutsScreen(showBack: true)),
+              ],
+            ),
+          ]),
         ],
       ),
 
