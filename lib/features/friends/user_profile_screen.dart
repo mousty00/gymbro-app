@@ -155,9 +155,32 @@ class PostGrid extends StatelessWidget {
           onTap: () => context.push('/posts/${p.id}'),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(AppRadius.sm + 2),
-            child: AppImage.supports(p.image)
-                ? AppImage(p.image!, fallback: _TextTile(text: p.content))
-                : _TextTile(text: p.content),
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                AppImage.supports(p.image)
+                    ? AppImage(p.image!, fallback: _TextTile(text: p.content))
+                    : _TextTile(text: p.content),
+                if (p.numLikes > 0)
+                  Positioned(
+                    left: 6,
+                    bottom: 6,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                      decoration: BoxDecoration(color: Colors.black45, borderRadius: BorderRadius.circular(20)),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.favorite_rounded, size: 12, color: Colors.white),
+                          const SizedBox(width: 3),
+                          Text('${p.numLikes}',
+                              style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w700)),
+                        ],
+                      ),
+                    ),
+                  ),
+              ],
+            ),
           ),
         );
       },

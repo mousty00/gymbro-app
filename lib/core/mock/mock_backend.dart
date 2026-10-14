@@ -221,6 +221,10 @@ class MockBackend extends Interceptor {
       post(marco, 'Sessione push con la crew stamattina. Chi viene sabato?', 2, 20, ['giulia.fit'], [('giulia.fit', 'Io ci sono')]),
       post(_me, 'Nuovo record in panca: 72,5 kg x 8!', 3, 30, ['giulia.fit', 'marco_lifts', 'sara.runs'], []),
       post(luca, 'Primo muscle-up pulito dopo tre mesi di prove. Non mollate!', 4, 50, ['sara.runs'], []),
+      post(_me, 'Leg day completato, domani non cammino 😅', 1, 54, ['giulia.fit'], [('giulia.fit', 'Classico!')]),
+      post(_me, 'Push con Marco, si chiude la settimana alla grande', 2, 100, ['marco_lifts', 'luca.cali'], []),
+      post(_me, 'Riposo attivo: 5 km tranquilli al parco', null, 140, ['sara.runs'], []),
+      post(_me, 'Primo mese di RepBirds: 12 sessioni 💪', 4, 300, ['giulia.fit', 'marco_lifts'], []),
     ]);
 
     _friendships.addAll([

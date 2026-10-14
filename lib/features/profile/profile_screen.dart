@@ -15,7 +15,6 @@ import '../../data/user_repository.dart';
 import '../../models/social.dart';
 import '../auth/session.dart';
 import '../friends/user_profile_screen.dart';
-import '../home/home_screen.dart';
 import '../share/share_actions.dart';
 import '../shell/app_shell.dart';
 import '../../core/widgets/skeleton.dart';
@@ -67,6 +66,71 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     }
   }
 
+  /// Account e impostazioni: tutto quello che non serve tutti i giorni.
+  void _showSettings() {
+    final me = ref.read(currentUserProvider);
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      builder: (ctx) {
+        void go(VoidCallback action) {
+          Navigator.pop(ctx);
+          action();
+        }
+
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text('Account', style: Theme.of(ctx).textTheme.headlineSmall),
+                const SizedBox(height: 14),
+                SoftCard(
+                  child: Column(
+                    children: [
+                      _InfoRow(label: 'Email', value: me.email ?? '—'),
+                      if (me.birthDate != null) _InfoRow(label: 'Data di nascita', value: formatDate(me.birthDate)),
+                      if (me.createdAt != null) _InfoRow(label: 'Iscritto da', value: formatMonthYear(me.createdAt)),
+                      if (Env.serverLabel != null) _InfoRow(label: 'Server', value: Env.serverLabel!),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 12),
+                SoftCard(
+                  padding: const EdgeInsets.symmetric(vertical: 6),
+                  child: Column(
+                    children: [
+                      _MenuRow(
+                        icon: Icons.sports_gymnastics_rounded,
+                        color: AppColors.mint,
+                        label: 'Libreria esercizi',
+                        onTap: () => go(() => context.push('/exercises')),
+                      ),
+                      _MenuRow(
+                        icon: Icons.logout_rounded,
+                        color: AppColors.ink,
+                        label: 'Esci',
+                        onTap: () => go(_logout),
+                        last: true,
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 8),
+                TextButton(
+                  onPressed: () => go(_deleteAccount),
+                  child: const Text('Elimina account', style: TextStyle(color: AppColors.danger)),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final me = ref.watch(currentUserProvider);
@@ -75,6 +139,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     final friends = ref.watch(friendsProvider).value ?? const <Friendship>[];
     final workouts = ref.watch(myWorkoutsProvider).value ?? const [];
     final total = history.fold<Duration>(Duration.zero, (a, h) => a + (h.duration ?? Duration.zero));
+    final t = Theme.of(context).textTheme;
 
     return Scaffold(
       body: SkyBackground(
@@ -93,7 +158,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               children: [
                 Row(
                   children: [
-                    Expanded(child: Text('Profilo', style: Theme.of(context).textTheme.headlineMedium)),
+                    Expanded(child: Text('@${me.username}', style: t.titleLarge, overflow: TextOverflow.ellipsis)),
                     CircleIconButton(
                       icon: Icons.ios_share_rounded,
                       tooltip: 'Condividi profilo',
@@ -101,82 +166,138 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                           mine: true, sessions: history.length, trained: total, friends: friends.length),
                     ),
                     const SizedBox(width: 10),
-                    CircleIconButton(icon: Icons.logout_rounded, tooltip: 'Esci', onTap: _logout),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    ProfileHeader(user: me, onEditAvatar: _uploading ? null : _changeAvatar),
-                    if (_uploading) const Positioned(top: 40, child: CircularProgressIndicator()),
-                  ],
-                ),
-                const SizedBox(height: 22),
-                Row(
-                  children: [
-                    _Counter(value: '${history.length}', label: 'Sessioni', onTap: () => context.push('/history')),
-                    _Counter(value: formatDuration(total), label: 'Allenato', onTap: () => context.push('/history')),
-                    _Counter(value: '${friends.length}', label: 'Amici', onTap: () => context.push('/friends')),
+                    CircleIconButton(icon: Icons.settings_outlined, tooltip: 'Account', onTap: _showSettings),
                   ],
                 ),
                 const SizedBox(height: 20),
-                SoftCard(
-                  padding: const EdgeInsets.symmetric(vertical: 6),
-                  child: Column(
-                    children: [
-                      _MenuRow(icon: Icons.people_alt_rounded, color: AppColors.pink, label: 'Amici e richieste', onTap: () => context.push('/friends')),
-                      _MenuRow(icon: Icons.history_rounded, color: AppColors.lilac, label: 'Storico allenamenti', onTap: () => context.push('/history')),
-                      _MenuRow(
+                // Foto, nome e numeri su una riga, come un profilo social.
+                Row(
+                  children: [
+                    GestureDetector(
+                      onTap: _uploading ? null : _changeAvatar,
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          UserAvatar(username: me.username, imageUrl: me.image, size: 92, ring: true),
+                          if (_uploading) const CircularProgressIndicator(),
+                          Positioned(
+                            right: 0,
+                            bottom: 0,
+                            child: Container(
+                              width: 28,
+                              height: 28,
+                              decoration: BoxDecoration(
+                                color: AppColors.ink,
+                                shape: BoxShape.circle,
+                                border: Border.all(color: Colors.white, width: 2),
+                              ),
+                              child: const Icon(Icons.photo_camera_rounded, size: 14, color: Colors.white),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        children: [
+                          _Counter(value: '${posts.value?.length ?? '–'}', label: 'Post'),
+                          _Counter(value: '${history.length}', label: 'Sessioni', onTap: () => context.push('/history')),
+                          _Counter(value: '${friends.length}', label: 'Amici', onTap: () => context.push('/friends')),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 14),
+                Row(
+                  children: [
+                    Flexible(child: Text(me.displayName, style: t.titleMedium, overflow: TextOverflow.ellipsis)),
+                    if (me.isAccountVerified == true) ...[
+                      const SizedBox(width: 4),
+                      const Icon(Icons.verified_rounded, color: AppColors.blue, size: 18),
+                    ],
+                  ],
+                ),
+                if (total > Duration.zero)
+                  Text('${formatDuration(total)} di allenamento', style: t.bodyMedium?.copyWith(color: AppColors.muted)),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _PillButton(
                         icon: Icons.fitness_center_rounded,
-                        color: AppColors.blue,
-                        label: 'Le mie schede',
-                        trailing: '${workouts.length}',
+                        label: 'Schede · ${workouts.length}',
                         onTap: () => context.push('/profile/workouts'),
                       ),
-                      _MenuRow(icon: Icons.sports_gymnastics_rounded, color: AppColors.mint, label: 'Libreria esercizi', onTap: () => context.push('/exercises')),
-                      _MenuRow(
-                        icon: Icons.ios_share_rounded,
-                        color: AppColors.pink,
-                        label: 'Condividi il mio profilo',
-                        onTap: () => shareProfile(context, me,
-                            mine: true, sessions: history.length, trained: total, friends: friends.length),
-                      ),
-                      _MenuRow(icon: Icons.add_circle_outline_rounded, color: AppColors.ink, label: 'Crea…', onTap: () => showQuickCreate(context), last: true),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: _PillButton(icon: Icons.history_rounded, label: 'Storico', onTap: () => context.push('/history')),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: _PillButton(icon: Icons.people_alt_rounded, label: 'Amici', onTap: () => context.push('/friends')),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 22),
-                SoftCard(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _InfoRow(label: 'Email', value: me.email ?? '—'),
-                      if (me.birthDate != null) _InfoRow(label: 'Data di nascita', value: formatDate(me.birthDate)),
-                      if (me.createdAt != null) _InfoRow(label: 'Iscritto da', value: formatMonthYear(me.createdAt)),
-                      if (Env.serverLabel != null) _InfoRow(label: 'Server', value: Env.serverLabel!),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 24),
-                const SectionHeader('I miei post'),
+                const SizedBox(height: 28),
+                SectionHeader('I miei post', action: 'Nuovo post', onAction: () => context.push('/posts/new')),
                 AsyncView<List<Post>>(
                   value: posts,
                   onRetry: () => ref.invalidate(userPostsProvider(me.username)),
                   loading: const SkeletonGrid(),
-                  data: (list) => PostGrid(posts: list),
-                ),
-                const SizedBox(height: 28),
-                Center(
-                  child: TextButton(
-                    onPressed: _deleteAccount,
-                    child: const Text('Elimina account', style: TextStyle(color: AppColors.danger)),
-                  ),
+                  data: (list) => list.isEmpty
+                      ? SoftCard(
+                          onTap: () => context.push('/posts/new'),
+                          padding: const EdgeInsets.symmetric(vertical: 28, horizontal: 20),
+                          child: const Column(
+                            children: [
+                              Icon(Icons.photo_camera_rounded, size: 32, color: AppColors.muted),
+                              SizedBox(height: 8),
+                              Text('Condividi il tuo primo allenamento',
+                                  style: TextStyle(fontWeight: FontWeight.w600)),
+                            ],
+                          ),
+                        )
+                      : PostGrid(posts: list),
                 ),
               ],
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// Pulsante a pillola bianco sotto l'intestazione del profilo.
+class _PillButton extends StatelessWidget {
+  const _PillButton({required this.icon, required this.label, required this.onTap});
+
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return SoftCard(
+      onTap: onTap,
+      padding: const EdgeInsets.symmetric(vertical: 11, horizontal: 8),
+      radius: AppRadius.md,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(icon, size: 16, color: AppColors.inkSoft),
+          const SizedBox(width: 6),
+          Flexible(
+            child: Text(label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+          ),
+        ],
       ),
     );
   }
@@ -191,33 +312,26 @@ class _Counter extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Expanded(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 4),
-        child: SoftCard(
-          onTap: onTap,
-          padding: const EdgeInsets.symmetric(vertical: 14),
-          radius: AppRadius.md + 2,
-          child: Column(
-            children: [
-              Text(value, style: Theme.of(context).textTheme.titleLarge, maxLines: 1, overflow: TextOverflow.ellipsis),
-              Text(label, style: const TextStyle(color: AppColors.muted, fontSize: 12)),
-            ],
-          ),
-        ),
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: Column(
+        children: [
+          Text(value, style: Theme.of(context).textTheme.titleLarge),
+          Text(label, style: const TextStyle(color: AppColors.muted, fontSize: 12)),
+        ],
       ),
     );
   }
 }
 
 class _MenuRow extends StatelessWidget {
-  const _MenuRow({required this.icon, required this.color, required this.label, required this.onTap, this.trailing, this.last = false});
+  const _MenuRow({required this.icon, required this.color, required this.label, required this.onTap, this.last = false});
 
   final IconData icon;
   final Color color;
   final String label;
   final VoidCallback onTap;
-  final String? trailing;
   final bool last;
 
   @override
@@ -228,13 +342,7 @@ class _MenuRow extends StatelessWidget {
           onTap: onTap,
           leading: IconChip(icon: icon, color: color, size: 36),
           title: Text(label, style: const TextStyle(fontWeight: FontWeight.w600)),
-          trailing: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (trailing != null) Text(trailing!, style: const TextStyle(color: AppColors.muted)),
-              const Icon(Icons.chevron_right_rounded, color: AppColors.muted),
-            ],
-          ),
+          trailing: const Icon(Icons.chevron_right_rounded, color: AppColors.muted),
         ),
         if (!last) const Divider(indent: 70, endIndent: 16),
       ],
