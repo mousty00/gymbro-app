@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gymbro_app/core/mock/mock_backend.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -99,8 +100,10 @@ void main() {
 
     Future<void> pump(WidgetTester tester, Widget card) async {
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(body: Center(child: card)),
+        ProviderScope(
+          child: MaterialApp(
+            home: Scaffold(body: Center(child: card)),
+          ),
         ),
       );
       expect(tester.takeException(), isNull);
@@ -178,10 +181,12 @@ void main() {
   group('cose private', () {
     Future<void> open(WidgetTester tester, Future<void> Function(BuildContext) share) async {
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: Builder(
-              builder: (ctx) => TextButton(onPressed: () => share(ctx), child: const Text('apri')),
+        ProviderScope(
+          child: MaterialApp(
+            home: Scaffold(
+              body: Builder(
+                builder: (ctx) => TextButton(onPressed: () => share(ctx), child: const Text('apri')),
+              ),
             ),
           ),
         ),
