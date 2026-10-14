@@ -258,7 +258,7 @@ class _ExerciseRow extends StatelessWidget {
               ],
             ),
           ),
-          Tag('${exercise.restSeconds}s', icon: Icons.timer_outlined, color: AppColors.lilac),
+          Tag('${exercise.restSeconds}s recupero', icon: Icons.hourglass_bottom_rounded, color: AppColors.lilac),
         ],
       ),
     );

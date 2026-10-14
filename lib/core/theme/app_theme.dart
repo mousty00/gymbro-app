@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart' show CupertinoPageTransitionsBuilder;
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -63,6 +64,14 @@ ThemeData buildAppTheme() {
       error: AppColors.danger,
     ),
     scaffoldBackgroundColor: AppColors.bg,
+    // Gesto indietro di sistema: swipe dal bordo su iOS, back predittivo
+    // (anteprima della schermata sotto) su Android.
+    pageTransitionsTheme: const PageTransitionsTheme(
+      builders: {
+        TargetPlatform.android: PredictiveBackPageTransitionsBuilder(),
+        TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
+      },
+    ),
   );
 
   final text = GoogleFonts.plusJakartaSansTextTheme(base.textTheme).apply(
