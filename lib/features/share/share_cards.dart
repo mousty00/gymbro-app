@@ -1,10 +1,17 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
+import 'package:latlong2/latlong.dart' show LatLng;
 
 import '../../core/theme/app_theme.dart';
 import '../../core/utils/formatters.dart';
+import '../../core/widgets/app_image.dart';
 import '../../core/widgets/ui.dart';
+import '../../models/running.dart';
+import '../../models/social.dart';
 import '../../models/user.dart';
 import '../../models/workout.dart';
+import '../running/geo.dart';
 import 'share_links.dart';
 
 // Card riepilogo da condividere come immagine (storie, chat, feed). Hanno
@@ -168,6 +175,191 @@ class ProfileShareCard extends StatelessWidget {
   }
 }
 
+/// Percorso di corsa: forma, distanza, dislivello.
+class RouteShareCard extends StatelessWidget {
+  const RouteShareCard({super.key, required this.route});
+
+  final RunRoute route;
+
+  @override
+  Widget build(BuildContext context) {
+    final author = route.originalAuthor ?? route.owner;
+    return _CardFrame(
+      label: 'Percorso',
+      icon: Icons.route_rounded,
+      footer: ShareLinks.route(route.id),
+      children: [
+        Text(route.name, style: _title, maxLines: 1, overflow: TextOverflow.ellipsis),
+        Text('di @${author.username}', style: _subtitle),
+        const SizedBox(height: 10),
+        Expanded(
+          child: TrackShape(points: route.points, color: AppColors.blue),
+        ),
+        const SizedBox(height: 10),
+        Row(
+          children: [
+            _Stat(value: formatDistance(route.distanceM), label: 'distanza'),
+            _Stat(value: route.elevationGainM == null ? '–' : '+${route.elevationGainM} m', label: 'dislivello'),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+/// Corsa registrata: traccia, distanza, tempo, passo.
+class RunShareCard extends StatelessWidget {
+  const RunShareCard({super.key, required this.run});
+
+  final RunActivity run;
+
+  @override
+  Widget build(BuildContext context) {
+    return _CardFrame(
+      label: 'Corsa',
+      icon: Icons.directions_run_rounded,
+      footer: ShareLinks.webBaseUrl,
+      children: [
+        Text(formatDate(run.startedAt), style: _subtitle),
+        Text(run.title, style: _title, maxLines: 1, overflow: TextOverflow.ellipsis),
+        Text('@${run.user.username}', style: _subtitle),
+        const SizedBox(height: 10),
+        Expanded(
+          child: TrackShape(points: run.track, color: AppColors.pink),
+        ),
+        const SizedBox(height: 10),
+        Row(
+          children: [
+            _Stat(value: formatDistance(run.distanceM), label: 'distanza'),
+            _Stat(value: formatSeconds(run.durationS), label: 'tempo'),
+            _Stat(value: formatPace(run.paceSPerKm), label: 'passo /km'),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+/// Post: la foto con autore e testo.
+class PostShareCard extends StatelessWidget {
+  const PostShareCard({super.key, required this.post});
+
+  final Post post;
+
+  @override
+  Widget build(BuildContext context) {
+    final image = post.image;
+    return _CardFrame(
+      label: 'Post',
+      icon: Icons.photo_camera_rounded,
+      footer: ShareLinks.post(post.id),
+      children: [
+        Row(
+          children: [
+            UserAvatar(username: post.user.username, imageUrl: post.user.image, size: 32),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                '@${post.user.username}',
+                style: const TextStyle(fontWeight: FontWeight.w700, color: AppColors.ink),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        Expanded(
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(AppRadius.md),
+            child: SizedBox.expand(
+              child: AppImage.supports(image)
+                  ? AppImage(image!, fallback: const ColoredBox(color: AppColors.blueSoft))
+                  : const ColoredBox(color: AppColors.blueSoft),
+            ),
+          ),
+        ),
+        if (post.content.isNotEmpty) ...[
+          const SizedBox(height: 10),
+          Text(
+            post.content,
+            style: const TextStyle(fontSize: 13.5, color: AppColors.ink),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+/// La forma di un percorso o di una traccia, senza mappa sotto: le tile
+/// esterne non servono e non finiscono nell'immagine.
+class TrackShape extends StatelessWidget {
+  const TrackShape({super.key, required this.points, required this.color});
+
+  final List<LatLng> points;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) => DecoratedBox(
+    decoration: BoxDecoration(
+      color: Colors.white.withValues(alpha: 0.55),
+      borderRadius: BorderRadius.circular(AppRadius.md),
+    ),
+    child: CustomPaint(painter: _TrackPainter(points, color), size: Size.infinite),
+  );
+}
+
+class _TrackPainter extends CustomPainter {
+  _TrackPainter(this.points, this.color);
+
+  final List<LatLng> points;
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (points.length < 2) return;
+    // Proiezione equirettangolare: per qualche km va benissimo.
+    final lat0 = points.first.latitude * math.pi / 180;
+    final xs = [for (final p in points) p.longitude * math.cos(lat0)];
+    final ys = [for (final p in points) -p.latitude];
+    final minX = xs.reduce(math.min), maxX = xs.reduce(math.max);
+    final minY = ys.reduce(math.min), maxY = ys.reduce(math.max);
+    const pad = 18.0;
+    final w = math.max(maxX - minX, 1e-9), h = math.max(maxY - minY, 1e-9);
+    final scale = math.min((size.width - 2 * pad) / w, (size.height - 2 * pad) / h);
+    final dx = (size.width - w * scale) / 2, dy = (size.height - h * scale) / 2;
+    Offset at(int i) => Offset(dx + (xs[i] - minX) * scale, dy + (ys[i] - minY) * scale);
+
+    final path = Path()..moveTo(at(0).dx, at(0).dy);
+    for (var i = 1; i < points.length; i++) {
+      path.lineTo(at(i).dx, at(i).dy);
+    }
+    final stroke = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+    canvas.drawPath(
+      path,
+      stroke
+        ..color = Colors.white
+        ..strokeWidth = 9,
+    );
+    canvas.drawPath(
+      path,
+      stroke
+        ..color = color
+        ..strokeWidth = 5,
+    );
+    canvas.drawCircle(at(0), 6, Paint()..color = AppColors.mint);
+    canvas.drawCircle(at(points.length - 1), 6, Paint()..color = AppColors.ink);
+  }
+
+  @override
+  bool shouldRepaint(_TrackPainter old) => old.points != points || old.color != color;
+}
+
 const _title = TextStyle(fontSize: 26, height: 1.15, fontWeight: FontWeight.w800, color: AppColors.ink);
 const _subtitle = TextStyle(fontSize: 14, color: AppColors.inkSoft, fontWeight: FontWeight.w500);
 
@@ -261,22 +453,25 @@ class _Stat extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Expanded(
-      child: Column(
-        crossAxisAlignment: center ? CrossAxisAlignment.center : CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            height: 28,
-            child: FittedBox(
-              fit: BoxFit.scaleDown,
-              child: Text(
-                value,
-                style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: AppColors.ink),
-                maxLines: 1,
+      child: Padding(
+        padding: EdgeInsets.only(right: center ? 0 : 8),
+        child: Column(
+          crossAxisAlignment: center ? CrossAxisAlignment.center : CrossAxisAlignment.start,
+          children: [
+            SizedBox(
+              height: 28,
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  value,
+                  style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: AppColors.ink),
+                  maxLines: 1,
+                ),
               ),
             ),
-          ),
-          Text(label, style: const TextStyle(fontSize: 12, color: AppColors.muted)),
-        ],
+            Text(label, style: const TextStyle(fontSize: 12, color: AppColors.muted)),
+          ],
+        ),
       ),
     );
   }

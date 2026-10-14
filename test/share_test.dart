@@ -3,9 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gymbro_app/core/mock/mock_backend.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:latlong2/latlong.dart';
+import 'package:gymbro_app/features/share/share_actions.dart';
 import 'package:gymbro_app/features/share/share_cards.dart';
 import 'package:gymbro_app/features/share/share_links.dart';
 import 'package:gymbro_app/models/notification.dart';
+import 'package:gymbro_app/models/running.dart';
+import 'package:gymbro_app/models/social.dart';
 import 'package:gymbro_app/models/user.dart';
 import 'package:gymbro_app/models/workout.dart';
 
@@ -16,6 +20,8 @@ void main() {
     test('scheda e profilo puntano al sito', () {
       expect(ShareLinks.workout('abc'), 'https://repbirds.com/w/abc');
       expect(ShareLinks.profile('giulia.fit'), 'https://repbirds.com/u/giulia.fit');
+      expect(ShareLinks.route('r1'), 'https://repbirds.com/r/r1');
+      expect(ShareLinks.post('p1'), 'https://repbirds.com/p/p1');
     });
 
     test('la notifica di una scheda ricevuta apre la scheda', () {
@@ -125,6 +131,103 @@ void main() {
       await pump(tester, const ProfileShareCard(user: user, sessions: 42, trained: Duration(hours: 31), friends: 7));
       expect(find.text('@mousty'), findsOneWidget);
       expect(find.text('repbirds.com/u/mousty'), findsOneWidget);
+    });
+
+    const track = [LatLng(45.4642, 9.19), LatLng(45.468, 9.185), LatLng(45.4705, 9.1795), LatLng(45.466, 9.175)];
+
+    testWidgets('percorso', (tester) async {
+      const route = RunRoute(
+        id: 'r1',
+        name: 'Giro dei Navigli',
+        owner: SimpleUser(id: 'u1', username: 'mousty'),
+        waypoints: track,
+        points: track,
+        distanceM: 5230,
+        elevationGainM: 12,
+        isPublic: true,
+      );
+      await pump(tester, const RouteShareCard(route: route));
+      expect(find.text('5,23 km'), findsOneWidget);
+    });
+
+    testWidgets('corsa', (tester) async {
+      final run = RunActivity(
+        id: 'a1',
+        user: const SimpleUser(id: 'u1', username: 'mousty'),
+        distanceM: 10020,
+        durationS: 3005,
+        paceSPerKm: 300,
+        track: track,
+        startedAt: DateTime(2026, 10, 14, 7),
+      );
+      await pump(tester, RunShareCard(run: run));
+      expect(find.text("5'00\""), findsOneWidget);
+    });
+
+    testWidgets('post', (tester) async {
+      const post = Post(
+        id: 'p1',
+        user: User(id: 'u2', username: 'giulia.fit'),
+        content: 'Gambe distrutte',
+      );
+      await pump(tester, const PostShareCard(post: post));
+      expect(find.text('repbirds.com/p/p1'), findsOneWidget);
+    });
+  });
+
+  group('cose private', () {
+    Future<void> open(WidgetTester tester, Future<void> Function(BuildContext) share) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: Builder(
+              builder: (ctx) => TextButton(onPressed: () => share(ctx), child: const Text('apri')),
+            ),
+          ),
+        ),
+      );
+      await tester.tap(find.text('apri'));
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('scheda privata: solo invio dentro l\'app', (tester) async {
+      const w = Workout(
+        id: 'w2',
+        name: 'Leg day',
+        user: SimpleUser(id: 'u1', username: 'mousty'),
+      );
+      await open(tester, (ctx) => shareWorkout(ctx, w, mine: true));
+      expect(find.textContaining('La scheda è privata'), findsOneWidget);
+      expect(find.text('Invia ad amici o gruppi'), findsOneWidget);
+      expect(find.text('WhatsApp, Instagram e altre app'), findsNothing);
+      expect(find.text('Copia link'), findsNothing);
+    });
+
+    testWidgets('scheda pubblica: anche fuori dall\'app', (tester) async {
+      const w = Workout(
+        id: 'w1',
+        name: 'Push day',
+        isPublic: true,
+        user: SimpleUser(id: 'u1', username: 'mousty'),
+      );
+      await open(tester, (ctx) => shareWorkout(ctx, w, mine: true));
+      expect(find.text('WhatsApp, Instagram e altre app'), findsOneWidget);
+      expect(find.text('Copia link'), findsOneWidget);
+    });
+
+    testWidgets('percorso privato: solo GPX', (tester) async {
+      const route = RunRoute(
+        id: 'r2',
+        name: 'Segreto',
+        owner: SimpleUser(id: 'u1', username: 'mousty'),
+        waypoints: [],
+        points: [],
+        distanceM: 1000,
+      );
+      await open(tester, (ctx) => shareRoute(ctx, route, loadGpx: () async => ''));
+      expect(find.textContaining('Il percorso è privato'), findsOneWidget);
+      expect(find.text('Esporta GPX (Strava, Garmin…)'), findsOneWidget);
+      expect(find.text('Copia link'), findsNothing);
     });
   });
 }

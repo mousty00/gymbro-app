@@ -255,8 +255,8 @@ Upload `build/app/outputs/bundle/release/app-release.aab` in Play Console → **
 
 ## Shared links (repbirds.com)
 
-Sharing a workout or a profile outside the app sends a summary image plus a link:
-`https://repbirds.com/w/<workout id>` and `https://repbirds.com/u/<username>` (change the domain
+Sharing something public outside the app sends a summary image plus a link:
+`https://repbirds.com/w/<workout id>`, `/u/<username>`, `/r/<route id>` and `/p/<post id>` (change the domain
 with `--dart-define=WEB_BASE_URL=...`). When the app is installed the phone opens it straight on
 that screen; otherwise the browser opens the page. Two files on the website make that work, and a
 page at those paths is what people without the app see (a short "Get RepBirds" page with the
@@ -271,7 +271,7 @@ store links is enough).
     "details": [
       {
         "appIDs": ["XYTKZ77M3V.com.mousty.repbirds"],
-        "components": [{ "/": "/w/*" }, { "/": "/u/*" }]
+        "components": [{ "/": "/w/*" }, { "/": "/u/*" }, { "/": "/r/*" }, { "/": "/p/*" }]
       }
     ]
   }

@@ -14,7 +14,7 @@ import '../../data/running_repository.dart';
 import '../../models/running.dart';
 import '../auth/session.dart';
 import 'geo.dart';
-import 'gpx_share.dart';
+import '../share/share_actions.dart';
 import 'route_map.dart';
 
 class RunDetailScreen extends ConsumerWidget {
@@ -41,13 +41,11 @@ class RunDetailScreen extends ConsumerWidget {
                   TopBar(
                     title: '',
                     actions: [
-                      Builder(
-                        builder: (ctx) => CircleIconButton(
-                          icon: Icons.ios_share_rounded,
-                          size: 44,
-                          tooltip: 'Esporta GPX',
-                          onTap: () => shareGpx(ctx, () => repo.runGpx(run.id), gpxFileName('${run.title} ${formatDate(run.startedAt)}')),
-                        ),
+                      CircleIconButton(
+                        icon: Icons.ios_share_rounded,
+                        size: 44,
+                        tooltip: 'Condividi',
+                        onTap: () => shareRun(context, run, mine: mine, loadGpx: () => repo.runGpx(run.id)),
                       ),
                       if (mine)
                         CircleIconButton(

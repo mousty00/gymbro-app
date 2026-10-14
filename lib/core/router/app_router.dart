@@ -42,7 +42,9 @@ final _rootKey = GlobalKey<NavigatorState>();
 String? _pendingLocation;
 
 /// Pagine raggiungibili dai link condivisi (vedi ShareLinks).
-bool _isSharedLink(String loc) => loc.startsWith('/w/') || loc.startsWith('/workout/') || loc.startsWith('/u/');
+bool _isSharedLink(String loc) => [
+      '/w/', '/workout/', '/u/', '/r/', '/running/route/', '/p/', '/posts/' //
+    ].any(loc.startsWith);
 
 final routerProvider = Provider<GoRouter>((ref) {
   final refresh = ValueNotifier<int>(0);
@@ -216,6 +218,8 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       // Link condivisi fuori dall'app (https://repbirds.com/w/<id>, vedi ShareLinks).
       GoRoute(path: '/w/:id', redirect: (_, s) => '/workout/${s.pathParameters['id']}'),
+      GoRoute(path: '/r/:id', redirect: (_, s) => '/running/route/${s.pathParameters['id']}'),
+      GoRoute(path: '/p/:id', redirect: (_, s) => '/posts/${s.pathParameters['id']}'),
     ],
   );
 });

@@ -13,7 +13,7 @@ import '../../data/running_repository.dart';
 import '../../models/running.dart';
 import '../auth/session.dart';
 import 'geo.dart';
-import 'gpx_share.dart';
+import '../share/share_actions.dart';
 import 'route_map.dart';
 
 class RouteDetailScreen extends ConsumerStatefulWidget {
@@ -81,13 +81,12 @@ class _RouteDetailScreenState extends ConsumerState<RouteDetailScreen> {
                   TopBar(
                     title: '',
                     actions: [
-                      Builder(
-                        builder: (ctx) => CircleIconButton(
-                          icon: Icons.ios_share_rounded,
-                          size: 44,
-                          tooltip: 'Esporta GPX',
-                          onTap: () => shareGpx(ctx, () => ref.read(runningRepositoryProvider).routeGpx(route.id), gpxFileName(route.name)),
-                        ),
+                      CircleIconButton(
+                        icon: Icons.ios_share_rounded,
+                        size: 44,
+                        tooltip: 'Condividi',
+                        onTap: () => shareRoute(context, route,
+                            loadGpx: () => ref.read(runningRepositoryProvider).routeGpx(route.id)),
                       ),
                       if (mine) ...[
                         CircleIconButton(

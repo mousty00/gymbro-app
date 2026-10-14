@@ -13,30 +13,57 @@ import 'share_cards.dart';
 
 /// Cosa condividere: l'immagine riepilogo ([card]), il testo e il link che la
 /// accompagnano, e quali strade offrire oltre al foglio di sistema.
+///
+/// Fuori dall'app (altre app, link, feed) si condivide solo quello che è
+/// pubblico: per una cosa privata [privateHint] spiega perché e restano solo
+/// [onSendInApp] e [extraActions].
 class ShareContent {
   const ShareContent({
     required this.card,
     required this.message,
-    required this.link,
     required this.fileName,
+    this.link,
+    this.privateHint,
     this.onSendInApp,
     this.allowFeed = true,
+    this.extraActions = const [],
   });
 
   final Widget card;
 
   /// Testo che accompagna immagine e link (chat, post).
   final String message;
-  final String link;
+
+  /// Link da aprire (scheda, profilo, percorso, post); null se non c'è una
+  /// pagina pubblica da aprire, es. una corsa: si condivide solo l'immagine.
+  final String? link;
 
   /// Nome del file immagine, senza estensione.
   final String fileName;
+
+  /// Se presente la cosa è privata: niente condivisione fuori dall'app.
+  final String? privateHint;
 
   /// Se presente, mostra "Invia ad amici o gruppi".
   final void Function(BuildContext context)? onSendInApp;
 
   /// Mostra "Pubblica nel feed" (un post con l'immagine riepilogo).
   final bool allowFeed;
+
+  /// Altre azioni in fondo, es. "Esporta GPX".
+  final List<ShareAction> extraActions;
+
+  bool get outside => privateHint == null;
+}
+
+/// Un'azione in più del foglio Condividi. [onTap] riceve il context del foglio
+/// (per posizionare il foglio di sistema su iPad).
+class ShareAction {
+  const ShareAction({required this.icon, required this.label, required this.onTap});
+
+  final IconData icon;
+  final String label;
+  final Future<void> Function(BuildContext context) onTap;
 }
 
 /// Foglio "Condividi": anteprima dell'immagine e le azioni possibili.
@@ -82,7 +109,7 @@ class _ShareSheetState extends State<_ShareSheet> {
       final png = await _capture();
       await SharePlus.instance.share(
         ShareParams(
-          text: '${c.message}\n${c.link}',
+          text: c.link == null ? c.message : '${c.message}\n${c.link}',
           subject: c.message,
           files: [XFile.fromData(png, mimeType: 'image/png')],
           fileNameOverrides: ['${c.fileName}.png'],
@@ -114,7 +141,7 @@ class _ShareSheetState extends State<_ShareSheet> {
   }
 
   Future<void> _copyLink() async {
-    await Clipboard.setData(ClipboardData(text: c.link));
+    await Clipboard.setData(ClipboardData(text: c.link!));
     if (mounted) showMessage(context, 'Link copiato');
   }
 
@@ -144,33 +171,50 @@ class _ShareSheetState extends State<_ShareSheet> {
             const SizedBox(height: 14),
             Text('Condividi', style: Theme.of(context).textTheme.titleLarge),
             const SizedBox(height: 14),
-            Center(
-              child: ConstrainedBox(
-                constraints: BoxConstraints(maxHeight: MediaQuery.sizeOf(context).height * 0.42),
-                child: AspectRatio(
-                  aspectRatio: shareCardSize.width / shareCardSize.height,
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(AppRadius.lg),
-                      boxShadow: AppShadows.float,
-                    ),
-                    child: FittedBox(
-                      child: RepaintBoundary(key: _boundary, child: c.card),
+            if (c.outside) ...[
+              Center(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(maxHeight: MediaQuery.sizeOf(context).height * 0.42),
+                  child: AspectRatio(
+                    aspectRatio: shareCardSize.width / shareCardSize.height,
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(AppRadius.lg),
+                        boxShadow: AppShadows.float,
+                      ),
+                      child: FittedBox(
+                        child: RepaintBoundary(key: _boundary, child: c.card),
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
-            const SizedBox(height: 18),
-            Builder(
-              builder: (buttonContext) => PrimaryButton(
-                label: 'WhatsApp, Instagram e altre app',
-                icon: Icons.ios_share_rounded,
-                loading: _busy,
-                onPressed: () => _shareOutside(buttonContext),
+              const SizedBox(height: 18),
+              Builder(
+                builder: (buttonContext) => PrimaryButton(
+                  label: 'WhatsApp, Instagram e altre app',
+                  icon: Icons.ios_share_rounded,
+                  loading: _busy,
+                  onPressed: () => _shareOutside(buttonContext),
+                ),
               ),
-            ),
-            const SizedBox(height: 8),
+              const SizedBox(height: 8),
+            ] else ...[
+              SoftCard(
+                color: AppColors.lilacSoft,
+                padding: const EdgeInsets.all(14),
+                child: Row(
+                  children: [
+                    const Icon(Icons.lock_outline_rounded, color: AppColors.lilac),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(c.privateHint!, style: const TextStyle(color: AppColors.inkSoft)),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 12),
+            ],
             SoftCard(
               padding: const EdgeInsets.symmetric(vertical: 4),
               child: Column(
@@ -182,14 +226,24 @@ class _ShareSheetState extends State<_ShareSheet> {
                       label: 'Invia ad amici o gruppi',
                       onTap: _busy ? null : _sendInApp,
                     ),
-                  if (c.allowFeed)
+                  if (c.outside && c.allowFeed)
                     _Action(
                       icon: Icons.dynamic_feed_rounded,
                       color: AppColors.pink,
                       label: 'Pubblica nel feed',
                       onTap: _busy ? null : _postToFeed,
                     ),
-                  _Action(icon: Icons.link_rounded, color: AppColors.mint, label: 'Copia link', onTap: _copyLink),
+                  if (c.outside && c.link != null)
+                    _Action(icon: Icons.link_rounded, color: AppColors.mint, label: 'Copia link', onTap: _copyLink),
+                  for (final a in c.extraActions)
+                    Builder(
+                      builder: (actionContext) => _Action(
+                        icon: a.icon,
+                        color: AppColors.inkSoft,
+                        label: a.label,
+                        onTap: _busy ? null : () => a.onTap(actionContext),
+                      ),
+                    ),
                 ],
               ),
             ),

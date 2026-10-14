@@ -14,6 +14,12 @@ class ShareLinks {
   /// `/w/<id>`: apre la scheda.
   static String workout(String id) => '$webBaseUrl/w/$id';
 
+  /// `/r/<id>`: apre il percorso di corsa (pubblico: lo vedono gli amici dell'autore).
+  static String route(String id) => '$webBaseUrl/r/$id';
+
+  /// `/p/<id>`: apre il post.
+  static String post(String id) => '$webBaseUrl/p/$id';
+
   /// `/u/<username>`: apre il profilo.
   static String profile(String username) => '$webBaseUrl/u/${Uri.encodeComponent(username)}';
 }
