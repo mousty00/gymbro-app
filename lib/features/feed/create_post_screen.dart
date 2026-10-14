@@ -12,18 +12,29 @@ import '../../data/providers.dart';
 import '../../data/social_repository.dart';
 import '../auth/session.dart';
 
+/// Post già preparato, es. dall'immagine riepilogo di un allenamento condiviso.
+class PostDraft {
+  const PostDraft({required this.imageBytes, required this.imageName, this.text = ''});
+
+  final Uint8List imageBytes;
+  final String imageName;
+  final String text;
+}
+
 /// Nuovo post: foto (obbligatoria per il backend) + testo.
 class CreatePostScreen extends ConsumerStatefulWidget {
-  const CreatePostScreen({super.key});
+  const CreatePostScreen({super.key, this.draft});
+
+  final PostDraft? draft;
 
   @override
   ConsumerState<CreatePostScreen> createState() => _CreatePostScreenState();
 }
 
 class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
-  final _text = TextEditingController();
-  Uint8List? _bytes;
-  String _filename = 'post.jpg';
+  late final _text = TextEditingController(text: widget.draft?.text);
+  late Uint8List? _bytes = widget.draft?.imageBytes;
+  late String _filename = widget.draft?.imageName ?? 'post.jpg';
   bool _loading = false;
 
   @override

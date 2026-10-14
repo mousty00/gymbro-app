@@ -11,6 +11,7 @@ import '../../data/providers.dart';
 import '../../models/social.dart';
 import '../../models/user.dart';
 import '../auth/session.dart';
+import '../share/share_actions.dart';
 import 'friends_screen.dart';
 import '../../core/widgets/skeleton.dart';
 
@@ -39,7 +40,18 @@ class UserProfileScreen extends ConsumerWidget {
         child: SafeArea(
           child: Column(
             children: [
-              const TopBar(title: ''),
+              TopBar(
+                title: '',
+                actions: [
+                  if (user.value != null)
+                    CircleIconButton(
+                      icon: Icons.ios_share_rounded,
+                      size: 44,
+                      tooltip: 'Condividi profilo',
+                      onTap: () => shareProfile(context, user.value!),
+                    ),
+                ],
+              ),
               Expanded(
                 child: AsyncView<User>(
                   value: user,

@@ -12,6 +12,7 @@ enum NotificationKind {
   runInvite('RUN_INVITE'),
   runInviteAccepted('RUN_INVITE_ACCEPTED'),
   routeSaved('ROUTE_SAVED'),
+  workoutShared('WORKOUT_SHARED'),
   unknown('');
 
   const NotificationKind(this.wire);
@@ -64,6 +65,7 @@ class AppNotification {
         NotificationKind.runInvite => 'ti ha invitato a correre${detail != null ? ': $detail' : ''}',
         NotificationKind.runInviteAccepted => 'parteciperà${detail != null ? ' a $detail' : ' alla tua corsa'}',
         NotificationKind.routeSaved => 'ha salvato il tuo percorso${detail != null ? ' $detail' : ''}',
+        NotificationKind.workoutShared => 'ti ha mandato la scheda${detail != null ? ' $detail' : ''}',
         NotificationKind.unknown => 'ha interagito con te',
       };
 
@@ -82,6 +84,8 @@ class AppNotification {
         return referenceId != null ? '/running/event/$referenceId' : '/running?tab=2';
       case NotificationKind.routeSaved:
         return referenceId != null ? '/running/route/$referenceId' : '/running';
+      case NotificationKind.workoutShared:
+        return referenceId != null ? '/workout/$referenceId' : null;
       case NotificationKind.friendAccepted:
         return actorUsername != null ? '/u/$actorUsername' : '/friends';
       case NotificationKind.friendRequest:

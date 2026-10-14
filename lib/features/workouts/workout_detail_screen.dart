@@ -11,6 +11,7 @@ import '../../data/providers.dart';
 import '../../data/workout_repository.dart';
 import '../../models/workout.dart';
 import '../auth/session.dart';
+import '../share/share_actions.dart';
 import 'exercise_picker.dart';
 import '../../core/widgets/skeleton.dart';
 
@@ -92,6 +93,12 @@ class WorkoutDetailScreen extends ConsumerWidget {
                   TopBar(
                     title: '',
                     actions: [
+                      CircleIconButton(
+                        icon: Icons.ios_share_rounded,
+                        size: 44,
+                        tooltip: 'Condividi',
+                        onTap: () => shareWorkout(context, w, mine: mine),
+                      ),
                       if (mine) ...[
                         CircleIconButton(
                           icon: Icons.edit_rounded,

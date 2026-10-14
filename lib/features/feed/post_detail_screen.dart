@@ -13,6 +13,7 @@ import '../../models/social.dart';
 import '../auth/session.dart';
 import 'post_card.dart';
 import '../../core/widgets/skeleton.dart';
+import '../share/share_actions.dart';
 
 class PostDetailScreen extends ConsumerStatefulWidget {
   const PostDetailScreen({super.key, required this.postId});
@@ -118,6 +119,13 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
             TopBar(
               title: 'Post',
               actions: [
+                if (post.value != null)
+                  CircleIconButton(
+                    icon: Icons.ios_share_rounded,
+                    size: 44,
+                    tooltip: 'Condividi',
+                    onTap: () => sharePost(context, post.value!),
+                  ),
                 if (isMine)
                   PopupMenuButton<String>(
                     icon: const Icon(Icons.more_horiz_rounded),

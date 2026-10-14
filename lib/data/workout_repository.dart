@@ -33,6 +33,14 @@ class WorkoutRepository {
 
   Future<void> delete(String id) => _api.delete<dynamic>('/workouts/delete/$id');
 
+  /// Manda la scheda ad amici e/o a tutti i membri dei gruppi indicati: ricevono
+  /// una notifica e possono aprirla anche se è privata. Restituisce quante
+  /// persone l'hanno ricevuta.
+  Future<int> share(String id, {List<String> usernames = const [], List<String> groupIds = const []}) async {
+    final res = await _api.post<Json>('/workouts/$id/share', data: {'usernames': usernames, 'groupIds': groupIds});
+    return parseInt(res['recipients']);
+  }
+
   // Esercizi della scheda
 
   Future<void> addExercise(WorkoutExerciseInput input) =>

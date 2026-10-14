@@ -38,6 +38,14 @@ import '../../models/workout.dart';
 
 final _rootKey = GlobalKey<NavigatorState>();
 
+/// Dove andare dopo splash o login, se l'app è stata aperta da un link.
+String? _pendingLocation;
+
+/// Pagine raggiungibili dai link condivisi (vedi ShareLinks).
+bool _isSharedLink(String loc) => [
+      '/w/', '/workout/', '/u/', '/r/', '/running/route/', '/p/', '/posts/' //
+    ].any(loc.startsWith);
+
 final routerProvider = Provider<GoRouter>((ref) {
   final refresh = ValueNotifier<int>(0);
   ref.listen(sessionProvider, (_, _) => refresh.value++);
@@ -52,11 +60,23 @@ final routerProvider = Provider<GoRouter>((ref) {
       final loc = state.matchedLocation;
       final onPublic = loc == '/welcome' || loc.startsWith('/auth');
 
-      if (!session.hasValue) return loc == '/splash' ? null : '/splash';
+      // Un link aperto da fuori (scheda, profilo) prima che la sessione sia
+      // pronta o prima del login: ci si torna appena si entra.
+      if (!session.hasValue) {
+        if (_isSharedLink(loc)) _pendingLocation = state.uri.toString();
+        return loc == '/splash' ? null : '/splash';
+      }
 
       final user = session.value;
-      if (user == null) return onPublic ? null : '/welcome';
-      if (onPublic || loc == '/splash') return '/home';
+      if (user == null) {
+        if (_isSharedLink(loc)) _pendingLocation = state.uri.toString();
+        return onPublic ? null : '/welcome';
+      }
+      if (onPublic || loc == '/splash') {
+        final next = _pendingLocation;
+        _pendingLocation = null;
+        return next ?? '/home';
+      }
       return null;
     },
     routes: [
@@ -97,7 +117,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         parentNavigatorKey: _rootKey,
         path: '/posts/new',
-        builder: (_, _) => const CreatePostScreen(),
+        builder: (_, s) => CreatePostScreen(draft: s.extra as PostDraft?),
       ),
       GoRoute(
         parentNavigatorKey: _rootKey,
@@ -205,6 +225,10 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/u/:username',
         builder: (_, s) => UserProfileScreen(username: s.pathParameters['username']!),
       ),
+      // Link condivisi fuori dall'app (https://repbirds.com/w/<id>, vedi ShareLinks).
+      GoRoute(path: '/w/:id', redirect: (_, s) => '/workout/${s.pathParameters['id']}'),
+      GoRoute(path: '/r/:id', redirect: (_, s) => '/running/route/${s.pathParameters['id']}'),
+      GoRoute(path: '/p/:id', redirect: (_, s) => '/posts/${s.pathParameters['id']}'),
     ],
   );
 });
