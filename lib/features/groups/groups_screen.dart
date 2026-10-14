@@ -119,7 +119,7 @@ class GroupCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final members = [group.createdBy.username, ...group.acceptedMembers.map((m) => m.user.username)];
+    final members = [group.createdBy, ...group.acceptedMembers.map((m) => m.user)];
     final past = group.scheduledFor != null && !group.isUpcoming;
     return SoftCard(
       color: _bgs[index % _bgs.length],
@@ -153,7 +153,7 @@ class GroupCard extends StatelessWidget {
           const SizedBox(height: 14),
           Row(
             children: [
-              Expanded(child: AvatarStack(usernames: members, size: 32)),
+              Expanded(child: AvatarStack(users: members, size: 32)),
               Text('${members.length} ${members.length == 1 ? 'persona' : 'persone'}',
                   style: const TextStyle(fontWeight: FontWeight.w600, color: AppColors.inkSoft, fontSize: 13)),
             ],

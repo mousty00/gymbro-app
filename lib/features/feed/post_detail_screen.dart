@@ -186,7 +186,7 @@ class _CommentTile extends StatelessWidget {
         children: [
           GestureDetector(
             onTap: () => context.push('/u/${comment.username}'),
-            child: UserAvatar(username: comment.username, size: 36),
+            child: UserAvatar(username: comment.username, imageUrl: comment.userImage, size: 36),
           ),
           const SizedBox(width: 10),
           Expanded(

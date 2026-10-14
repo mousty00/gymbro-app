@@ -8,6 +8,7 @@ import '../../core/widgets/backgrounds.dart';
 import '../../core/widgets/ui.dart';
 import '../../data/providers.dart';
 import '../../models/group.dart';
+import '../../models/user.dart';
 import '../../models/workout.dart';
 import '../auth/session.dart';
 import '../feed/post_card.dart';
@@ -592,7 +593,7 @@ class _UpcomingGroups extends ConsumerWidget {
                       const SizedBox(height: 2),
                       Text(g.workoutName, style: const TextStyle(color: AppColors.inkSoft, fontSize: 13)),
                       const SizedBox(height: 8),
-                      AvatarStack(usernames: [g.createdBy.username, ...g.acceptedMembers.map((m) => m.user.username)]),
+                      AvatarStack(users: [g.createdBy, ...g.acceptedMembers.map((m) => m.user)]),
                     ],
                   ),
                 ),
@@ -608,15 +609,15 @@ class _UpcomingGroups extends ConsumerWidget {
 
 /// Avatar sovrapposti (max 4 + contatore).
 class AvatarStack extends StatelessWidget {
-  const AvatarStack({super.key, required this.usernames, this.size = 28});
+  const AvatarStack({super.key, required this.users, this.size = 28});
 
-  final List<String> usernames;
+  final List<SimpleUser> users;
   final double size;
 
   @override
   Widget build(BuildContext context) {
-    final shown = usernames.take(4).toList();
-    final extra = usernames.length - shown.length;
+    final shown = users.take(4).toList();
+    final extra = users.length - shown.length;
     return SizedBox(
       height: size,
       child: Stack(
@@ -626,7 +627,7 @@ class AvatarStack extends StatelessWidget {
               left: i * size * 0.65,
               child: Container(
                 decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: Colors.white, width: 2)),
-                child: UserAvatar(username: shown[i], size: size - 4),
+                child: UserAvatar(username: shown[i].username, imageUrl: shown[i].image, size: size - 4),
               ),
             ),
           if (extra > 0)
