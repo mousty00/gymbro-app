@@ -104,6 +104,10 @@ class FriendshipRepository {
   Future<void> reject(String id) => _api.get<dynamic>('/friendship/reject/$id');
 
   Future<void> block(String id) => _api.get<dynamic>('/friendship/block/$id');
+
+  /// Blocca chiunque, amico o no: post, commenti e notifiche spariscono in entrambe le direzioni.
+  Future<void> blockUser(String username) =>
+      _api.post<dynamic>('/friendship/block-user', query: {'username': username});
 }
 
 final postRepositoryProvider =

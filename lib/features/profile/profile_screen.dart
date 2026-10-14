@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/config/env.dart';
 import '../../core/network/api_exception.dart';
@@ -16,6 +17,7 @@ import '../../models/social.dart';
 import '../auth/session.dart';
 import '../friends/user_profile_screen.dart';
 import '../share/share_actions.dart';
+import '../share/share_links.dart';
 import '../shell/app_shell.dart';
 import '../../core/widgets/skeleton.dart';
 
@@ -107,6 +109,18 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         color: AppColors.mint,
                         label: 'Libreria esercizi',
                         onTap: () => go(() => context.push('/exercises')),
+                      ),
+                      _MenuRow(
+                        icon: Icons.privacy_tip_outlined,
+                        color: AppColors.blue,
+                        label: 'Privacy policy',
+                        onTap: () => go(() => launchUrl(Uri.parse(ShareLinks.privacy))),
+                      ),
+                      _MenuRow(
+                        icon: Icons.description_outlined,
+                        color: AppColors.inkSoft,
+                        label: 'Termini di servizio',
+                        onTap: () => go(() => launchUrl(Uri.parse(ShareLinks.terms))),
                       ),
                       _MenuRow(
                         icon: Icons.logout_rounded,

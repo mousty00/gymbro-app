@@ -29,6 +29,10 @@ class UserRepository {
   }
 
   Future<void> deleteMe() => _api.delete<dynamic>('/users/me');
+
+  /// `type`: POST, COMMENT o USER. Le segnalazioni arrivano via mail al moderatore.
+  Future<void> report({required String type, required String targetId, String? reason}) =>
+      _api.post<dynamic>('/reports', data: {'type': type, 'targetId': targetId, 'reason': reason});
 }
 
 final userRepositoryProvider =

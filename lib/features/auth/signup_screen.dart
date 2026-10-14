@@ -1,11 +1,15 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/network/api_exception.dart';
+import '../../core/theme/app_theme.dart';
 import '../../core/utils/formatters.dart';
 import '../../core/widgets/ui.dart';
 import '../../data/auth_repository.dart';
+import '../share/share_links.dart';
 import 'auth_widgets.dart';
 
 class SignupScreen extends ConsumerStatefulWidget {
@@ -39,9 +43,10 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
     final now = DateTime.now();
     final picked = await showDatePicker(
       context: context,
-      initialDate: _birthDate ?? DateTime(now.year - 20),
+      initialDate: _birthDate ?? DateTime(now.year - 20, now.month, now.day),
       firstDate: DateTime(1920),
-      lastDate: now.subtract(const Duration(days: 1)),
+      // età minima 14 anni (consenso digitale in Italia), la controlla anche il backend
+      lastDate: DateTime(now.year - 14, now.month, now.day),
       helpText: 'Data di nascita',
     );
     if (picked != null) {
@@ -158,8 +163,28 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
           ),
         ),
         const SizedBox(height: 8),
+        Text.rich(
+          TextSpan(
+            text: 'Creando un account accetti i ',
+            children: [
+              _link('Termini di servizio', ShareLinks.terms),
+              const TextSpan(text: ' e la '),
+              _link('Privacy policy', ShareLinks.privacy),
+              const TextSpan(text: '. Niente contenuti offensivi: chi li pubblica viene rimosso.'),
+            ],
+          ),
+          textAlign: TextAlign.center,
+          style: const TextStyle(color: AppColors.muted, fontSize: 12, height: 1.4),
+        ),
+        const SizedBox(height: 12),
         PrimaryButton(label: 'Crea account', loading: _loading, onPressed: _submit),
       ],
     );
   }
 }
+
+TextSpan _link(String text, String url) => TextSpan(
+      text: text,
+      style: const TextStyle(color: AppColors.blue, fontWeight: FontWeight.w600),
+      recognizer: TapGestureRecognizer()..onTap = () => launchUrl(Uri.parse(url)),
+    );

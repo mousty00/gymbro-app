@@ -11,6 +11,7 @@ import '../../data/providers.dart';
 import '../../models/social.dart';
 import '../../models/user.dart';
 import '../auth/session.dart';
+import '../feed/moderation.dart';
 import '../share/share_actions.dart';
 import 'friends_screen.dart';
 import '../../core/widgets/skeleton.dart';
@@ -49,6 +50,13 @@ class UserProfileScreen extends ConsumerWidget {
                       size: 44,
                       tooltip: 'Condividi profilo',
                       onTap: () => shareProfile(context, user.value!),
+                    ),
+                  if (user.value != null && username != me.username)
+                    ModerationMenu(
+                      type: 'USER',
+                      targetId: user.value!.id,
+                      username: username,
+                      onBlocked: () => context.canPop() ? context.pop() : null,
                     ),
                 ],
               ),

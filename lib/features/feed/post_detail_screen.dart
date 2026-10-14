@@ -11,6 +11,7 @@ import '../../data/providers.dart';
 import '../../data/social_repository.dart';
 import '../../models/social.dart';
 import '../auth/session.dart';
+import 'moderation.dart';
 import 'post_card.dart';
 import '../../core/widgets/skeleton.dart';
 import '../share/share_actions.dart';
@@ -136,6 +137,13 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                       PopupMenuItem(value: 'edit', child: Text('Modifica')),
                       PopupMenuItem(value: 'delete', child: Text('Elimina', style: TextStyle(color: AppColors.danger))),
                     ],
+                  )
+                else if (post.value != null)
+                  ModerationMenu(
+                    type: 'POST',
+                    targetId: post.value!.id,
+                    username: post.value!.user.username,
+                    onBlocked: () => context.canPop() ? context.pop() : null,
                   ),
               ],
             ),
@@ -164,6 +172,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                           // il backend lascia eliminare un commento solo a chi l'ha scritto
                           canDelete: c.username == me.username,
                           onDelete: () => _deleteComment(c),
+                          onBlocked: () => ref.invalidate(postProvider(widget.postId)),
                         ),
                     ],
                   );
@@ -179,11 +188,12 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
 }
 
 class _CommentTile extends StatelessWidget {
-  const _CommentTile({required this.comment, required this.canDelete, required this.onDelete});
+  const _CommentTile({required this.comment, required this.canDelete, required this.onDelete, required this.onBlocked});
 
   final SimpleComment comment;
   final bool canDelete;
   final VoidCallback onDelete;
+  final VoidCallback onBlocked;
 
   @override
   Widget build(BuildContext context) {
@@ -224,6 +234,14 @@ class _CommentTile extends StatelessWidget {
                           GestureDetector(
                             onTap: onDelete,
                             child: const Icon(Icons.close_rounded, size: 16, color: AppColors.muted),
+                          )
+                        else
+                          ModerationMenu(
+                            type: 'COMMENT',
+                            targetId: comment.id,
+                            username: comment.username,
+                            onBlocked: onBlocked,
+                            small: true,
                           ),
                       ],
                     ),

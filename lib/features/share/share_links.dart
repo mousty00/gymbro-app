@@ -22,4 +22,8 @@ class ShareLinks {
 
   /// `/u/<username>`: apre il profilo.
   static String profile(String username) => '$webBaseUrl/u/${Uri.encodeComponent(username)}';
+
+  /// Pagine legali sul sito (non sono App/Universal Links: si aprono nel browser).
+  static String get privacy => '$webBaseUrl/privacy';
+  static String get terms => '$webBaseUrl/terms';
 }

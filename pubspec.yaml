@@ -1,7 +1,7 @@
 name: gymbro_app
 description: "RepBirds: allenati da solo o in gruppo. Client Flutter per gymbro-api."
 publish_to: 'none'
-version: 1.0.0+5TEST
+version: 1.0.0+6TEST
 
 environment:
   sdk: ^3.9.0
@@ -22,6 +22,7 @@ dependencies:
   latlong2: ^0.10.1
   geolocator: ^14.1.1
   share_plus: ^13.3.1
+  url_launcher: ^6.3.3
 
 dev_dependencies:
   flutter_test:

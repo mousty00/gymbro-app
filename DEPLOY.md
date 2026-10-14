@@ -115,9 +115,8 @@ On the app's version page fill in:
   currently supports iPad orientations in `Info.plist`, so App Store Connect will ask for iPad
   screenshots too unless you remove iPad from the target's supported destinations.
 - Description, keywords, support URL, **privacy policy URL** (required).
-- **App Privacy**: the app collects email, username, photos, workout data, **precise location**
-  (only while recording a run, saved as the run's track) and a device push token, all linked to
-  the user and not used for tracking.
+- **App Privacy**: answers in [STORE_PRIVACY.md](STORE_PRIVACY.md), matching
+  `ios/Runner/PrivacyInfo.xcprivacy`. Privacy policy: `https://repbirds.com/privacy`.
 - **Location in background**: the app declares the `location` background mode so a run keeps
   recording with the screen off. It only asks for "While Using" permission and starts updates
   from a visible screen, with the blue indicator on. In the review notes, say: "Location is used
@@ -132,9 +131,9 @@ On the app's version page fill in:
 Review notes worth knowing before you submit:
 
 - Account deletion (guideline 5.1.1(v)) is in the app (Profile), good.
-- User-generated content (guideline 1.2) needs a way to **block** users (present) and to
-  **report** objectionable posts or comments, plus a contact for reports. There's no report
-  button yet; expect a rejection until there is one.
+- User-generated content (guideline 1.2): **Report** and **Block** are in the "…" menu of posts,
+  comments and profiles; reports are emailed to `APP_REPORTS_EMAIL` on the API. Terms with zero
+  tolerance are accepted at signup.
 
 ## 3. Android and Google Play
 
@@ -221,8 +220,7 @@ Free. Then work through **Dashboard → Set up your app**:
 - Ads: no.
 - Content rating questionnaire (mention user-generated content).
 - Target audience.
-- **Data safety**: email, username, photos, fitness data, **precise location** (run tracks),
-  device id (push token); collected, encrypted in transit, not shared, deletable by the user.
+- **Data safety**: answers in [STORE_PRIVACY.md](STORE_PRIVACY.md).
 - **Location / foreground service**: the app uses a `location` foreground service (from
   geolocator) only while a run is recording, with a persistent notification. Play Console asks
   you to declare `FOREGROUND_SERVICE_LOCATION` under **App content → Foreground service
@@ -230,8 +228,7 @@ Free. Then work through **Dashboard → Set up your app**:
   run. No `ACCESS_BACKGROUND_LOCATION` is requested, so there's no background location
   declaration.
 - **Account deletion**: Play also asks for a **web link** where users can request deletion
-  without the app. In-app deletion alone isn't enough; a simple page with a contact form or
-  email address works.
+  without the app: `https://repbirds.com/delete-account`.
 - Store listing: short and full description, 512 × 512 icon, 1024 × 500 feature graphic, at
   least 2 phone screenshots.
 
@@ -311,10 +308,10 @@ online the links still work as web links, and Android asks which app to open the
 - [ ] `ROUTING_ORS_API_KEY` set on the API, so routes follow the streets
 - [ ] Android: signed with the upload key, `google-services.json` in `android/app/`
 - [ ] iOS: Push Notifications capability on, `ITSAppUsesNonExemptEncryption` set
-- [ ] Privacy policy URL and (for Play) account-deletion URL online
+- [ ] `/privacy`, `/terms`, `/delete-account` online on repbirds.com, placeholders filled (see STORE_PRIVACY.md)
 - [ ] `apple-app-site-association` and `assetlinks.json` online on repbirds.com (shared links)
 - [ ] Demo account for reviewers, with some data in it
-- [ ] Report button for posts and comments (App Store guideline 1.2)
+- [ ] `APP_REPORTS_EMAIL` set on the API and the inbox read daily (reports within 24h)
 - [ ] Tested the release build on a real device: login, push received, photo upload
 
 ## CI
