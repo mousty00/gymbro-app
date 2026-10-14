@@ -77,13 +77,13 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (_, _, shell) => AppShell(shell: shell),
         branches: [
           StatefulShellBranch(routes: [GoRoute(path: '/home', builder: (_, _) => const HomeScreen())]),
-          StatefulShellBranch(routes: [GoRoute(path: '/feed', builder: (_, _) => const FeedScreen())]),
-          StatefulShellBranch(routes: [GoRoute(path: '/workouts', builder: (_, _) => const WorkoutsScreen())]),
-          StatefulShellBranch(routes: [GoRoute(path: '/groups', builder: (_, _) => const GroupsScreen())]),
+          StatefulShellBranch(routes: [GoRoute(path: '/feed', builder: (_, _) => const BackToHome(child: FeedScreen()))]),
+          StatefulShellBranch(routes: [GoRoute(path: '/workouts', builder: (_, _) => const BackToHome(child: WorkoutsScreen()))]),
+          StatefulShellBranch(routes: [GoRoute(path: '/groups', builder: (_, _) => const BackToHome(child: GroupsScreen()))]),
           StatefulShellBranch(routes: [
             GoRoute(
               path: '/profile',
-              builder: (_, _) => const ProfileScreen(),
+              builder: (_, _) => const BackToHome(child: ProfileScreen()),
               routes: [
                 // "Le mie schede" dal profilo: resta nella tab Profilo, così indietro torna lì.
                 GoRoute(path: 'workouts', builder: (_, _) => const WorkoutsScreen(showBack: true)),
