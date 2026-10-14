@@ -74,7 +74,7 @@ class RunDetailScreen extends ConsumerWidget {
                         const SizedBox(height: 6),
                         Text(
                           '${mine ? '' : '@${run.user.username} · '}${formatDayTime(run.startedAt)}',
-                          style: const TextStyle(color: AppColors.inkSoft),
+                          style: TextStyle(color: AppColors.inkSoft),
                         ),
                         const SizedBox(height: 18),
                         RouteMap(track: run.track, height: 300),
@@ -136,7 +136,7 @@ class _Big extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(value, style: Theme.of(context).textTheme.headlineSmall),
-            Text(label, style: const TextStyle(color: AppColors.muted, fontSize: 13)),
+            Text(label, style: TextStyle(color: AppColors.muted, fontSize: 13)),
           ],
         ),
       );

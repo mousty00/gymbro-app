@@ -106,7 +106,7 @@ class RunEventDetailScreen extends ConsumerWidget {
                           const SizedBox(height: 12),
                           Text(event.title, style: Theme.of(context).textTheme.displaySmall),
                           const SizedBox(height: 6),
-                          Text('Organizzata da @${event.createdBy.username}', style: const TextStyle(color: AppColors.inkSoft)),
+                          Text('Organizzata da @${event.createdBy.username}', style: TextStyle(color: AppColors.inkSoft)),
                           const SizedBox(height: 18),
                           RouteMap(
                             route: event.route.points,
@@ -135,12 +135,12 @@ class RunEventDetailScreen extends ConsumerWidget {
                                           formatDistance(event.route.distanceM),
                                           if (event.route.elevationGainM != null) '+${event.route.elevationGainM} m',
                                         ].join(' · '),
-                                        style: const TextStyle(color: AppColors.muted, fontSize: 13),
+                                        style: TextStyle(color: AppColors.muted, fontSize: 13),
                                       ),
                                     ],
                                   ),
                                 ),
-                                const Icon(Icons.chevron_right_rounded, color: AppColors.muted),
+                                Icon(Icons.chevron_right_rounded, color: AppColors.muted),
                               ],
                             ),
                           ),
@@ -206,7 +206,7 @@ class RunEventDetailScreen extends ConsumerWidget {
                             loading: const SkeletonList(item: SkeletonTile(trailing: true), count: 2, spacing: 8, padding: EdgeInsets.zero),
                             onRetry: () => ref.invalidate(eventRunsProvider(event.id)),
                             data: (list) => list.isEmpty
-                                ? const Text('Nessuno ha ancora registrato la corsa.', style: TextStyle(color: AppColors.muted))
+                                ? Text('Nessuno ha ancora registrato la corsa.', style: TextStyle(color: AppColors.muted))
                                 : Column(
                                     children: [
                                       for (final r in list)
@@ -249,7 +249,7 @@ class _InfoRow extends StatelessWidget {
         children: [
           Icon(icon, size: 18, color: AppColors.inkSoft),
           const SizedBox(width: 8),
-          Expanded(child: Text(text, style: const TextStyle(color: AppColors.inkSoft))),
+          Expanded(child: Text(text, style: TextStyle(color: AppColors.inkSoft))),
         ],
       );
 }
@@ -278,7 +278,7 @@ class _PersonTile extends StatelessWidget {
             Expanded(child: Text('@$username', style: const TextStyle(fontWeight: FontWeight.w600))),
             Tag(status, color: muted ? AppColors.muted : AppColors.mint),
             if (onRemove != null)
-              IconButton(icon: const Icon(Icons.close_rounded, size: 18, color: AppColors.muted), onPressed: onRemove),
+              IconButton(icon: Icon(Icons.close_rounded, size: 18, color: AppColors.muted), onPressed: onRemove),
           ],
         ),
       ),
@@ -344,7 +344,7 @@ class _InviteSheetState extends ConsumerState<_InviteSheet> {
                 data: (list) {
                   final candidates = list.map((f) => f.other(me)).where((u) => !already.contains(u.username)).toList();
                   if (candidates.isEmpty) {
-                    return const Center(child: Text('Nessun amico da invitare', style: TextStyle(color: AppColors.muted)));
+                    return Center(child: Text('Nessun amico da invitare', style: TextStyle(color: AppColors.muted)));
                   }
                   return ListView(
                     children: [

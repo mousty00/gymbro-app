@@ -115,7 +115,7 @@ class GroupCard extends StatelessWidget {
   final WorkoutGroup group;
   final int index;
 
-  static const _bgs = [AppColors.blueSoft, AppColors.lilacSoft, AppColors.pinkSoft, AppColors.mintSoft];
+  static List<Color> get _bgs => [AppColors.blueSoft, AppColors.lilacSoft, AppColors.pinkSoft, AppColors.mintSoft];
 
   @override
   Widget build(BuildContext context) {
@@ -133,7 +133,7 @@ class GroupCard extends StatelessWidget {
               if (group.scheduledFor != null)
                 Tag(formatDayTime(group.scheduledFor), color: past ? AppColors.inkSoft : AppColors.ink, icon: Icons.schedule_rounded)
               else
-                const Tag('Da programmare', color: AppColors.inkSoft),
+                Tag('Da programmare', color: AppColors.inkSoft),
               const Spacer(),
               Container(
                 width: 38,
@@ -149,13 +149,13 @@ class GroupCard extends StatelessWidget {
           const SizedBox(height: 18),
           Text(group.name, style: Theme.of(context).textTheme.titleLarge),
           const SizedBox(height: 2),
-          Text('Scheda: ${group.workoutName}', style: const TextStyle(color: AppColors.inkSoft)),
+          Text('Scheda: ${group.workoutName}', style: TextStyle(color: AppColors.inkSoft)),
           const SizedBox(height: 14),
           Row(
             children: [
               Expanded(child: AvatarStack(users: members, size: 32)),
               Text('${members.length} ${members.length == 1 ? 'persona' : 'persone'}',
-                  style: const TextStyle(fontWeight: FontWeight.w600, color: AppColors.inkSoft, fontSize: 13)),
+                  style: TextStyle(fontWeight: FontWeight.w600, color: AppColors.inkSoft, fontSize: 13)),
             ],
           ),
         ],

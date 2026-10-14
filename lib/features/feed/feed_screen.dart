@@ -128,7 +128,7 @@ class SegmentedPill extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(5),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.8),
+        color: AppColors.card.withValues(alpha: 0.8),
         borderRadius: BorderRadius.circular(40),
         boxShadow: AppShadows.soft,
       ),
@@ -150,7 +150,7 @@ class SegmentedPill extends StatelessWidget {
                     options[i],
                     style: TextStyle(
                       fontWeight: FontWeight.w600,
-                      color: i == index ? Colors.white : AppColors.inkSoft,
+                      color: i == index ? AppColors.onInk : AppColors.inkSoft,
                     ),
                   ),
                 ),

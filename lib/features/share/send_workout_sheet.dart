@@ -86,7 +86,7 @@ class _SendWorkoutSheetState extends ConsumerState<_SendWorkoutSheet> {
                 overflow: TextOverflow.ellipsis,
               ),
               const SizedBox(height: 4),
-              const Text(
+              Text(
                 'Riceveranno una notifica e potranno allenarsi con questa scheda.',
                 style: TextStyle(color: AppColors.inkSoft),
               ),

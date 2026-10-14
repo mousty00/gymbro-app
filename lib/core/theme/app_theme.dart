@@ -1,37 +1,191 @@
 import 'package:flutter/cupertino.dart' show CupertinoPageTransitionsBuilder;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-/// Palette: chiara, pulita, con gradienti azzurro/lilla morbidi.
-class AppColors {
-  const AppColors._();
-
+/// Colori fissi del tema chiaro. Servono anche dove il colore non deve
+/// seguire il tema del dispositivo (le card da condividere come immagine).
+abstract final class LightColors {
   static const ink = Color(0xFF111322);
   static const inkSoft = Color(0xFF5B6075);
   static const muted = Color(0xFF9A9FB2);
   static const bg = Color(0xFFF3F5FA);
   static const card = Colors.white;
   static const stroke = Color(0xFFE9ECF3);
+  static const onInk = Colors.white;
 
-  static const blue = Color(0xFF4C7CF5);
+  static const blue = AppColors.blue;
   static const blueSoft = Color(0xFFE3EBFE);
-  static const lilac = Color(0xFF8E7CF8);
+  static const lilac = AppColors.lilac;
   static const lilacSoft = Color(0xFFEDE8FE);
-  static const pink = Color(0xFFF39BDF);
+  static const pink = AppColors.pink;
   static const pinkSoft = Color(0xFFFCE4F6);
-  static const mint = Color(0xFF2FB475);
+  static const mint = AppColors.mint;
   static const mintSoft = Color(0xFFDFF5EA);
-  static const amber = Color(0xFFF2B33D);
-  static const danger = Color(0xFFE5484D);
+  static const amber = AppColors.amber;
+  static const danger = AppColors.danger;
 
   static const skyTop = Color(0xFFD6E2FB);
   static const skyMid = Color(0xFFEAE7FB);
+
+  static const brandGradient = AppColors.brandGradient;
+}
+
+/// I colori che cambiano tra tema chiaro e scuro.
+class AppPalette {
+  const AppPalette({
+    required this.brightness,
+    required this.ink,
+    required this.inkSoft,
+    required this.muted,
+    required this.bg,
+    required this.card,
+    required this.stroke,
+    required this.onInk,
+    required this.blueSoft,
+    required this.lilacSoft,
+    required this.pinkSoft,
+    required this.mintSoft,
+    required this.skyTop,
+    required this.skyMid,
+  });
+
+  final Brightness brightness;
+  final Color ink;
+  final Color inkSoft;
+  final Color muted;
+  final Color bg;
+  final Color card;
+  final Color stroke;
+  final Color onInk;
+  final Color blueSoft;
+  final Color lilacSoft;
+  final Color pinkSoft;
+  final Color mintSoft;
+  final Color skyTop;
+  final Color skyMid;
+
+  static const light = AppPalette(
+    brightness: Brightness.light,
+    ink: LightColors.ink,
+    inkSoft: LightColors.inkSoft,
+    muted: LightColors.muted,
+    bg: LightColors.bg,
+    card: LightColors.card,
+    stroke: LightColors.stroke,
+    onInk: LightColors.onInk,
+    blueSoft: LightColors.blueSoft,
+    lilacSoft: LightColors.lilacSoft,
+    pinkSoft: LightColors.pinkSoft,
+    mintSoft: LightColors.mintSoft,
+    skyTop: LightColors.skyTop,
+    skyMid: LightColors.skyMid,
+  );
+
+  static const dark = AppPalette(
+    brightness: Brightness.dark,
+    ink: Color(0xFFEEF0F8),
+    inkSoft: Color(0xFFA9AEC4),
+    muted: Color(0xFF7A7F98),
+    bg: Color(0xFF0D0F1A),
+    card: Color(0xFF181B2B),
+    stroke: Color(0xFF272B3F),
+    onInk: Color(0xFF111322),
+    blueSoft: Color(0xFF1D2A4E),
+    lilacSoft: Color(0xFF29234D),
+    pinkSoft: Color(0xFF3B2039),
+    mintSoft: Color(0xFF16352B),
+    skyTop: Color(0xFF1A2550),
+    skyMid: Color(0xFF221D44),
+  );
+
+  static AppPalette of(Brightness brightness) => brightness == Brightness.dark ? dark : light;
+}
+
+/// Palette dell'app: chiara e pulita con gradienti azzurro/lilla morbidi, o
+/// scura con gli stessi accenti. Segue il tema del dispositivo: i colori
+/// neutri (testo, sfondi, card, bordi) cambiano col tema attivo, gli accenti
+/// restano uguali.
+abstract final class AppColors {
+  static AppPalette _palette = AppPalette.light;
+
+  /// Imposta la palette attiva. Lo chiama solo [AppThemeSync].
+  static void use(AppPalette palette) => _palette = palette;
+
+  static bool get isDark => _palette.brightness == Brightness.dark;
+
+  /// Testo principale; anche sfondo dei pulsanti "pieni" (scuri nel tema
+  /// chiaro, chiari nel tema scuro).
+  static Color get ink => _palette.ink;
+  static Color get inkSoft => _palette.inkSoft;
+  static Color get muted => _palette.muted;
+  static Color get bg => _palette.bg;
+  static Color get card => _palette.card;
+  static Color get stroke => _palette.stroke;
+
+  /// Testo e icone sopra [ink].
+  static Color get onInk => _palette.onInk;
+
+  static const blue = Color(0xFF4C7CF5);
+  static Color get blueSoft => _palette.blueSoft;
+  static const lilac = Color(0xFF8E7CF8);
+  static Color get lilacSoft => _palette.lilacSoft;
+  static const pink = Color(0xFFF39BDF);
+  static Color get pinkSoft => _palette.pinkSoft;
+  static const mint = Color(0xFF2FB475);
+  static Color get mintSoft => _palette.mintSoft;
+  static const amber = Color(0xFFF2B33D);
+  static const danger = Color(0xFFE5484D);
+
+  static Color get skyTop => _palette.skyTop;
+  static Color get skyMid => _palette.skyMid;
 
   static const brandGradient = LinearGradient(
     colors: [blue, lilac],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
+}
+
+/// Tiene [AppColors] allineato al tema attivo (quello del dispositivo) e,
+/// quando il dispositivo passa da chiaro a scuro o viceversa con l'app aperta,
+/// ridisegna tutte le schermate senza perdere navigazione e stato.
+class AppThemeSync extends StatefulWidget {
+  const AppThemeSync({super.key, required this.child});
+
+  final Widget child;
+
+  @override
+  State<AppThemeSync> createState() => _AppThemeSyncState();
+}
+
+class _AppThemeSyncState extends State<AppThemeSync> {
+  Brightness? _brightness;
+
+  @override
+  Widget build(BuildContext context) {
+    final brightness = Theme.of(context).brightness;
+    AppColors.use(AppPalette.of(brightness));
+    if (_brightness != null && _brightness != brightness) {
+      // Molti widget leggono AppColors in costruttori const o senza dipendere
+      // dal Theme: dopo il cambio vanno ricostruiti tutti.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        void rebuild(Element el) {
+          el.markNeedsBuild();
+          el.visitChildren(rebuild);
+        }
+
+        (context as Element).visitChildren(rebuild);
+      });
+    }
+    _brightness = brightness;
+    final dark = brightness == Brightness.dark;
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: dark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,
+      child: widget.child,
+    );
+  }
 }
 
 class AppRadius {
@@ -52,18 +206,24 @@ class AppShadows {
   ];
 }
 
-ThemeData buildAppTheme() {
+/// Tema Material per una palette (chiara o scura).
+ThemeData buildAppTheme([AppPalette p = AppPalette.light]) {
+  final dark = p.brightness == Brightness.dark;
   final base = ThemeData(
     useMaterial3: true,
-    brightness: Brightness.light,
+    brightness: p.brightness,
     colorScheme: ColorScheme.fromSeed(
       seedColor: AppColors.blue,
+      brightness: p.brightness,
       primary: AppColors.blue,
       secondary: AppColors.lilac,
-      surface: AppColors.card,
+      surface: p.card,
+      onSurface: p.ink,
       error: AppColors.danger,
     ),
-    scaffoldBackgroundColor: AppColors.bg,
+    scaffoldBackgroundColor: p.bg,
+    canvasColor: p.bg,
+    cardColor: p.card,
     // Gesto indietro di sistema: swipe dal bordo su iOS, back predittivo
     // (anteprima della schermata sotto) su Android.
     pageTransitionsTheme: const PageTransitionsTheme(
@@ -75,8 +235,8 @@ ThemeData buildAppTheme() {
   );
 
   final text = GoogleFonts.plusJakartaSansTextTheme(base.textTheme).apply(
-    bodyColor: AppColors.ink,
-    displayColor: AppColors.ink,
+    bodyColor: p.ink,
+    displayColor: p.ink,
   );
 
   return base.copyWith(
@@ -88,29 +248,30 @@ ThemeData buildAppTheme() {
       headlineSmall: text.headlineSmall?.copyWith(fontWeight: FontWeight.w600, letterSpacing: -0.6),
       titleLarge: text.titleLarge?.copyWith(fontWeight: FontWeight.w600, letterSpacing: -0.4),
       titleMedium: text.titleMedium?.copyWith(fontWeight: FontWeight.w600, letterSpacing: -0.2),
-      bodyMedium: text.bodyMedium?.copyWith(color: AppColors.inkSoft, height: 1.45),
-      bodySmall: text.bodySmall?.copyWith(color: AppColors.muted),
+      bodyMedium: text.bodyMedium?.copyWith(color: p.inkSoft, height: 1.45),
+      bodySmall: text.bodySmall?.copyWith(color: p.muted),
     ),
     appBarTheme: AppBarTheme(
       backgroundColor: Colors.transparent,
       surfaceTintColor: Colors.transparent,
       elevation: 0,
       centerTitle: false,
-      foregroundColor: AppColors.ink,
+      foregroundColor: p.ink,
+      systemOverlayStyle: dark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,
       titleTextStyle: text.titleLarge?.copyWith(fontWeight: FontWeight.w600, letterSpacing: -0.4),
     ),
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
-      fillColor: Colors.white,
-      hintStyle: const TextStyle(color: AppColors.muted),
+      fillColor: p.card,
+      hintStyle: TextStyle(color: p.muted),
       contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(AppRadius.md),
-        borderSide: const BorderSide(color: AppColors.stroke),
+        borderSide: BorderSide(color: p.stroke),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(AppRadius.md),
-        borderSide: const BorderSide(color: AppColors.stroke),
+        borderSide: BorderSide(color: p.stroke),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(AppRadius.md),
@@ -123,8 +284,8 @@ ThemeData buildAppTheme() {
     ),
     filledButtonTheme: FilledButtonThemeData(
       style: FilledButton.styleFrom(
-        backgroundColor: AppColors.ink,
-        foregroundColor: Colors.white,
+        backgroundColor: p.ink,
+        foregroundColor: p.onInk,
         minimumSize: const Size.fromHeight(58),
         shape: const StadiumBorder(),
         textStyle: text.titleMedium,
@@ -132,10 +293,10 @@ ThemeData buildAppTheme() {
     ),
     outlinedButtonTheme: OutlinedButtonThemeData(
       style: OutlinedButton.styleFrom(
-        foregroundColor: AppColors.ink,
-        backgroundColor: Colors.white,
+        foregroundColor: p.ink,
+        backgroundColor: p.card,
         minimumSize: const Size.fromHeight(52),
-        side: const BorderSide(color: AppColors.stroke),
+        side: BorderSide(color: p.stroke),
         shape: const StadiumBorder(),
         textStyle: text.titleSmall?.copyWith(fontWeight: FontWeight.w600),
       ),
@@ -147,29 +308,33 @@ ThemeData buildAppTheme() {
       ),
     ),
     chipTheme: base.chipTheme.copyWith(
-      backgroundColor: Colors.white,
-      selectedColor: AppColors.ink,
-      side: const BorderSide(color: AppColors.stroke),
+      backgroundColor: p.card,
+      selectedColor: p.ink,
+      side: BorderSide(color: p.stroke),
       shape: const StadiumBorder(),
-      labelStyle: text.labelLarge?.copyWith(color: AppColors.ink),
-      secondaryLabelStyle: text.labelLarge?.copyWith(color: Colors.white),
-      checkmarkColor: Colors.white,
+      labelStyle: text.labelLarge?.copyWith(color: p.ink),
+      secondaryLabelStyle: text.labelLarge?.copyWith(color: p.onInk),
+      checkmarkColor: p.onInk,
     ),
     snackBarTheme: SnackBarThemeData(
       behavior: SnackBarBehavior.floating,
-      backgroundColor: AppColors.ink,
-      contentTextStyle: text.bodyMedium?.copyWith(color: Colors.white),
+      backgroundColor: p.ink,
+      contentTextStyle: text.bodyMedium?.copyWith(color: p.onInk),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.md)),
     ),
-    bottomSheetTheme: const BottomSheetThemeData(
-      backgroundColor: AppColors.bg,
+    bottomSheetTheme: BottomSheetThemeData(
+      backgroundColor: p.bg,
       surfaceTintColor: Colors.transparent,
       showDragHandle: true,
-      shape: RoundedRectangleBorder(
+      dragHandleColor: p.muted,
+      shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.lg)),
       ),
     ),
-    dividerTheme: const DividerThemeData(color: AppColors.stroke, thickness: 1, space: 1),
+    dividerTheme: DividerThemeData(color: p.stroke, thickness: 1, space: 1),
+    dialogTheme: DialogThemeData(backgroundColor: p.card, surfaceTintColor: Colors.transparent),
+    popupMenuTheme: PopupMenuThemeData(color: p.card, surfaceTintColor: Colors.transparent),
+    iconTheme: IconThemeData(color: p.ink),
     progressIndicatorTheme: const ProgressIndicatorThemeData(color: AppColors.blue),
   );
 }

@@ -37,12 +37,15 @@ flutter:
 
 # Splash nativo (iOS + Android, incluso Android 12+). Dopo ogni modifica:
 #   dart run flutter_native_splash:create
-# Colore = centro dello SkyBackground dello splash in-app, così il passaggio è morbido.
+# Colore = centro dello SkyBackground dello splash in-app, così il passaggio è morbido
+# (color_dark = lo stesso col tema scuro del dispositivo, AppPalette.dark.skyMid).
 flutter_native_splash:
   color: "#EAE7FB"
+  color_dark: "#221D44"
   image: assets/splash/logo.png
   android_12:
     color: "#EAE7FB"
+    color_dark: "#221D44"
     image: assets/splash/logo_android12.png
   fullscreen: false
   web: false

@@ -113,7 +113,7 @@ class _PostCardState extends ConsumerState<PostCard> {
                   _post.image!,
                   fallback: Container(
                     color: AppColors.blueSoft,
-                    child: const Icon(Icons.image_not_supported_outlined, color: AppColors.muted),
+                    child: Icon(Icons.image_not_supported_outlined, color: AppColors.muted),
                   ),
                 ),
               ),

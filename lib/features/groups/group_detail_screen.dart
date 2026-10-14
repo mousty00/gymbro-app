@@ -124,7 +124,7 @@ class GroupDetailScreen extends ConsumerWidget {
                           const SizedBox(height: 12),
                           Text(g.name, style: Theme.of(context).textTheme.displaySmall),
                           const SizedBox(height: 6),
-                          Text('Organizzato da @${g.createdBy.username}', style: const TextStyle(color: AppColors.inkSoft)),
+                          Text('Organizzato da @${g.createdBy.username}', style: TextStyle(color: AppColors.inkSoft)),
                           const SizedBox(height: 20),
                           SoftCard(
                             onTap: () => context.push('/workout/${g.workoutId}'),
@@ -136,12 +136,12 @@ class GroupDetailScreen extends ConsumerWidget {
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      const Text('Scheda', style: TextStyle(color: AppColors.muted, fontSize: 12)),
+                                      Text('Scheda', style: TextStyle(color: AppColors.muted, fontSize: 12)),
                                       Text(g.workoutName, style: const TextStyle(fontWeight: FontWeight.w700)),
                                     ],
                                   ),
                                 ),
-                                const Icon(Icons.chevron_right_rounded, color: AppColors.muted),
+                                Icon(Icons.chevron_right_rounded, color: AppColors.muted),
                               ],
                             ),
                           ),
@@ -172,8 +172,8 @@ class GroupDetailScreen extends ConsumerWidget {
                             loading: const SkeletonList(item: SkeletonTile(leading: 34), count: 2, spacing: 8, padding: EdgeInsets.zero),
                             onRetry: () => ref.invalidate(groupHistoryProvider(g.id)),
                             data: (list) => list.isEmpty
-                                ? const Padding(
-                                    padding: EdgeInsets.symmetric(vertical: 8),
+                                ? Padding(
+                                    padding: const EdgeInsets.symmetric(vertical: 8),
                                     child: Text('Ancora nessuna sessione registrata.', style: TextStyle(color: AppColors.muted)),
                                   )
                                 : Column(
@@ -189,7 +189,7 @@ class GroupDetailScreen extends ConsumerWidget {
                                                 const IconChip(icon: Icons.check_circle_rounded, color: AppColors.mint, size: 34),
                                                 const SizedBox(width: 12),
                                                 Expanded(child: Text(formatDayTime(h.startedAt), style: const TextStyle(fontWeight: FontWeight.w600))),
-                                                Text(formatDuration(h.duration), style: const TextStyle(color: AppColors.inkSoft)),
+                                                Text(formatDuration(h.duration), style: TextStyle(color: AppColors.inkSoft)),
                                               ],
                                             ),
                                           ),
@@ -243,7 +243,7 @@ class _MemberTile extends StatelessWidget {
             Expanded(child: Text('@$username', style: const TextStyle(fontWeight: FontWeight.w600))),
             Tag(status, color: muted ? AppColors.muted : AppColors.mint),
             if (onRemove != null)
-              IconButton(icon: const Icon(Icons.close_rounded, size: 18, color: AppColors.muted), onPressed: onRemove),
+              IconButton(icon: Icon(Icons.close_rounded, size: 18, color: AppColors.muted), onPressed: onRemove),
           ],
         ),
       ),
@@ -315,7 +315,7 @@ class _InviteSheetState extends ConsumerState<_InviteSheet> {
                 data: (list) {
                   final candidates = list.map((f) => f.other(me.username)).where((u) => !already.contains(u.username)).toList();
                   if (candidates.isEmpty) {
-                    return const Center(child: Text('Nessun amico da invitare', style: TextStyle(color: AppColors.muted)));
+                    return Center(child: Text('Nessun amico da invitare', style: TextStyle(color: AppColors.muted)));
                   }
                   return ListView(
                     children: [

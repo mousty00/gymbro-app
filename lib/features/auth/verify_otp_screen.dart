@@ -76,8 +76,8 @@ class _VerifyOtpScreenState extends ConsumerState<VerifyOtpScreen> {
       subtitle: 'Inserisci il codice a 6 cifre che ti abbiamo inviato per attivare l\'account.',
       children: [
         if (widget.username.isEmpty) LabeledField(label: 'Username', controller: _username),
-        const Padding(
-          padding: EdgeInsets.only(left: 6, bottom: 8),
+        Padding(
+          padding: const EdgeInsets.only(left: 6, bottom: 8),
           child: Text('Codice', style: TextStyle(fontWeight: FontWeight.w600, color: AppColors.inkSoft)),
         ),
         TextField(

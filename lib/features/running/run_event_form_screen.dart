@@ -122,7 +122,7 @@ class _RunEventFormScreenState extends ConsumerState<RunEventFormScreen> {
                           const SizedBox(width: 12),
                           const Expanded(child: Text('Quando', style: TextStyle(fontWeight: FontWeight.w600))),
                           Text(_when == null ? 'Scegli data e ora' : formatDayTime(_when),
-                              style: const TextStyle(color: AppColors.inkSoft)),
+                              style: TextStyle(color: AppColors.inkSoft)),
                         ],
                       ),
                     ),
@@ -152,7 +152,7 @@ class _RunEventFormScreenState extends ConsumerState<RunEventFormScreen> {
                               Padding(
                                 padding: const EdgeInsets.only(bottom: 8),
                                 child: Material(
-                                  color: r.id == _routeId ? AppColors.ink : Colors.white,
+                                  color: r.id == _routeId ? AppColors.ink : AppColors.card,
                                   borderRadius: BorderRadius.circular(AppRadius.md),
                                   child: InkWell(
                                     borderRadius: BorderRadius.circular(AppRadius.md),
@@ -165,13 +165,13 @@ class _RunEventFormScreenState extends ConsumerState<RunEventFormScreen> {
                                             child: Text(r.name,
                                                 style: TextStyle(
                                                   fontWeight: FontWeight.w700,
-                                                  color: r.id == _routeId ? Colors.white : AppColors.ink,
+                                                  color: r.id == _routeId ? AppColors.onInk : AppColors.ink,
                                                 )),
                                           ),
                                           Text(formatDistance(r.distanceM),
                                               style: TextStyle(
                                                 fontSize: 12,
-                                                color: r.id == _routeId ? Colors.white70 : AppColors.muted,
+                                                color: r.id == _routeId ? AppColors.onInk.withValues(alpha: 0.7) : AppColors.muted,
                                               )),
                                         ],
                                       ),
@@ -191,7 +191,7 @@ class _RunEventFormScreenState extends ConsumerState<RunEventFormScreen> {
                       data: (list) {
                         final people = list.map((f) => f.other(me)).toList();
                         if (people.isEmpty) {
-                          return const Text('Aggiungi degli amici per invitarli; puoi anche correre da solo.',
+                          return Text('Aggiungi degli amici per invitarli; puoi anche correre da solo.',
                               style: TextStyle(color: AppColors.muted));
                         }
                         return Wrap(

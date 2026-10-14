@@ -69,8 +69,8 @@ class _RunningScreenState extends ConsumerState<RunningScreen> {
                     selected: _tab == i,
                     showCheckmark: false,
                     selectedColor: AppColors.ink,
-                    labelStyle: TextStyle(color: _tab == i ? Colors.white : AppColors.ink, fontWeight: FontWeight.w600),
-                    backgroundColor: Colors.white,
+                    labelStyle: TextStyle(color: _tab == i ? AppColors.onInk : AppColors.ink, fontWeight: FontWeight.w600),
+                    backgroundColor: AppColors.card,
                     side: BorderSide.none,
                     shape: const StadiumBorder(),
                     onSelected: (_) => setState(() => _tab = i),
@@ -298,7 +298,7 @@ class _Stat extends StatelessWidget {
         children: [
           Icon(icon, size: 15, color: AppColors.inkSoft),
           const SizedBox(width: 4),
-          Text(label, style: const TextStyle(color: AppColors.inkSoft, fontWeight: FontWeight.w600, fontSize: 13)),
+          Text(label, style: TextStyle(color: AppColors.inkSoft, fontWeight: FontWeight.w600, fontSize: 13)),
         ],
       );
 }
@@ -330,11 +330,11 @@ class RunEventCard extends StatelessWidget {
           Text(
             '${event.route.name} · ${formatDistance(event.route.distanceM)} · '
             '$people ${people == 1 ? 'partecipante' : 'partecipanti'}',
-            style: const TextStyle(color: AppColors.inkSoft),
+            style: TextStyle(color: AppColors.inkSoft),
           ),
           if (event.meetingPoint != null && event.meetingPoint!.isNotEmpty) ...[
             const SizedBox(height: 4),
-            Text('Ritrovo: ${event.meetingPoint}', style: const TextStyle(color: AppColors.inkSoft)),
+            Text('Ritrovo: ${event.meetingPoint}', style: TextStyle(color: AppColors.inkSoft)),
           ],
         ],
       ),
@@ -367,7 +367,7 @@ class RunTile extends StatelessWidget {
                 Text(showUser ? '@${run.user.username}' : run.title, style: const TextStyle(fontWeight: FontWeight.w700)),
                 Text(
                   showUser ? formatSeconds(run.durationS) : formatDayTime(run.startedAt),
-                  style: const TextStyle(color: AppColors.muted, fontSize: 13),
+                  style: TextStyle(color: AppColors.muted, fontSize: 13),
                 ),
               ],
             ),
@@ -376,7 +376,7 @@ class RunTile extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Text(formatDistance(run.distanceM), style: const TextStyle(fontWeight: FontWeight.w700)),
-              Text('${formatPace(run.paceSPerKm)} /km', style: const TextStyle(color: AppColors.inkSoft, fontSize: 13)),
+              Text('${formatPace(run.paceSPerKm)} /km', style: TextStyle(color: AppColors.inkSoft, fontSize: 13)),
             ],
           ),
         ],

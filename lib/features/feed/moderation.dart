@@ -78,7 +78,7 @@ class ModerationMenu extends ConsumerWidget {
       padding: small ? EdgeInsets.zero : const EdgeInsets.all(8),
       constraints: const BoxConstraints(),
       tooltip: 'Altro',
-      color: Colors.white,
+      color: AppColors.card,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.md)),
       onSelected: (v) async {
         if (v == 'report') {

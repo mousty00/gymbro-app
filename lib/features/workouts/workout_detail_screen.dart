@@ -223,7 +223,7 @@ class _Metric extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(value, style: Theme.of(context).textTheme.headlineSmall),
-            Text(label, style: const TextStyle(color: AppColors.muted, fontSize: 12)),
+            Text(label, style: TextStyle(color: AppColors.muted, fontSize: 12)),
           ],
         ),
       ),
@@ -251,7 +251,7 @@ class _ExerciseRow extends StatelessWidget {
             width: 40,
             height: 40,
             alignment: Alignment.center,
-            decoration: const BoxDecoration(color: AppColors.bg, shape: BoxShape.circle),
+            decoration: BoxDecoration(color: AppColors.bg, shape: BoxShape.circle),
             child: Text('${exercise.position}', style: const TextStyle(fontWeight: FontWeight.w700)),
           ),
           const SizedBox(width: 12),
@@ -261,7 +261,7 @@ class _ExerciseRow extends StatelessWidget {
               children: [
                 Text(exercise.exerciseName ?? 'Esercizio', style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
                 const SizedBox(height: 2),
-                Text(exercise.summary, style: const TextStyle(color: AppColors.inkSoft, fontSize: 13)),
+                Text(exercise.summary, style: TextStyle(color: AppColors.inkSoft, fontSize: 13)),
               ],
             ),
           ),

@@ -123,17 +123,17 @@ class _ExercisesScreenState extends ConsumerState<ExercisesScreen> {
                                     Text(e.name, style: const TextStyle(fontWeight: FontWeight.w700)),
                                     Text(
                                       [e.muscleGroup, if (e.description?.isNotEmpty == true) e.description!].join(' · '),
-                                      style: const TextStyle(color: AppColors.inkSoft, fontSize: 13),
+                                      style: TextStyle(color: AppColors.inkSoft, fontSize: 13),
                                       maxLines: 2,
                                       overflow: TextOverflow.ellipsis,
                                     ),
                                   ],
                                 ),
                               ),
-                              if (!e.isPublic) const Tag('Privato', color: AppColors.inkSoft),
+                              if (!e.isPublic) Tag('Privato', color: AppColors.inkSoft),
                               if (mine)
                                 IconButton(
-                                  icon: const Icon(Icons.delete_outline_rounded, color: AppColors.muted),
+                                  icon: Icon(Icons.delete_outline_rounded, color: AppColors.muted),
                                   onPressed: () => _delete(e),
                                 ),
                             ],
@@ -234,7 +234,7 @@ class _CreateExerciseSheetState extends ConsumerState<_CreateExerciseSheet> {
               decoration: const InputDecoration(hintText: 'Descrizione (opzionale)'),
             ),
             const SizedBox(height: 16),
-            const Text('Gruppo muscolare', style: TextStyle(fontWeight: FontWeight.w600, color: AppColors.inkSoft)),
+            Text('Gruppo muscolare', style: TextStyle(fontWeight: FontWeight.w600, color: AppColors.inkSoft)),
             const SizedBox(height: 10),
             Wrap(
               spacing: 8,

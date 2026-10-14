@@ -6,17 +6,18 @@ import '../theme/app_theme.dart';
 
 /// Sfondo "cielo" azzurro → lilla che sfuma nel grigio chiaro, con macchie morbide.
 class SkyBackground extends StatelessWidget {
-  const SkyBackground({super.key, required this.child, this.height = 420, this.tint = AppColors.skyTop});
+  const SkyBackground({super.key, required this.child, this.height = 420, this.tint});
 
   final Widget child;
   final double height;
-  final Color tint;
+  /// Colore in cima al gradiente; di default [AppColors.skyTop].
+  final Color? tint;
 
   @override
   Widget build(BuildContext context) {
     return Stack(
       children: [
-        const Positioned.fill(child: ColoredBox(color: AppColors.bg)),
+        Positioned.fill(child: ColoredBox(color: AppColors.bg)),
         Positioned(
           top: 0,
           left: 0,
@@ -27,7 +28,7 @@ class SkyBackground extends StatelessWidget {
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
-                colors: [tint, AppColors.skyMid.withValues(alpha: 0.6), AppColors.bg],
+                colors: [tint ?? AppColors.skyTop, AppColors.skyMid.withValues(alpha: 0.6), AppColors.bg],
                 stops: const [0, 0.55, 1],
               ),
             ),

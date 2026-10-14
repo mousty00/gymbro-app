@@ -92,7 +92,7 @@ class LabeledField extends StatelessWidget {
         children: [
           Padding(
             padding: const EdgeInsets.only(left: 6, bottom: 8),
-            child: Text(label, style: const TextStyle(fontWeight: FontWeight.w600, color: AppColors.inkSoft)),
+            child: Text(label, style: TextStyle(fontWeight: FontWeight.w600, color: AppColors.inkSoft)),
           ),
           TextFormField(
             controller: controller,

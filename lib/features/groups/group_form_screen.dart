@@ -105,7 +105,7 @@ class _GroupFormScreenState extends ConsumerState<GroupFormScreen> {
                           const SizedBox(width: 12),
                           const Expanded(child: Text('Quando', style: TextStyle(fontWeight: FontWeight.w600))),
                           Text(_when == null ? 'Scegli data e ora' : formatDayTime(_when),
-                              style: const TextStyle(color: AppColors.inkSoft)),
+                              style: TextStyle(color: AppColors.inkSoft)),
                         ],
                       ),
                     ),
@@ -130,7 +130,7 @@ class _GroupFormScreenState extends ConsumerState<GroupFormScreen> {
                               Padding(
                                 padding: const EdgeInsets.only(bottom: 8),
                                 child: Material(
-                                  color: w.id == _workoutId ? AppColors.ink : Colors.white,
+                                  color: w.id == _workoutId ? AppColors.ink : AppColors.card,
                                   borderRadius: BorderRadius.circular(AppRadius.md),
                                   child: InkWell(
                                     borderRadius: BorderRadius.circular(AppRadius.md),
@@ -144,7 +144,7 @@ class _GroupFormScreenState extends ConsumerState<GroupFormScreen> {
                                               w.name,
                                               style: TextStyle(
                                                 fontWeight: FontWeight.w700,
-                                                color: w.id == _workoutId ? Colors.white : AppColors.ink,
+                                                color: w.id == _workoutId ? AppColors.onInk : AppColors.ink,
                                               ),
                                             ),
                                           ),
@@ -152,7 +152,7 @@ class _GroupFormScreenState extends ConsumerState<GroupFormScreen> {
                                             '${w.exercises.length} esercizi',
                                             style: TextStyle(
                                               fontSize: 12,
-                                              color: w.id == _workoutId ? Colors.white70 : AppColors.muted,
+                                              color: w.id == _workoutId ? AppColors.onInk.withValues(alpha: 0.7) : AppColors.muted,
                                             ),
                                           ),
                                         ],

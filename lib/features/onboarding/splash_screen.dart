@@ -30,7 +30,7 @@ class SplashScreen extends ConsumerWidget {
                   child: const Text('Riprova'),
                 ),
               ] else
-                const SizedBox(
+                SizedBox(
                   width: 22,
                   height: 22,
                   child: CircularProgressIndicator(strokeWidth: 2.2, color: AppColors.ink),

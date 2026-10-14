@@ -67,7 +67,7 @@ class _StepIndicator extends StatelessWidget {
             height: 4,
             margin: const EdgeInsets.symmetric(horizontal: 3),
             decoration: BoxDecoration(
-              color: active ? AppColors.blue : Colors.white.withValues(alpha: 0.7),
+              color: active ? AppColors.blue : AppColors.card.withValues(alpha: 0.7),
               borderRadius: BorderRadius.circular(4),
             ),
           ),
@@ -130,7 +130,7 @@ class _FloatingChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.fromLTRB(8, 8, 16, 8),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.9),
+        color: AppColors.card.withValues(alpha: 0.9),
         borderRadius: BorderRadius.circular(22),
         boxShadow: AppShadows.soft,
       ),
@@ -144,7 +144,7 @@ class _FloatingChip extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(title, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
-              Text(subtitle, style: const TextStyle(color: AppColors.muted, fontSize: 12)),
+              Text(subtitle, style: TextStyle(color: AppColors.muted, fontSize: 12)),
             ],
           ),
         ],

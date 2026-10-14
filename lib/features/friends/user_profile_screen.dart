@@ -143,8 +143,8 @@ class PostGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (posts.isEmpty) {
-      return const Padding(
-        padding: EdgeInsets.symmetric(vertical: 16),
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 16),
         child: Center(child: Text('Ancora nessun post', style: TextStyle(color: AppColors.muted))),
       );
     }

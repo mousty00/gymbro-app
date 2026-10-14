@@ -73,8 +73,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       subtitle: 'Accedi per riprendere i tuoi allenamenti.',
       children: [
         if (Env.useMock)
-          const Padding(
-            padding: EdgeInsets.only(bottom: 20),
+          Padding(
+            padding: const EdgeInsets.only(bottom: 20),
             child: SoftCard(
               color: AppColors.lilacSoft,
               child: Text(
@@ -92,7 +92,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  Text(
                     'Non riesco a contattare ${Env.apiBaseUrl}. '
                     'Vuoi provare l\'app con i dati demo?',
                     style: TextStyle(color: AppColors.inkSoft, height: 1.4),
@@ -133,11 +133,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         Center(
           child: TextButton(
             onPressed: () => context.pushReplacement('/auth/signup'),
-            child: const Text.rich(
+            child: Text.rich(
               TextSpan(
                 text: 'Non hai un account? ',
                 style: TextStyle(color: AppColors.inkSoft, fontWeight: FontWeight.w500),
-                children: [TextSpan(text: 'Registrati', style: TextStyle(color: AppColors.blue))],
+                children: const [TextSpan(text: 'Registrati', style: TextStyle(color: AppColors.blue))],
               ),
             ),
           ),

@@ -108,12 +108,12 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                               : DecorationImage(image: MemoryImage(_bytes!), fit: BoxFit.cover),
                         ),
                         child: _bytes == null
-                            ? const Column(
+                            ? Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  IconChip(icon: Icons.add_photo_alternate_rounded, background: Colors.white, size: 56),
-                                  SizedBox(height: 12),
-                                  Text('Aggiungi una foto', style: TextStyle(fontWeight: FontWeight.w700)),
+                                  IconChip(icon: Icons.add_photo_alternate_rounded, background: AppColors.card, size: 56),
+                                  const SizedBox(height: 12),
+                                  const Text('Aggiungi una foto', style: TextStyle(fontWeight: FontWeight.w700)),
                                 ],
                               )
                             : Align(

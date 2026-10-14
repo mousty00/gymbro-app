@@ -142,16 +142,16 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
                               children: [
                                 Row(
                                   children: [
-                                    Icon(Icons.timer_outlined, size: 16, color: Colors.white.withValues(alpha: 0.6)),
+                                    Icon(Icons.timer_outlined, size: 16, color: AppColors.onInk.withValues(alpha: 0.6)),
                                     const SizedBox(width: 6),
                                     Text(widget.groupId != null ? 'Durata sessione di gruppo' : 'Durata allenamento',
-                                        style: TextStyle(color: Colors.white.withValues(alpha: 0.6))),
+                                        style: TextStyle(color: AppColors.onInk.withValues(alpha: 0.6))),
                                   ],
                                 ),
                                 const SizedBox(height: 6),
                                 Text(
                                   formatClock(_elapsed),
-                                  style: t.displayLarge?.copyWith(color: Colors.white, fontFeatures: const [FontFeature.tabularFigures()]),
+                                  style: t.displayLarge?.copyWith(color: AppColors.onInk, fontFeatures: const [FontFeature.tabularFigures()]),
                                 ),
                                 const SizedBox(height: 16),
                                 ClipRRect(
@@ -159,13 +159,13 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
                                   child: LinearProgressIndicator(
                                     value: progress,
                                     minHeight: 8,
-                                    backgroundColor: Colors.white.withValues(alpha: 0.12),
+                                    backgroundColor: AppColors.onInk.withValues(alpha: 0.12),
                                     color: AppColors.lilac,
                                   ),
                                 ),
                                 const SizedBox(height: 8),
                                 Text('$doneSets / $totalSets serie completate',
-                                    style: TextStyle(color: Colors.white.withValues(alpha: 0.7), fontSize: 13)),
+                                    style: TextStyle(color: AppColors.onInk.withValues(alpha: 0.7), fontSize: 13)),
                               ],
                             ),
                           ),
@@ -191,7 +191,7 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
                                         Expanded(
                                           child: Text(e.exerciseName ?? 'Esercizio', style: t.titleMedium),
                                         ),
-                                        Text(e.summary, style: const TextStyle(color: AppColors.inkSoft)),
+                                        Text(e.summary, style: TextStyle(color: AppColors.inkSoft)),
                                       ],
                                     ),
                                     const SizedBox(height: 12),
@@ -263,7 +263,7 @@ class _SetDot extends StatelessWidget {
         ),
         child: done
             ? const Icon(Icons.check_rounded, color: Colors.white)
-            : Text('$index', style: const TextStyle(fontWeight: FontWeight.w700, color: AppColors.inkSoft)),
+            : Text('$index', style: TextStyle(fontWeight: FontWeight.w700, color: AppColors.inkSoft)),
       ),
     );
   }
@@ -287,7 +287,7 @@ class _RestCard extends StatelessWidget {
       duration: const Duration(milliseconds: 200),
       padding: const EdgeInsets.fromLTRB(18, 14, 12, 14),
       decoration: BoxDecoration(
-        color: resting ? AppColors.lilac : Colors.white.withValues(alpha: 0.7),
+        color: resting ? AppColors.lilac : AppColors.card.withValues(alpha: 0.7),
         borderRadius: BorderRadius.circular(AppRadius.md + 2),
       ),
       child: Row(

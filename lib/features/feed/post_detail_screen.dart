@@ -130,7 +130,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                 if (isMine)
                   PopupMenuButton<String>(
                     icon: const Icon(Icons.more_horiz_rounded),
-                    color: Colors.white,
+                    color: AppColors.card,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.md)),
                     onSelected: (v) => v == 'edit' ? _editPost(post.value!) : _deletePost(post.value!),
                     itemBuilder: (_) => const [
@@ -162,8 +162,8 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                       const SizedBox(height: 20),
                       SectionHeader('Commenti · ${comments.length}'),
                       if (comments.isEmpty)
-                        const Padding(
-                          padding: EdgeInsets.symmetric(vertical: 12),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
                           child: Text('Nessun commento. Scrivi il primo!', style: TextStyle(color: AppColors.muted)),
                         ),
                       for (final c in comments)
@@ -212,9 +212,9 @@ class _CommentTile extends StatelessWidget {
               onLongPress: canDelete ? onDelete : null,
               child: Container(
                 padding: const EdgeInsets.fromLTRB(14, 10, 14, 12),
-                decoration: const BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.only(
+                decoration: BoxDecoration(
+                  color: AppColors.card,
+                  borderRadius: const BorderRadius.only(
                     topRight: Radius.circular(AppRadius.md),
                     bottomLeft: Radius.circular(AppRadius.md),
                     bottomRight: Radius.circular(AppRadius.md),
@@ -228,12 +228,12 @@ class _CommentTile extends StatelessWidget {
                       children: [
                         Text(comment.username, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
                         const SizedBox(width: 8),
-                        Text(timeAgo(comment.createdAt), style: const TextStyle(color: AppColors.muted, fontSize: 12)),
+                        Text(timeAgo(comment.createdAt), style: TextStyle(color: AppColors.muted, fontSize: 12)),
                         const Spacer(),
                         if (canDelete)
                           GestureDetector(
                             onTap: onDelete,
-                            child: const Icon(Icons.close_rounded, size: 16, color: AppColors.muted),
+                            child: Icon(Icons.close_rounded, size: 16, color: AppColors.muted),
                           )
                         else
                           ModerationMenu(
@@ -246,7 +246,7 @@ class _CommentTile extends StatelessWidget {
                       ],
                     ),
                     const SizedBox(height: 4),
-                    Text(comment.content, style: const TextStyle(color: AppColors.ink, height: 1.35)),
+                    Text(comment.content, style: TextStyle(color: AppColors.ink, height: 1.35)),
                   ],
                 ),
               ),
@@ -276,7 +276,7 @@ class _CommentComposer extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: AppColors.card,
                 borderRadius: BorderRadius.circular(40),
                 boxShadow: AppShadows.soft,
               ),
@@ -311,11 +311,11 @@ class _CommentComposer extends StatelessWidget {
                 width: 58,
                 height: 58,
                 child: sending
-                    ? const Padding(
-                        padding: EdgeInsets.all(18),
-                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                    ? Padding(
+                        padding: const EdgeInsets.all(18),
+                        child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.onInk),
                       )
-                    : const Icon(Icons.send_rounded, color: Colors.white),
+                    : Icon(Icons.send_rounded, color: AppColors.onInk),
               ),
             ),
           ),

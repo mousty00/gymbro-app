@@ -214,7 +214,7 @@ class _EditorState extends ConsumerState<_Editor> {
                   Expanded(
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(30), boxShadow: AppShadows.soft),
+                      decoration: BoxDecoration(color: AppColors.card, borderRadius: BorderRadius.circular(30), boxShadow: AppShadows.soft),
                       child: Text(
                         _waypoints.isEmpty ? 'Tocca la mappa per mettere la partenza' : 'Tocca per aggiungere punti',
                         style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
@@ -253,7 +253,7 @@ class _EditorState extends ConsumerState<_Editor> {
                                           if (plan.elevationGainM != null) '+${plan.elevationGainM} m di dislivello',
                                           estimateTime(plan.distanceM),
                                         ].join(' · '),
-                                  style: const TextStyle(color: AppColors.inkSoft, fontSize: 13),
+                                  style: TextStyle(color: AppColors.inkSoft, fontSize: 13),
                                 ),
                               ],
                             ),
@@ -264,7 +264,7 @@ class _EditorState extends ConsumerState<_Editor> {
                       ),
                       if (plan != null && !plan.snapped && _waypoints.length > 1) ...[
                         const SizedBox(height: 6),
-                        const Text('Tratti in linea retta: metti più punti lungo le strade che vuoi fare.',
+                        Text('Tratti in linea retta: metti più punti lungo le strade che vuoi fare.',
                             style: TextStyle(color: AppColors.muted, fontSize: 12)),
                       ],
                       const SizedBox(height: 10),
