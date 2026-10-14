@@ -16,6 +16,7 @@ import '../../models/social.dart';
 import '../auth/session.dart';
 import '../friends/user_profile_screen.dart';
 import '../home/home_screen.dart';
+import '../share/share_actions.dart';
 import '../shell/app_shell.dart';
 import '../../core/widgets/skeleton.dart';
 
@@ -93,6 +94,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 Row(
                   children: [
                     Expanded(child: Text('Profilo', style: Theme.of(context).textTheme.headlineMedium)),
+                    CircleIconButton(
+                      icon: Icons.ios_share_rounded,
+                      tooltip: 'Condividi profilo',
+                      onTap: () => shareProfile(context, me,
+                          mine: true, sessions: history.length, trained: total, friends: friends.length),
+                    ),
+                    const SizedBox(width: 10),
                     CircleIconButton(icon: Icons.logout_rounded, tooltip: 'Esci', onTap: _logout),
                   ],
                 ),
@@ -127,6 +135,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         onTap: () => context.go('/workouts'),
                       ),
                       _MenuRow(icon: Icons.sports_gymnastics_rounded, color: AppColors.mint, label: 'Libreria esercizi', onTap: () => context.push('/exercises')),
+                      _MenuRow(
+                        icon: Icons.ios_share_rounded,
+                        color: AppColors.pink,
+                        label: 'Condividi il mio profilo',
+                        onTap: () => shareProfile(context, me,
+                            mine: true, sessions: history.length, trained: total, friends: friends.length),
+                      ),
                       _MenuRow(icon: Icons.add_circle_outline_rounded, color: AppColors.ink, label: 'Crea…', onTap: () => showQuickCreate(context), last: true),
                     ],
                   ),

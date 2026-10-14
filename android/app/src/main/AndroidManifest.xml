@@ -35,6 +35,18 @@
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
+            <!-- Link condivisi (schede e profili): https://repbirds.com/w/<id> e /u/<username>
+                 aprono l'app. autoVerify richiede /.well-known/assetlinks.json sul sito (DEPLOY.md). -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:scheme="https"/>
+                <data android:host="repbirds.com"/>
+                <data android:host="www.repbirds.com"/>
+                <data android:pathPrefix="/w/"/>
+                <data android:pathPrefix="/u/"/>
+            </intent-filter>
         </activity>
         <!-- Push with the app in foreground and token refreshes (see MainActivity.kt) -->
         <service

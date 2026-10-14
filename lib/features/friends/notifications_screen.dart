@@ -111,6 +111,7 @@ class ActivityTile extends StatelessWidget {
         NotificationKind.groupInvite || NotificationKind.groupInviteAccepted => Icons.groups_rounded,
         NotificationKind.runInvite || NotificationKind.runInviteAccepted => Icons.directions_run_rounded,
         NotificationKind.routeSaved => Icons.bookmark_added_rounded,
+        NotificationKind.workoutShared => Icons.fitness_center_rounded,
         _ => Icons.person_add_alt_1_rounded,
       };
 

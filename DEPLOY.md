@@ -253,6 +253,53 @@ Upload `build/app/outputs/bundle/release/app-release.aab` in Play Console → **
   Organization accounts skip this.
 - **Production**: after review (usually hours to a few days).
 
+## Shared links (repbirds.com)
+
+Sharing a workout or a profile outside the app sends a summary image plus a link:
+`https://repbirds.com/w/<workout id>` and `https://repbirds.com/u/<username>` (change the domain
+with `--dart-define=WEB_BASE_URL=...`). When the app is installed the phone opens it straight on
+that screen; otherwise the browser opens the page. Two files on the website make that work, and a
+page at those paths is what people without the app see (a short "Get RepBirds" page with the
+store links is enough).
+
+`https://repbirds.com/.well-known/apple-app-site-association` (no extension, served as
+`application/json`, no redirects):
+
+```json
+{
+  "applinks": {
+    "details": [
+      {
+        "appIDs": ["XYTKZ77M3V.com.mousty.repbirds"],
+        "components": [{ "/": "/w/*" }, { "/": "/u/*" }]
+      }
+    ]
+  }
+}
+```
+
+The app already declares `applinks:repbirds.com` in `ios/Runner/Runner.entitlements`; with
+automatic signing Xcode turns on the Associated Domains capability for the App ID.
+
+`https://repbirds.com/.well-known/assetlinks.json`:
+
+```json
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.mousty.repbirds",
+      "sha256_cert_fingerprints": ["<Play app signing key SHA-256>", "<upload key SHA-256>"]
+    }
+  }
+]
+```
+
+The app signing key fingerprint is in Play Console → Test and release → App integrity. Check with
+`adb shell pm get-app-links com.mousty.repbirds` (should say `verified`). Until the files are
+online the links still work as web links, and Android asks which app to open them with.
+
 ## 4. Release checklist
 
 - [ ] API deployed and healthy on `https://api.<domain>/api`, SMTP and S3 tested with a signup
@@ -265,6 +312,7 @@ Upload `build/app/outputs/bundle/release/app-release.aab` in Play Console → **
 - [ ] Android: signed with the upload key, `google-services.json` in `android/app/`
 - [ ] iOS: Push Notifications capability on, `ITSAppUsesNonExemptEncryption` set
 - [ ] Privacy policy URL and (for Play) account-deletion URL online
+- [ ] `apple-app-site-association` and `assetlinks.json` online on repbirds.com (shared links)
 - [ ] Demo account for reviewers, with some data in it
 - [ ] Report button for posts and comments (App Store guideline 1.2)
 - [ ] Tested the release build on a real device: login, push received, photo upload

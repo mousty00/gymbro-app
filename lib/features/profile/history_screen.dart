@@ -10,6 +10,8 @@ import '../../data/providers.dart';
 import '../../data/workout_repository.dart';
 import '../../models/workout.dart';
 import '../../core/widgets/skeleton.dart';
+import '../auth/session.dart';
+import '../share/share_actions.dart';
 
 /// Storico delle sessioni completate.
 class HistoryScreen extends ConsumerWidget {
@@ -18,7 +20,8 @@ class HistoryScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final history = ref.watch(historyProvider);
-    final workouts = {for (final w in ref.watch(myWorkoutsProvider).value ?? const <Workout>[]) w.id: w.name};
+    final me = ref.watch(currentUserProvider);
+    final workouts = {for (final w in ref.watch(myWorkoutsProvider).value ?? const <Workout>[]) w.id: w};
 
     return Scaffold(
       body: SafeArea(
@@ -91,7 +94,7 @@ class HistoryScreen extends ConsumerWidget {
                                       child: Column(
                                         crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
-                                          Text(workouts[h.workoutId] ?? 'Allenamento',
+                                          Text(workouts[h.workoutId]?.name ?? 'Allenamento',
                                               style: const TextStyle(fontWeight: FontWeight.w700)),
                                           Text(
                                             [formatTime(h.startedAt), formatDuration(h.duration), if (h.groupId != null) 'di gruppo']
@@ -106,6 +109,12 @@ class HistoryScreen extends ConsumerWidget {
                                             ),
                                         ],
                                       ),
+                                    ),
+                                    IconButton(
+                                      icon: const Icon(Icons.ios_share_rounded, color: AppColors.inkSoft),
+                                      tooltip: 'Condividi',
+                                      onPressed: () => shareSession(context, h,
+                                          workout: workouts[h.workoutId], username: me.username),
                                     ),
                                   ],
                                 ),

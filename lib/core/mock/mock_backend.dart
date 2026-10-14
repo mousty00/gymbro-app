@@ -249,6 +249,7 @@ class MockBackend extends Interceptor {
         };
     _notifications.addAll([
       notification('FRIEND_REQUEST', sara, 'f3', 3),
+      notification('WORKOUT_SHARED', giulia, 'w4', 4, detail: 'Full body 45\''),
       notification('POST_COMMENTED', giulia, myPost, 5, detail: 'Che macchina! 🔥'),
       notification('POST_LIKED', marco, myPost, 26, read: true),
       notification('FRIEND_ACCEPTED', giulia, 'f1', 48, read: true),
@@ -552,6 +553,28 @@ class MockBackend extends Interceptor {
       return _ok('Workout deleted');
     }
     if (match('GET', '/workouts/:id')) return _workoutById(last);
+    if (match('POST', '/workouts/:id/share')) {
+      final w = _workoutById(seg[1]);
+      if ((w['user'] as Map)['username'] != _meName && w['isPublic'] != true) {
+        throw _MockError(403, 'Only the owner can share a private workout');
+      }
+      final recipients = <String>{};
+      for (final u in List<String>.from(body['usernames'] as List? ?? const [])) {
+        if (!_isFriend(u)) throw _MockError(403, 'You can only share with your friends: $u');
+        recipients.add(u);
+      }
+      for (final id in List<String>.from(body['groupIds'] as List? ?? const [])) {
+        final g = _groupById(id);
+        if (!_canSeeGroup(g)) throw _MockError(404, 'Gruppo non trovato');
+        recipients.add((g['createdBy'] as Map)['username'] as String);
+        for (final m in g['groupMembers'] as List) {
+          if (m['status'] == 'accepted') recipients.add((m['user'] as Map)['username'] as String);
+        }
+      }
+      recipients.remove(_meName);
+      if (recipients.isEmpty) throw _MockError(400, 'Choose at least one friend or group to share with');
+      return {'recipients': recipients.length};
+    }
 
     // Esercizi della scheda
     if (match('POST', '/workout-exercises/create') || match('PUT', '/workout-exercises/update')) {
