@@ -12,11 +12,7 @@ void main() {
             branches: [
               StatefulShellBranch(routes: [GoRoute(path: '/home', builder: (_, _) => const Text('home'))]),
               StatefulShellBranch(routes: [
-                GoRoute(
-                  path: '/profile',
-                  builder: (_, _) => const BackToHome(child: Text('profile')),
-                  routes: [GoRoute(path: 'workouts', builder: (_, _) => const Text('schede'))],
-                ),
+                GoRoute(path: '/profile', builder: (_, _) => const BackToHome(child: Text('profile'))),
               ]),
             ],
           ),
@@ -33,20 +29,5 @@ void main() {
     await tester.binding.handlePopRoute();
     await tester.pumpAndSettle();
     expect(r.state.matchedLocation, '/home');
-  });
-
-  testWidgets('indietro da Le mie schede torna al profilo', (tester) async {
-    final r = router();
-    await tester.pumpWidget(MaterialApp.router(routerConfig: r));
-    r.go('/profile');
-    await tester.pumpAndSettle();
-    r.push('/profile/workouts');
-    await tester.pumpAndSettle();
-    expect(find.text('schede'), findsOneWidget);
-
-    await tester.binding.handlePopRoute();
-    await tester.pumpAndSettle();
-    expect(r.state.matchedLocation, '/profile');
-    expect(find.text('profile'), findsOneWidget);
   });
 }

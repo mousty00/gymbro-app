@@ -78,10 +78,8 @@ class HomeScreen extends ConsumerWidget {
                   ],
                 ),
                 const SizedBox(height: 28),
-                // Una cosa alla volta: cosa fare oggi, scorciatoie, la settimana, cosa arriva.
+                // Una cosa alla volta: cosa fare oggi, la settimana, cosa arriva.
                 const _TodaySection(),
-                const SizedBox(height: 14),
-                const _Shortcuts(),
                 const SizedBox(height: 32),
                 const _WeekCard(),
                 const SizedBox(height: 32),
@@ -309,39 +307,6 @@ class TodayWorkoutCard extends StatelessWidget {
   }
 }
 
-/// Scorciatoie piccole per ciò che non sta nella barra in basso.
-class _Shortcuts extends StatelessWidget {
-  const _Shortcuts();
-
-  @override
-  Widget build(BuildContext context) {
-    Widget chip(IconData icon, String label, String route) => Expanded(
-          child: SoftCard(
-            onTap: () => context.push(route),
-            padding: const EdgeInsets.symmetric(vertical: 12),
-            radius: AppRadius.md,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(icon, size: 18, color: AppColors.inkSoft),
-                const SizedBox(width: 6),
-                Text(label, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
-              ],
-            ),
-          ),
-        );
-    return Row(
-      children: [
-        chip(Icons.directions_run_rounded, tr('Corsa'), '/running'),
-        const SizedBox(width: 10),
-        chip(Icons.history_rounded, tr('Storico'), '/history'),
-        const SizedBox(width: 10),
-        chip(Icons.sports_gymnastics_rounded, tr('Esercizi'), '/exercises'),
-      ],
-    );
-  }
-}
-
 /// La settimana in una card sola: barre lun → dom, sessioni e tempo.
 class _WeekCard extends ConsumerWidget {
   const _WeekCard();
@@ -495,7 +460,7 @@ class AvatarStack extends StatelessWidget {
   }
 }
 
-/// Bottom sheet "Crea": post, scheda, gruppo, esercizio.
+/// Bottom sheet "Crea": post, scheda, gruppo, percorso.
 void showQuickCreate(BuildContext context) {
   // Sopra la barra di navigazione (root navigator), alto quanto serve e, se lo
   // schermo è piccolo o i testi lunghi, scorrevole invece di tagliarsi.
@@ -543,7 +508,6 @@ void showQuickCreate(BuildContext context) {
               item(Icons.fitness_center_rounded, AppColors.blue, tr('Nuova scheda'), tr('Esercizi, giorni e orario'), '/workout/new'),
               item(Icons.groups_rounded, AppColors.lilac, tr('Allenamento di gruppo'), tr('Invita i tuoi amici'), '/group/new'),
               item(Icons.add_road_rounded, AppColors.blue, tr('Percorso di corsa'), tr('Disegnalo sulla mappa'), '/running/route/new'),
-              item(Icons.sports_gymnastics_rounded, AppColors.mint, tr('Libreria esercizi'), tr('Crea o cerca esercizi'), '/exercises'),
             ],
           ),
         ),

@@ -442,6 +442,8 @@ const es = <String, String>{
   'Copia link': 'Copiar enlace',
   'Home': 'Inicio',
   'Allenamenti': 'Entrenamientos',
+  'Allenati': 'Entrena',
+  'Feed': 'Feed',
   'Profilo': 'Perfil',
   'Scegli un esercizio': 'Elige un ejercicio',
   'Aggiungi esercizio': 'Añadir ejercicio',

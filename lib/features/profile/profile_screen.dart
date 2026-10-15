@@ -21,6 +21,7 @@ import '../friends/user_profile_screen.dart';
 import '../share/share_actions.dart';
 import '../share/share_links.dart';
 import '../shell/app_shell.dart';
+import '../shell/sections.dart';
 import '../../core/widgets/skeleton.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
@@ -106,12 +107,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   padding: const EdgeInsets.symmetric(vertical: 6),
                   child: Column(
                     children: [
-                      _MenuRow(
-                        icon: Icons.sports_gymnastics_rounded,
-                        color: AppColors.mint,
-                        label: tr('Libreria esercizi'),
-                        onTap: () => go(() => context.push('/exercises')),
-                      ),
                       _MenuRow(
                         icon: Icons.language_rounded,
                         color: AppColors.lilac,
@@ -206,7 +201,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     final posts = ref.watch(userPostsProvider(me.username));
     final history = ref.watch(historyProvider).value ?? const [];
     final friends = ref.watch(friendsProvider).value ?? const <Friendship>[];
-    final workouts = ref.watch(myWorkoutsProvider).value ?? const [];
     final total = history.fold<Duration>(Duration.zero, (a, h) => a + (h.duration ?? Duration.zero));
     final t = Theme.of(context).textTheme;
 
@@ -272,7 +266,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         children: [
                           _Counter(value: '${posts.value?.length ?? '–'}', label: tr('Post')),
                           _Counter(value: '${history.length}', label: tr('Sessioni'), onTap: () => context.push('/history')),
-                          _Counter(value: '${friends.length}', label: tr('Amici'), onTap: () => context.push('/friends')),
+                          _Counter(
+                            value: '${friends.length}',
+                            label: tr('Amici'),
+                            onTap: () {
+                              ref.read(communitySectionProvider.notifier).show(CommunitySection.friends);
+                              context.go('/feed');
+                            },
+                          ),
                         ],
                       ),
                     ),
@@ -290,28 +291,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 ),
                 if (total > Duration.zero)
                   Text(tr('{duration} di allenamento', {'duration': formatDuration(total)}), style: t.bodyMedium?.copyWith(color: AppColors.muted)),
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Expanded(
-                      child: _PillButton(
-                        icon: Icons.fitness_center_rounded,
-                        label: tr('Schede · {count}', {'count': workouts.length}),
-                        onTap: () => context.push('/profile/workouts'),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: _PillButton(icon: Icons.history_rounded, label: tr('Storico'), onTap: () => context.push('/history')),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: _PillButton(icon: Icons.people_alt_rounded, label: tr('Amici'), onTap: () => context.push('/friends')),
-                    ),
-                  ],
-                ),
                 const SizedBox(height: 28),
-                SectionHeader(tr('I miei post'), action: tr('Nuovo post'), onAction: () => context.push('/posts/new')),
+                SectionHeader(tr('I miei post')),
                 AsyncView<List<Post>>(
                   value: posts,
                   onRetry: () => ref.invalidate(userPostsProvider(me.username)),
@@ -335,37 +316,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             ),
           ),
         ),
-      ),
-    );
-  }
-}
-
-/// Pulsante a pillola bianco sotto l'intestazione del profilo.
-class _PillButton extends StatelessWidget {
-  const _PillButton({required this.icon, required this.label, required this.onTap});
-
-  final IconData icon;
-  final String label;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return SoftCard(
-      onTap: onTap,
-      padding: const EdgeInsets.symmetric(vertical: 11, horizontal: 8),
-      radius: AppRadius.md,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(icon, size: 16, color: AppColors.inkSoft),
-          const SizedBox(width: 6),
-          Flexible(
-            child: Text(label,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
-          ),
-        ],
       ),
     );
   }

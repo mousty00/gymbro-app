@@ -20,7 +20,7 @@ void main() {
     await tester.tap(find.text('+'));
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
-    await tester.scrollUntilVisible(find.text('Bibliothèque d\'exercices'), 100, scrollable: find.byType(Scrollable).last);
-    expect(find.text('Bibliothèque d\'exercices'), findsOneWidget);
+    await tester.scrollUntilVisible(find.text('Parcours de course'), 100, scrollable: find.byType(Scrollable).last);
+    expect(find.text('Parcours de course'), findsOneWidget);
   });
 }

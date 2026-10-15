@@ -10,19 +10,25 @@ import '../../core/widgets/ui.dart';
 import '../../data/providers.dart';
 import '../../models/social.dart';
 import '../shell/app_shell.dart';
+import '../shell/sections.dart';
 import 'post_card.dart';
 import '../../core/widgets/skeleton.dart';
 
-/// Community: post degli amici o di tutti.
+/// Community: post degli amici ([explore] false) o di tutti.
 class FeedScreen extends ConsumerStatefulWidget {
-  const FeedScreen({super.key});
+  const FeedScreen({super.key, required this.explore, required this.title});
+
+  final bool explore;
+
+  /// Il selettore di sezione della tab Community.
+  final Widget title;
 
   @override
   ConsumerState<FeedScreen> createState() => _FeedScreenState();
 }
 
 class _FeedScreenState extends ConsumerState<FeedScreen> {
-  bool _friends = true;
+  bool get _friends => !widget.explore;
 
   FutureProvider<List<Post>> get _provider => _friends ? friendsPostsProvider : explorePostsProvider;
 
@@ -45,14 +51,7 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
                       children: [
                         Row(
                           children: [
-                            Expanded(
-                              child: Text(tr('Community'), style: Theme.of(context).textTheme.headlineMedium),
-                            ),
-                            CircleIconButton(
-                              icon: Icons.person_search_rounded,
-                              tooltip: tr('Trova amici'),
-                              onTap: () => context.push('/friends'),
-                            ),
+                            Expanded(child: widget.title),
                             const SizedBox(width: 10),
                             CircleIconButton(
                               icon: Icons.add_rounded,
@@ -61,12 +60,6 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
                               onTap: () => context.push('/posts/new'),
                             ),
                           ],
-                        ),
-                        const SizedBox(height: 18),
-                        SegmentedPill(
-                          options: [tr('Amici'), tr('Esplora')],
-                          index: _friends ? 0 : 1,
-                          onChanged: (i) => setState(() => _friends = i == 0),
                         ),
                         const SizedBox(height: 18),
                       ],
@@ -93,7 +86,9 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
                               ? tr('Quando i tuoi amici pubblicano un allenamento lo vedrai qui.')
                               : tr('Sii il primo a condividere un allenamento.'),
                           action: _friends ? tr('Trova amici') : tr('Pubblica un post'),
-                          onAction: () => context.push(_friends ? '/friends' : '/posts/new'),
+                          onAction: () => _friends
+                              ? ref.read(communitySectionProvider.notifier).show(CommunitySection.friends)
+                              : context.push('/posts/new'),
                         ),
                       );
                     }

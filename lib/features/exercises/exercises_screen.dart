@@ -14,7 +14,10 @@ import '../../core/widgets/skeleton.dart';
 
 /// Libreria esercizi: pubblici + creati da me, filtrabili per gruppo muscolare.
 class ExercisesScreen extends ConsumerStatefulWidget {
-  const ExercisesScreen({super.key});
+  const ExercisesScreen({super.key, this.title});
+
+  /// Dentro la tab Allenati: il selettore di sezione al posto del titolo.
+  final Widget? title;
 
   @override
   ConsumerState<ExercisesScreen> createState() => _ExercisesScreenState();
@@ -46,6 +49,7 @@ class _ExercisesScreenState extends ConsumerState<ExercisesScreen> {
           children: [
             TopBar(
               title: tr('Esercizi'),
+              titleWidget: widget.title,
               actions: [
                 CircleIconButton(
                   icon: Icons.add_rounded,

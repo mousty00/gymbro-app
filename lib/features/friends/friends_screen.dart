@@ -21,7 +21,10 @@ import '../../core/widgets/skeleton.dart';
 
 /// Amici, richieste ricevute e ricerca utenti.
 class FriendsScreen extends ConsumerStatefulWidget {
-  const FriendsScreen({super.key});
+  const FriendsScreen({super.key, this.title});
+
+  /// Dentro la tab Community: il selettore di sezione al posto del titolo.
+  final Widget? title;
 
   @override
   ConsumerState<FriendsScreen> createState() => _FriendsScreenState();
@@ -76,7 +79,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            TopBar(title: tr('Amici')),
+            TopBar(title: tr('Amici'), titleWidget: widget.title),
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 8, 20, 14),
               child: SearchPill(controller: _search, hint: tr('Cerca per username'), onChanged: _onSearch),

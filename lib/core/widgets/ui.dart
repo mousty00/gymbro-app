@@ -497,11 +497,14 @@ class SearchPill extends StatelessWidget {
 
 /// Barra superiore per le schermate interne: indietro + titolo + azioni.
 class TopBar extends StatelessWidget {
-  const TopBar({super.key, required this.title, this.actions = const [], this.showBack = true});
+  const TopBar({super.key, required this.title, this.actions = const [], this.showBack = true, this.titleWidget});
 
   final String title;
   final List<Widget> actions;
   final bool showBack;
+
+  /// Al posto del titolo, es. il selettore di sezione dentro una tab (niente indietro).
+  final Widget? titleWidget;
 
   @override
   Widget build(BuildContext context) {
@@ -509,7 +512,7 @@ class TopBar extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(20, 8, 20, 8),
       child: Row(
         children: [
-          if (showBack) ...[
+          if (showBack && titleWidget == null) ...[
             CircleIconButton(
               icon: Icons.arrow_back_rounded,
               size: 44,
@@ -519,11 +522,12 @@ class TopBar extends StatelessWidget {
             const SizedBox(width: 14),
           ],
           Expanded(
-            child: Text(
-              title,
-              style: Theme.of(context).textTheme.headlineSmall,
-              overflow: TextOverflow.ellipsis,
-            ),
+            child: titleWidget ??
+                Text(
+                  title,
+                  style: Theme.of(context).textTheme.headlineSmall,
+                  overflow: TextOverflow.ellipsis,
+                ),
           ),
           for (final a in actions) ...[const SizedBox(width: 10), a],
         ],

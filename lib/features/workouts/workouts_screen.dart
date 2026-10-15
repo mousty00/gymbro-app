@@ -10,15 +10,14 @@ import '../../core/widgets/ui.dart';
 import '../../data/providers.dart';
 import '../../models/workout.dart';
 import '../auth/session.dart';
-import '../feed/feed_screen.dart';
 import '../shell/app_shell.dart';
 import '../../core/widgets/skeleton.dart';
 
 class WorkoutsScreen extends ConsumerStatefulWidget {
-  const WorkoutsScreen({super.key, this.showBack = false});
+  const WorkoutsScreen({super.key, required this.title});
 
-  /// Aperta dal profilo ("Le mie schede"): freccia indietro che riporta lì.
-  final bool showBack;
+  /// Il selettore di sezione della tab Allenati.
+  final Widget title;
 
   @override
   ConsumerState<WorkoutsScreen> createState() => _WorkoutsScreenState();
@@ -49,19 +48,8 @@ class _WorkoutsScreenState extends ConsumerState<WorkoutsScreen> {
                       children: [
                         Row(
                           children: [
-                            if (widget.showBack) ...[
-                              CircleIconButton(
-                                icon: Icons.arrow_back_rounded,
-                                size: 44,
-                                tooltip: tr('Indietro'),
-                                onTap: () => context.canPop() ? context.pop() : context.go('/profile'),
-                              ),
-                              const SizedBox(width: 14),
-                            ],
-                            Expanded(
-                              child: Text(widget.showBack ? tr('Le mie schede') : tr('Allenamenti'),
-                                  style: Theme.of(context).textTheme.headlineMedium),
-                            ),
+                            Expanded(child: widget.title),
+                            const SizedBox(width: 10),
                             CircleIconButton(
                               icon: Icons.add_rounded,
                               dark: true,
@@ -70,37 +58,18 @@ class _WorkoutsScreenState extends ConsumerState<WorkoutsScreen> {
                             ),
                           ],
                         ),
-                        const SizedBox(height: 18),
-                        Row(
+                        const SizedBox(height: 14),
+                        Wrap(
+                          spacing: 8,
                           children: [
-                            Expanded(
-                              child: _ShortcutCard(
-                                icon: Icons.sports_gymnastics_rounded,
-                                title: tr('Esercizi'),
-                                subtitle: tr('Libreria'),
-                                color: AppColors.pinkSoft,
-                                accent: AppColors.pink,
-                                onTap: () => context.push('/exercises'),
+                            for (final (i, label) in [tr('Le mie schede'), tr('Esplora')].indexed)
+                              ChoiceChip(
+                                label: Text(label),
+                                selected: _tab == i,
+                                showCheckmark: false,
+                                onSelected: (_) => setState(() => _tab = i),
                               ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: _ShortcutCard(
-                                icon: Icons.history_rounded,
-                                title: tr('Storico'),
-                                subtitle: tr('Sessioni'),
-                                color: AppColors.lilacSoft,
-                                accent: AppColors.lilac,
-                                onTap: () => context.push('/history'),
-                              ),
-                            ),
                           ],
-                        ),
-                        const SizedBox(height: 20),
-                        SegmentedPill(
-                          options: [tr('Le mie schede'), tr('Esplora')],
-                          index: _tab,
-                          onChanged: (i) => setState(() => _tab = i),
                         ),
                         const SizedBox(height: 18),
                       ],
@@ -146,49 +115,6 @@ class _WorkoutsScreenState extends ConsumerState<WorkoutsScreen> {
             ),
           ),
         ),
-      ),
-    );
-  }
-}
-
-class _ShortcutCard extends StatelessWidget {
-  const _ShortcutCard({
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-    required this.color,
-    required this.accent,
-    required this.onTap,
-  });
-
-  final IconData icon;
-  final String title;
-  final String subtitle;
-  final Color color;
-  final Color accent;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return SoftCard(
-      color: color,
-      onTap: onTap,
-      padding: const EdgeInsets.all(16),
-      child: Row(
-        children: [
-          IconChip(icon: icon, color: accent, background: AppColors.card),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(title, style: const TextStyle(fontWeight: FontWeight.w700)),
-                Text(subtitle, style: TextStyle(color: AppColors.inkSoft, fontSize: 12)),
-              ],
-            ),
-          ),
-          const Icon(Icons.north_east_rounded, size: 18),
-        ],
       ),
     );
   }

@@ -13,7 +13,7 @@ class AppShell extends StatelessWidget {
   static List<(IconData, String)> get _items => [
         (Icons.home_rounded, tr('Home')),
         (Icons.dynamic_feed_rounded, tr('Community')),
-        (Icons.fitness_center_rounded, tr('Allenamenti')),
+        (Icons.fitness_center_rounded, tr('Allenati')),
         (Icons.groups_rounded, tr('Gruppi')),
         (Icons.person_rounded, tr('Profilo')),
       ];

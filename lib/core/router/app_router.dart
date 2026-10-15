@@ -7,9 +7,7 @@ import '../../features/auth/login_screen.dart';
 import '../../features/auth/session.dart';
 import '../../features/auth/signup_screen.dart';
 import '../../features/auth/verify_otp_screen.dart';
-import '../../features/exercises/exercises_screen.dart';
 import '../../features/feed/create_post_screen.dart';
-import '../../features/feed/feed_screen.dart';
 import '../../features/feed/post_detail_screen.dart';
 import '../../features/friends/friends_screen.dart';
 import '../../features/friends/notifications_screen.dart';
@@ -30,10 +28,10 @@ import '../../features/running/run_event_form_screen.dart';
 import '../../features/running/run_tracker_screen.dart';
 import '../../features/running/running_screen.dart';
 import '../../features/shell/app_shell.dart';
+import '../../features/shell/sections.dart';
 import '../../features/workouts/workout_detail_screen.dart';
 import '../../features/workouts/workout_form_screen.dart';
 import '../../features/workouts/workout_session_screen.dart';
-import '../../features/workouts/workouts_screen.dart';
 import '../../models/workout.dart';
 
 final _rootKey = GlobalKey<NavigatorState>();
@@ -99,18 +97,11 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (_, _, shell) => AppShell(shell: shell),
         branches: [
           StatefulShellBranch(routes: [GoRoute(path: '/home', builder: (_, _) => const HomeScreen())]),
-          StatefulShellBranch(routes: [GoRoute(path: '/feed', builder: (_, _) => const BackToHome(child: FeedScreen()))]),
-          StatefulShellBranch(routes: [GoRoute(path: '/workouts', builder: (_, _) => const BackToHome(child: WorkoutsScreen()))]),
+          StatefulShellBranch(routes: [GoRoute(path: '/feed', builder: (_, _) => const BackToHome(child: CommunityScreen()))]),
+          StatefulShellBranch(routes: [GoRoute(path: '/workouts', builder: (_, _) => const BackToHome(child: TrainScreen()))]),
           StatefulShellBranch(routes: [GoRoute(path: '/groups', builder: (_, _) => const BackToHome(child: GroupsScreen()))]),
           StatefulShellBranch(routes: [
-            GoRoute(
-              path: '/profile',
-              builder: (_, _) => const BackToHome(child: ProfileScreen()),
-              routes: [
-                // "Le mie schede" dal profilo: resta nella tab Profilo, così indietro torna lì.
-                GoRoute(path: 'workouts', builder: (_, _) => const WorkoutsScreen(showBack: true)),
-              ],
-            ),
+            GoRoute(path: '/profile', builder: (_, _) => const BackToHome(child: ProfileScreen())),
           ]),
         ],
       ),
@@ -148,11 +139,6 @@ final routerProvider = Provider<GoRouter>((ref) {
           workoutId: s.pathParameters['id']!,
           groupId: s.uri.queryParameters['group'],
         ),
-      ),
-      GoRoute(
-        parentNavigatorKey: _rootKey,
-        path: '/exercises',
-        builder: (_, _) => const ExercisesScreen(),
       ),
       GoRoute(
         parentNavigatorKey: _rootKey,

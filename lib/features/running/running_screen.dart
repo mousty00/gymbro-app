@@ -17,9 +17,12 @@ import 'route_map.dart';
 /// Hub della corsa: i miei percorsi, quelli pubblici degli amici, le corse di
 /// gruppo e lo storico delle corse.
 class RunningScreen extends ConsumerStatefulWidget {
-  const RunningScreen({super.key, this.initialTab = 0});
+  const RunningScreen({super.key, this.initialTab = 0, this.title});
 
   final int initialTab;
+
+  /// Dentro la tab Allenati: il selettore di sezione al posto del titolo.
+  final Widget? title;
 
   @override
   ConsumerState<RunningScreen> createState() => _RunningScreenState();
@@ -47,6 +50,7 @@ class _RunningScreenState extends ConsumerState<RunningScreen> {
             children: [
               TopBar(
                 title: tr('Corsa'),
+                titleWidget: widget.title,
                 actions: [
                   CircleIconButton(
                     icon: Icons.add_road_rounded,
