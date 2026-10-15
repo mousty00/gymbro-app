@@ -117,7 +117,6 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
       },
       child: Scaffold(
         body: SkyBackground(
-          tint: AppColors.lilacSoft,
           child: SafeArea(
             child: AsyncView<Workout>(
               value: workout,

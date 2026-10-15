@@ -24,7 +24,6 @@ class GroupsScreen extends ConsumerWidget {
 
     return Scaffold(
       body: SkyBackground(
-        tint: AppColors.mintSoft,
         child: SafeArea(
           bottom: false,
           child: RefreshIndicator(

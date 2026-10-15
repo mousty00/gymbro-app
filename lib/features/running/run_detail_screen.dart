@@ -28,7 +28,6 @@ class RunDetailScreen extends ConsumerWidget {
     final repo = ref.read(runningRepositoryProvider);
     return Scaffold(
       body: SkyBackground(
-        tint: AppColors.pinkSoft,
         child: SafeArea(
           child: AsyncView<RunActivity>(
             value: ref.watch(runProvider(runId)),

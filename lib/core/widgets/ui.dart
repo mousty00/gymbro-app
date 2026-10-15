@@ -13,7 +13,6 @@ class SoftCard extends StatelessWidget {
     required this.child,
     this.padding = const EdgeInsets.all(18),
     this.color,
-    this.gradient,
     this.onTap,
     this.radius = AppRadius.lg,
     this.border = true,
@@ -23,7 +22,6 @@ class SoftCard extends StatelessWidget {
   final EdgeInsetsGeometry padding;
   /// Di default [AppColors.card].
   final Color? color;
-  final Gradient? gradient;
   final VoidCallback? onTap;
   final double radius;
   final bool border;
@@ -34,10 +32,9 @@ class SoftCard extends StatelessWidget {
     final color = this.color ?? AppColors.card;
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: gradient == null ? color : null,
-        gradient: gradient,
+        color: color,
         borderRadius: shape,
-        border: border && gradient == null && color == AppColors.card
+        border: border && color == AppColors.card
             ? Border.all(color: AppColors.stroke.withValues(alpha: 0.7))
             : null,
         boxShadow: AppShadows.soft,
@@ -209,7 +206,7 @@ class PrimaryButton extends StatelessWidget {
   }
 }
 
-/// Avatar con foto o iniziali su gradiente. Per l'utente loggato usa sempre
+/// Avatar con foto o iniziali su colore pieno. Per l'utente loggato usa sempre
 /// la sua foto profilo attuale, anche dove il dato arriva senza immagine o con
 /// quella vecchia (i suoi post, i commenti, gli avatar di gruppo).
 class UserAvatar extends ConsumerWidget {
@@ -226,19 +223,14 @@ class UserAvatar extends ConsumerWidget {
     final imageUrl = me != null && me.username == username && AppImage.supports(me.image) ? me.image : this.imageUrl;
     final initials = username.isEmpty ? '?' : username.characters.first.toUpperCase();
     final hasImage = AppImage.supports(imageUrl);
-    final colors = _palette[username.hashCode.abs() % _palette.length];
-    final initialsView = DecoratedBox(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(colors: colors, begin: Alignment.topLeft, end: Alignment.bottomRight),
-      ),
-      child: Center(child: _Initials(initials, size)),
-    );
+    final color = _palette[username.hashCode.abs() % _palette.length];
+    final initialsView = ColoredBox(color: color, child: Center(child: _Initials(initials, size)));
     // La foto riempie tutto il cerchio (cover + ritaglio tondo), anche dentro l'anello.
     return Container(
       width: size,
       height: size,
       padding: ring ? const EdgeInsets.all(3) : EdgeInsets.zero,
-      decoration: ring ? const BoxDecoration(shape: BoxShape.circle, gradient: AppColors.brandGradient) : null,
+      decoration: ring ? const BoxDecoration(shape: BoxShape.circle, color: AppColors.blue) : null,
       child: Container(
         padding: ring ? const EdgeInsets.all(2.5) : EdgeInsets.zero,
         decoration: ring ? BoxDecoration(shape: BoxShape.circle, color: AppColors.card) : null,
@@ -254,10 +246,10 @@ class UserAvatar extends ConsumerWidget {
   }
 
   static const _palette = [
-    [Color(0xFFBFD3FF), Color(0xFFD9CCFF)],
-    [Color(0xFFFFD1EE), Color(0xFFD9CCFF)],
-    [Color(0xFFC6F0E0), Color(0xFFBFD3FF)],
-    [Color(0xFFFFE2B8), Color(0xFFFFC9DE)],
+    Color(0xFFBFD3FF),
+    Color(0xFFFFD1EE),
+    Color(0xFFC6F0E0),
+    Color(0xFFFFE2B8),
   ];
 }
 

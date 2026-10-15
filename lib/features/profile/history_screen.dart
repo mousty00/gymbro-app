@@ -50,7 +50,7 @@ class HistoryScreen extends ConsumerWidget {
                       padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
                       children: [
                         SoftCard(
-                          gradient: AppColors.brandGradient,
+                          color: AppColors.blue,
                           padding: const EdgeInsets.all(20),
                           child: Row(
                             children: [

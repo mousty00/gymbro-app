@@ -5,43 +5,14 @@ import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import 'rep_bird.dart';
 
-/// Sfondo "cielo" azzurro → lilla che sfuma nel grigio chiaro (tema chiaro);
-/// a tinta unita nel tema scuro.
+/// Sfondo a tinta unita delle schermate, del colore di fondo del tema.
 class SkyBackground extends StatelessWidget {
-  const SkyBackground({super.key, required this.child, this.height = 420, this.tint});
+  const SkyBackground({super.key, required this.child});
 
   final Widget child;
-  final double height;
-  /// Colore in cima al gradiente; di default [AppColors.skyTop].
-  final Color? tint;
 
   @override
-  Widget build(BuildContext context) {
-    // Nel tema scuro niente gradiente: sfondo a tinta unita.
-    if (AppColors.isDark) return ColoredBox(color: AppColors.bg, child: child);
-    return Stack(
-      children: [
-        Positioned.fill(child: ColoredBox(color: AppColors.bg)),
-        Positioned(
-          top: 0,
-          left: 0,
-          right: 0,
-          height: height,
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [tint ?? AppColors.skyTop, AppColors.skyMid.withValues(alpha: 0.6), AppColors.bg],
-                stops: const [0, 0.55, 1],
-              ),
-            ),
-          ),
-        ),
-        Positioned.fill(child: child),
-      ],
-    );
-  }
+  Widget build(BuildContext context) => ColoredBox(color: AppColors.bg, child: child);
 }
 
 /// Il logo dell'app: l'uccellino bianco su un cerchio del colore del brand.

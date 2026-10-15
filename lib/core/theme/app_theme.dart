@@ -26,7 +26,6 @@ abstract final class LightColors {
   static const danger = AppColors.danger;
 
   static const skyTop = Color(0xFFD6E2FB);
-  static const skyMid = Color(0xFFEAE7FB);
 
   static const brandGradient = AppColors.brandGradient;
 }
@@ -46,8 +45,6 @@ class AppPalette {
     required this.lilacSoft,
     required this.pinkSoft,
     required this.mintSoft,
-    required this.skyTop,
-    required this.skyMid,
   });
 
   final Brightness brightness;
@@ -62,8 +59,6 @@ class AppPalette {
   final Color lilacSoft;
   final Color pinkSoft;
   final Color mintSoft;
-  final Color skyTop;
-  final Color skyMid;
 
   static const light = AppPalette(
     brightness: Brightness.light,
@@ -78,8 +73,6 @@ class AppPalette {
     lilacSoft: LightColors.lilacSoft,
     pinkSoft: LightColors.pinkSoft,
     mintSoft: LightColors.mintSoft,
-    skyTop: LightColors.skyTop,
-    skyMid: LightColors.skyMid,
   );
 
   static const dark = AppPalette(
@@ -95,14 +88,12 @@ class AppPalette {
     lilacSoft: Color(0xFF29234D),
     pinkSoft: Color(0xFF3B2039),
     mintSoft: Color(0xFF16352B),
-    skyTop: Color(0xFF1A2550),
-    skyMid: Color(0xFF221D44),
   );
 
   static AppPalette of(Brightness brightness) => brightness == Brightness.dark ? dark : light;
 }
 
-/// Palette dell'app: chiara e pulita con gradienti azzurro/lilla morbidi, o
+/// Palette dell'app: chiara e pulita a tinte unite, o
 /// scura con gli stessi accenti. Segue il tema del dispositivo: i colori
 /// neutri (testo, sfondi, card, bordi) cambiano col tema attivo, gli accenti
 /// restano uguali.
@@ -143,9 +134,6 @@ abstract final class AppColors {
   static Color get mintSoft => _palette.mintSoft;
   static const amber = Color(0xFFF2B33D);
   static const danger = Color(0xFFE5484D);
-
-  static Color get skyTop => _palette.skyTop;
-  static Color get skyMid => _palette.skyMid;
 
   static const brandGradient = LinearGradient(
     colors: [blue, lilac],

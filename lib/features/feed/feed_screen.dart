@@ -30,7 +30,6 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
     final posts = ref.watch(_provider);
     return Scaffold(
       body: SkyBackground(
-        tint: AppColors.pinkSoft,
         child: SafeArea(
           bottom: false,
           child: RefreshIndicator(

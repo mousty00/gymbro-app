@@ -157,7 +157,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
     return Scaffold(
       body: SkyBackground(
-        tint: AppColors.lilacSoft,
         child: SafeArea(
           bottom: false,
           child: RefreshIndicator(

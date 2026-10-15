@@ -68,7 +68,6 @@ class _RouteDetailScreenState extends ConsumerState<RouteDetailScreen> {
     final value = ref.watch(runRouteProvider(widget.routeId));
     return Scaffold(
       body: SkyBackground(
-        tint: AppColors.blueSoft,
         child: SafeArea(
           child: AsyncView<RunRoute>(
             value: value,

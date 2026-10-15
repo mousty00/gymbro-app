@@ -78,7 +78,6 @@ class WorkoutDetailScreen extends ConsumerWidget {
 
     return Scaffold(
       body: SkyBackground(
-        tint: AppColors.blueSoft,
         child: SafeArea(
           child: AsyncView<Workout>(
             value: workout,

@@ -81,7 +81,6 @@ class GroupDetailScreen extends ConsumerWidget {
 
     return Scaffold(
       body: SkyBackground(
-        tint: AppColors.mintSoft,
         child: SafeArea(
           child: AsyncView<WorkoutGroup>(
             value: group,

@@ -13,7 +13,6 @@ class WelcomeScreen extends StatelessWidget {
     final t = Theme.of(context).textTheme;
     return Scaffold(
       body: SkyBackground(
-        height: 700,
         child: SafeArea(
           child: Padding(
             padding: const EdgeInsets.fromLTRB(24, 12, 24, 16),

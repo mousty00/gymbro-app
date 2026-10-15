@@ -378,12 +378,7 @@ class _CardFrame extends StatelessWidget {
       child: DecoratedBox(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(AppRadius.lg),
-          gradient: const LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [LightColors.skyTop, LightColors.skyMid, Colors.white],
-            stops: [0, 0.5, 1],
-          ),
+          color: LightColors.skyTop,
         ),
         child: Stack(
           children: [

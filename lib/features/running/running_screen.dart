@@ -40,7 +40,6 @@ class _RunningScreenState extends ConsumerState<RunningScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SkyBackground(
-        tint: AppColors.blueSoft,
         child: SafeArea(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -215,7 +214,7 @@ class _Runs extends ConsumerWidget {
           padding: _listPadding,
           children: [
             SoftCard(
-              gradient: AppColors.brandGradient,
+              color: AppColors.blue,
               child: Row(
                 children: [
                   const Icon(Icons.directions_run_rounded, color: Colors.white, size: 32),
