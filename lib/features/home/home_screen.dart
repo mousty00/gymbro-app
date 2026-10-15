@@ -497,8 +497,12 @@ class AvatarStack extends StatelessWidget {
 
 /// Bottom sheet "Crea": post, scheda, gruppo, esercizio.
 void showQuickCreate(BuildContext context) {
+  // Sopra la barra di navigazione (root navigator), alto quanto serve e, se lo
+  // schermo è piccolo o i testi lunghi, scorrevole invece di tagliarsi.
   showModalBottomSheet<void>(
     context: context,
+    useRootNavigator: true,
+    isScrollControlled: true,
     builder: (ctx) {
       Widget item(IconData icon, Color color, String title, String subtitle, String route) => Padding(
             padding: const EdgeInsets.only(bottom: 10),
@@ -527,7 +531,7 @@ void showQuickCreate(BuildContext context) {
             ),
           );
       return SafeArea(
-        child: Padding(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
           child: Column(
             mainAxisSize: MainAxisSize.min,
