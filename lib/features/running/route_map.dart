@@ -22,7 +22,7 @@ Widget mapAttribution({bool top = false}) => Align(
         margin: top ? const EdgeInsets.fromLTRB(4, 110, 12, 4) : const EdgeInsets.all(4),
         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
         decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.8), borderRadius: BorderRadius.circular(6)),
-        child: const Text(Env.mapAttribution, style: TextStyle(fontSize: 9, color: AppColors.inkSoft)),
+        child: const Text(Env.mapAttribution, style: TextStyle(fontSize: 9, color: LightColors.inkSoft)),
       ),
     );
 
@@ -55,7 +55,7 @@ Marker pointMarker(LatLng point, {required Color color, IconData? icon, double s
 
 /// Partenza (verde) e arrivo (scuro) di una linea.
 List<Marker> startEndMarkers(List<LatLng> points) => [
-      if (points.length > 1) pointMarker(points.last, color: AppColors.ink, icon: Icons.flag_rounded),
+      if (points.length > 1) pointMarker(points.last, color: LightColors.ink, icon: Icons.flag_rounded),
       if (points.isNotEmpty) pointMarker(points.first, color: AppColors.mint, icon: Icons.play_arrow_rounded),
     ];
 

@@ -203,9 +203,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                               decoration: BoxDecoration(
                                 color: AppColors.ink,
                                 shape: BoxShape.circle,
-                                border: Border.all(color: Colors.white, width: 2),
+                                border: Border.all(color: AppColors.card, width: 2),
                               ),
-                              child: const Icon(Icons.photo_camera_rounded, size: 14, color: Colors.white),
+                              child: Icon(Icons.photo_camera_rounded, size: 14, color: AppColors.onInk),
                             ),
                           ),
                         ],
@@ -266,11 +266,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       ? SoftCard(
                           onTap: () => context.push('/posts/new'),
                           padding: const EdgeInsets.symmetric(vertical: 28, horizontal: 20),
-                          child: const Column(
+                          child: Column(
                             children: [
                               Icon(Icons.photo_camera_rounded, size: 32, color: AppColors.muted),
-                              SizedBox(height: 8),
-                              Text('Condividi il tuo primo allenamento',
+                              const SizedBox(height: 8),
+                              const Text('Condividi il tuo primo allenamento',
                                   style: TextStyle(fontWeight: FontWeight.w600)),
                             ],
                           ),
@@ -332,7 +332,7 @@ class _Counter extends StatelessWidget {
       child: Column(
         children: [
           Text(value, style: Theme.of(context).textTheme.titleLarge),
-          Text(label, style: const TextStyle(color: AppColors.muted, fontSize: 12)),
+          Text(label, style: TextStyle(color: AppColors.muted, fontSize: 12)),
         ],
       ),
     );
@@ -356,7 +356,7 @@ class _MenuRow extends StatelessWidget {
           onTap: onTap,
           leading: IconChip(icon: icon, color: color, size: 36),
           title: Text(label, style: const TextStyle(fontWeight: FontWeight.w600)),
-          trailing: const Icon(Icons.chevron_right_rounded, color: AppColors.muted),
+          trailing: Icon(Icons.chevron_right_rounded, color: AppColors.muted),
         ),
         if (!last) const Divider(indent: 70, endIndent: 16),
       ],
@@ -376,7 +376,7 @@ class _InfoRow extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
         children: [
-          Text(label, style: const TextStyle(color: AppColors.muted)),
+          Text(label, style: TextStyle(color: AppColors.muted)),
           const SizedBox(width: 12),
           Expanded(
             child: Text(value,

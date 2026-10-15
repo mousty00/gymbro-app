@@ -210,7 +210,7 @@ class _RestDay extends StatelessWidget {
               style: const TextStyle(fontWeight: FontWeight.w600, height: 1.35),
             ),
           ),
-          const Icon(Icons.chevron_right_rounded, color: AppColors.muted),
+          Icon(Icons.chevron_right_rounded, color: AppColors.muted),
         ],
       ),
     );
@@ -240,8 +240,8 @@ class _Row extends StatelessWidget {
             fontWeight: FontWeight.w600,
             color: done ? AppColors.muted : AppColors.ink,
           )),
-      subtitle: Text(subtitle, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(color: AppColors.muted, fontSize: 13)),
-      trailing: const Icon(Icons.chevron_right_rounded, color: AppColors.muted),
+      subtitle: Text(subtitle, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(color: AppColors.muted, fontSize: 13)),
+      trailing: Icon(Icons.chevron_right_rounded, color: AppColors.muted),
     );
   }
 }
@@ -259,7 +259,7 @@ class TodayWorkoutCard extends StatelessWidget {
       '${workout.exercises.length} esercizi',
     ].join(' · ');
     return SoftCard(
-      color: AppColors.ink,
+      color: AppColors.inkCard,
       onTap: () => context.push('/workout/${workout.id}'),
       padding: const EdgeInsets.fromLTRB(20, 20, 16, 20),
       child: Row(
@@ -381,7 +381,7 @@ class _WeekCard extends ConsumerWidget {
                   Padding(
                     padding: const EdgeInsets.only(bottom: 4),
                     child: Text(formatDuration(Duration(minutes: minutes)),
-                        style: const TextStyle(color: AppColors.muted, fontWeight: FontWeight.w600)),
+                        style: TextStyle(color: AppColors.muted, fontWeight: FontWeight.w600)),
                   ),
                 ],
               ),
@@ -475,7 +475,7 @@ class AvatarStack extends StatelessWidget {
             Positioned(
               left: i * size * 0.65,
               child: Container(
-                decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: Colors.white, width: 2)),
+                decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: AppColors.card, width: 2)),
                 child: UserAvatar(username: shown[i].username, imageUrl: shown[i].image, size: size - 4),
               ),
             ),
@@ -513,11 +513,11 @@ void showQuickCreate(BuildContext context) {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(title, style: const TextStyle(fontWeight: FontWeight.w700)),
-                        Text(subtitle, style: const TextStyle(color: AppColors.muted, fontSize: 13)),
+                        Text(subtitle, style: TextStyle(color: AppColors.muted, fontSize: 13)),
                       ],
                     ),
                   ),
-                  const Icon(Icons.chevron_right_rounded, color: AppColors.muted),
+                  Icon(Icons.chevron_right_rounded, color: AppColors.muted),
                 ],
               ),
             ),

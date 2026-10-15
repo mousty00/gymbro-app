@@ -100,18 +100,18 @@ class HistoryScreen extends ConsumerWidget {
                                             [formatTime(h.startedAt), formatDuration(h.duration), if (h.groupId != null) 'di gruppo']
                                                 .where((s) => s.isNotEmpty)
                                                 .join(' · '),
-                                            style: const TextStyle(color: AppColors.inkSoft, fontSize: 13),
+                                            style: TextStyle(color: AppColors.inkSoft, fontSize: 13),
                                           ),
                                           if (h.notes?.isNotEmpty == true)
                                             Padding(
                                               padding: const EdgeInsets.only(top: 4),
-                                              child: Text(h.notes!, style: const TextStyle(color: AppColors.muted, fontSize: 13)),
+                                              child: Text(h.notes!, style: TextStyle(color: AppColors.muted, fontSize: 13)),
                                             ),
                                         ],
                                       ),
                                     ),
                                     IconButton(
-                                      icon: const Icon(Icons.ios_share_rounded, color: AppColors.inkSoft),
+                                      icon: Icon(Icons.ios_share_rounded, color: AppColors.inkSoft),
                                       tooltip: 'Condividi',
                                       onPressed: () => shareSession(context, h,
                                           workout: workouts[h.workoutId], username: me.username),

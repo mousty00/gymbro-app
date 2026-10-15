@@ -3,20 +3,25 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import '../theme/app_theme.dart';
+import 'rep_bird.dart';
 
-/// Sfondo "cielo" azzurro → lilla che sfuma nel grigio chiaro, con macchie morbide.
+/// Sfondo "cielo" azzurro → lilla che sfuma nel grigio chiaro (tema chiaro);
+/// a tinta unita nel tema scuro.
 class SkyBackground extends StatelessWidget {
-  const SkyBackground({super.key, required this.child, this.height = 420, this.tint = AppColors.skyTop});
+  const SkyBackground({super.key, required this.child, this.height = 420, this.tint});
 
   final Widget child;
   final double height;
-  final Color tint;
+  /// Colore in cima al gradiente; di default [AppColors.skyTop].
+  final Color? tint;
 
   @override
   Widget build(BuildContext context) {
+    // Nel tema scuro niente gradiente: sfondo a tinta unita.
+    if (AppColors.isDark) return ColoredBox(color: AppColors.bg, child: child);
     return Stack(
       children: [
-        const Positioned.fill(child: ColoredBox(color: AppColors.bg)),
+        Positioned.fill(child: ColoredBox(color: AppColors.bg)),
         Positioned(
           top: 0,
           left: 0,
@@ -27,21 +32,11 @@ class SkyBackground extends StatelessWidget {
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
-                colors: [tint, AppColors.skyMid.withValues(alpha: 0.6), AppColors.bg],
+                colors: [tint ?? AppColors.skyTop, AppColors.skyMid.withValues(alpha: 0.6), AppColors.bg],
                 stops: const [0, 0.55, 1],
               ),
             ),
           ),
-        ),
-        Positioned(
-          top: -80,
-          right: -60,
-          child: _Blob(color: AppColors.lilac.withValues(alpha: 0.18), size: 260),
-        ),
-        Positioned(
-          top: 120,
-          left: -90,
-          child: _Blob(color: AppColors.blue.withValues(alpha: 0.12), size: 220),
         ),
         Positioned.fill(child: child),
       ],
@@ -49,89 +44,62 @@ class SkyBackground extends StatelessWidget {
   }
 }
 
-class _Blob extends StatelessWidget {
-  const _Blob({required this.color, required this.size});
+/// Il logo dell'app: l'uccellino bianco su un cerchio del colore del brand.
+/// Con [animate] fa vedere il bicipite e sbatte l'occhio ogni tanto.
+class BrandMark extends StatefulWidget {
+  const BrandMark({super.key, this.size = 120, this.animate = false});
 
-  final Color color;
   final double size;
+  final bool animate;
 
   @override
-  Widget build(BuildContext context) {
-    return IgnorePointer(
-      child: Container(
-        width: size,
-        height: size,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          gradient: RadialGradient(colors: [color, color.withValues(alpha: 0)]),
-        ),
-      ),
-    );
-  }
+  State<BrandMark> createState() => _BrandMarkState();
 }
 
-/// Sfera iridescente (rosa / azzurro / lilla), elemento decorativo del brand.
-class GlassOrb extends StatelessWidget {
-  const GlassOrb({super.key, this.size = 120});
+class _BrandMarkState extends State<BrandMark> with SingleTickerProviderStateMixin {
+  late final _c = AnimationController(vsync: this, duration: const Duration(milliseconds: 3200));
 
-  final double size;
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final still = MediaQuery.maybeDisableAnimationsOf(context) ?? false;
+    if (widget.animate && !still) {
+      if (!_c.isAnimating) _c.repeat();
+    } else {
+      _c.stop();
+    }
+  }
+
+  @override
+  void dispose() {
+    _c.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: size * 1.6,
-      height: size * 1.6,
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          // alone
-          Container(
-            width: size * 1.6,
-            height: size * 1.6,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: RadialGradient(colors: [
-                AppColors.pink.withValues(alpha: 0.35),
-                AppColors.lilac.withValues(alpha: 0.12),
-                Colors.transparent,
-              ]),
-            ),
-          ),
-          Container(
-            width: size,
-            height: size,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: const SweepGradient(
-                colors: [
-                  Color(0xFFB9D3FF),
-                  Color(0xFFF5B8EE),
-                  Color(0xFFC9B6FF),
-                  Color(0xFF9FE7F5),
-                  Color(0xFFB9D3FF),
-                ],
-                transform: GradientRotation(math.pi / 5),
-              ),
-              boxShadow: [
-                BoxShadow(color: AppColors.lilac.withValues(alpha: 0.35), blurRadius: 40, offset: const Offset(0, 16)),
-              ],
-            ),
-          ),
-          // riflesso
-          Container(
-            width: size,
-            height: size,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: RadialGradient(
-                center: const Alignment(-0.35, -0.45),
-                radius: 0.7,
-                colors: [Colors.white.withValues(alpha: 0.95), Colors.white.withValues(alpha: 0)],
-              ),
-            ),
-          ),
+    final mark = AnimatedBuilder(
+      animation: _c,
+      builder: (context, _) {
+        final v = _c.value;
+        // due flessioni all'inizio del giro, un occhiolino a metà
+        final flex = v < 0.3 ? math.sin(v / 0.3 * math.pi * 2).abs() : 0.0;
+        final blink = v > 0.55 && v < 0.6 ? math.sin((v - 0.55) / 0.05 * math.pi) : 0.0;
+        return RepBird(size: widget.size * 0.62, eyeColor: AppColors.brand, flex: flex, blink: blink);
+      },
+    );
+    return Container(
+      width: widget.size,
+      height: widget.size,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: AppColors.brand,
+        shape: BoxShape.circle,
+        boxShadow: [
+          BoxShadow(color: AppColors.brand.withValues(alpha: 0.35), blurRadius: widget.size * 0.3, offset: Offset(0, widget.size * 0.1)),
         ],
       ),
+      child: mark,
     );
   }
 }

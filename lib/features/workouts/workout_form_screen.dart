@@ -134,8 +134,8 @@ class _WorkoutFormScreenState extends ConsumerState<WorkoutFormScreen> {
                       hint: 'Obiettivo, note, intensità…',
                       maxLines: 3,
                     ),
-                    const Padding(
-                      padding: EdgeInsets.only(left: 6, bottom: 10),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 6, bottom: 10),
                       child: Text('Giorni', style: TextStyle(fontWeight: FontWeight.w600, color: AppColors.inkSoft)),
                     ),
                     Row(
@@ -163,7 +163,7 @@ class _WorkoutFormScreenState extends ConsumerState<WorkoutFormScreen> {
                           const IconChip(icon: Icons.schedule_rounded, color: AppColors.lilac),
                           const SizedBox(width: 12),
                           const Expanded(child: Text('Orario di inizio', style: TextStyle(fontWeight: FontWeight.w600))),
-                          Text(_time?.label ?? 'Nessuno', style: const TextStyle(color: AppColors.inkSoft)),
+                          Text(_time?.label ?? 'Nessuno', style: TextStyle(color: AppColors.inkSoft)),
                           if (_time != null)
                             IconButton(
                               icon: const Icon(Icons.close_rounded, size: 18),
@@ -215,7 +215,7 @@ class _DayToggle extends StatelessWidget {
         height: 64,
         alignment: Alignment.center,
         decoration: BoxDecoration(
-          color: selected ? AppColors.ink : Colors.white,
+          color: selected ? AppColors.ink : AppColors.card,
           borderRadius: BorderRadius.circular(30),
           border: Border.all(color: selected ? AppColors.ink : AppColors.stroke),
         ),
@@ -224,7 +224,7 @@ class _DayToggle extends StatelessWidget {
           style: TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.w700,
-            color: selected ? Colors.white : AppColors.inkSoft,
+            color: selected ? AppColors.onInk : AppColors.inkSoft,
           ),
         ),
       ),

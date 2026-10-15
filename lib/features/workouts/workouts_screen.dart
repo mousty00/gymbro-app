@@ -174,14 +174,14 @@ class _ShortcutCard extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       child: Row(
         children: [
-          IconChip(icon: icon, color: accent, background: Colors.white),
+          IconChip(icon: icon, color: accent, background: AppColors.card),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(title, style: const TextStyle(fontWeight: FontWeight.w700)),
-                Text(subtitle, style: const TextStyle(color: AppColors.inkSoft, fontSize: 12)),
+                Text(subtitle, style: TextStyle(color: AppColors.inkSoft, fontSize: 12)),
               ],
             ),
           ),
@@ -235,7 +235,7 @@ class WorkoutCard extends StatelessWidget {
                     ),
                     if (workout.isPublic) ...[
                       const SizedBox(width: 6),
-                      const Icon(Icons.public_rounded, size: 15, color: AppColors.muted),
+                      Icon(Icons.public_rounded, size: 15, color: AppColors.muted),
                     ],
                   ],
                 ),
@@ -244,7 +244,7 @@ class WorkoutCard extends StatelessWidget {
                   showOwner && workout.user != null
                       ? '@${workout.user!.username} · ${workout.exercises.length} esercizi'
                       : '${weekdaysLabel(workout.dayOfWeek)}${workout.startTime != null ? ' · ${workout.startTime!.label}' : ''}',
-                  style: const TextStyle(color: AppColors.inkSoft, fontSize: 13),
+                  style: TextStyle(color: AppColors.inkSoft, fontSize: 13),
                   overflow: TextOverflow.ellipsis,
                 ),
               ],
@@ -256,7 +256,7 @@ class WorkoutCard extends StatelessWidget {
             children: [
               Text('${workout.exercises.length}', style: Theme.of(context).textTheme.titleLarge),
               Text(totalSets > 0 ? '$totalSets serie' : 'esercizi',
-                  style: const TextStyle(color: AppColors.muted, fontSize: 12)),
+                  style: TextStyle(color: AppColors.muted, fontSize: 12)),
             ],
           ),
         ],

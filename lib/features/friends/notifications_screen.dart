@@ -145,7 +145,7 @@ class ActivityTile extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(fontWeight: n.read ? FontWeight.w400 : FontWeight.w600),
                 ),
-                Text(timeAgo(n.createdAt), style: const TextStyle(color: AppColors.inkSoft, fontSize: 13)),
+                Text(timeAgo(n.createdAt), style: TextStyle(color: AppColors.inkSoft, fontSize: 13)),
               ],
             ),
           ),
@@ -202,7 +202,7 @@ class _FriendRequestTileState extends ConsumerState<FriendRequestTile> {
               children: [
                 Text('@${from.username}', style: const TextStyle(fontWeight: FontWeight.w700)),
                 Text('vuole allenarsi con te · ${timeAgo(widget.request.createdAt)}',
-                    style: const TextStyle(color: AppColors.inkSoft, fontSize: 13)),
+                    style: TextStyle(color: AppColors.inkSoft, fontSize: 13)),
               ],
             ),
           ),
@@ -256,7 +256,7 @@ class _GroupInviteTileState extends ConsumerState<GroupInviteTile> {
       color: AppColors.lilacSoft,
       child: Row(
         children: [
-          const IconChip(icon: Icons.groups_rounded, color: AppColors.lilac, background: Colors.white, size: 46),
+          IconChip(icon: Icons.groups_rounded, color: AppColors.lilac, background: AppColors.card, size: 46),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -272,7 +272,7 @@ class _GroupInviteTileState extends ConsumerState<GroupInviteTile> {
                   _subtitle(widget.member),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(color: AppColors.inkSoft, fontSize: 13),
+                  style: TextStyle(color: AppColors.inkSoft, fontSize: 13),
                 ),
               ],
             ),

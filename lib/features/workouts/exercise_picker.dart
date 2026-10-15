@@ -118,7 +118,7 @@ class _ExerciseEditorState extends ConsumerState<_ExerciseEditor> {
                       .where((e) => _query.isEmpty || e.name.toLowerCase().contains(_query) || e.muscleGroup.toLowerCase().contains(_query))
                       .toList();
                   if (filtered.isEmpty) {
-                    return const Center(child: Text('Nessun esercizio trovato', style: TextStyle(color: AppColors.muted)));
+                    return Center(child: Text('Nessun esercizio trovato', style: TextStyle(color: AppColors.muted)));
                   }
                   return ListView.builder(
                     padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
@@ -129,7 +129,7 @@ class _ExerciseEditorState extends ConsumerState<_ExerciseEditor> {
                       return Padding(
                         padding: const EdgeInsets.only(bottom: 8),
                         child: Material(
-                          color: selected ? AppColors.ink : Colors.white,
+                          color: selected ? AppColors.ink : AppColors.card,
                           borderRadius: BorderRadius.circular(AppRadius.md),
                           child: InkWell(
                             borderRadius: BorderRadius.circular(AppRadius.md),
@@ -146,13 +146,13 @@ class _ExerciseEditorState extends ConsumerState<_ExerciseEditor> {
                                       e.name,
                                       style: TextStyle(
                                         fontWeight: FontWeight.w600,
-                                        color: selected ? Colors.white : AppColors.ink,
+                                        color: selected ? AppColors.onInk : AppColors.ink,
                                       ),
                                     ),
                                   ),
                                   Text(
                                     e.muscleGroup,
-                                    style: TextStyle(fontSize: 12, color: selected ? Colors.white70 : AppColors.muted),
+                                    style: TextStyle(fontSize: 12, color: selected ? AppColors.onInk.withValues(alpha: 0.7) : AppColors.muted),
                                   ),
                                 ],
                               ),
@@ -167,9 +167,9 @@ class _ExerciseEditorState extends ConsumerState<_ExerciseEditor> {
             ),
             Container(
               padding: const EdgeInsets.fromLTRB(20, 14, 20, 16),
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.lg)),
+              decoration: BoxDecoration(
+                color: AppColors.card,
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(AppRadius.lg)),
                 boxShadow: AppShadows.float,
               ),
               child: SafeArea(
@@ -236,7 +236,7 @@ class Stepper2 extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Widget btn(IconData icon, VoidCallback onTap) => Material(
-          color: Colors.white,
+          color: AppColors.card,
           shape: const CircleBorder(),
           child: InkWell(
             customBorder: const CircleBorder(),
@@ -253,7 +253,7 @@ class Stepper2 extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(label, style: const TextStyle(fontSize: 11, color: AppColors.muted)),
+                Text(label, style: TextStyle(fontSize: 11, color: AppColors.muted)),
                 Text(value, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
               ],
             ),

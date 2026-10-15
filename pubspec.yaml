@@ -37,12 +37,13 @@ flutter:
 
 # Splash nativo (iOS + Android, incluso Android 12+). Dopo ogni modifica:
 #   dart run flutter_native_splash:create
-# Colore = centro dello SkyBackground dello splash in-app, così il passaggio è morbido.
+# Tinta unita del logo (AppColors.brand) in entrambi i temi, come lo splash
+# animato in-app (lib/features/onboarding/splash_screen.dart) che lo segue.
 flutter_native_splash:
-  color: "#EAE7FB"
+  color: "#6366F1"
   image: assets/splash/logo.png
   android_12:
-    color: "#EAE7FB"
+    color: "#6366F1"
     image: assets/splash/logo_android12.png
   fullscreen: false
   web: false

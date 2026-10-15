@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -12,7 +11,6 @@ import 'features/auth/session.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initializeDateFormatting('it');
-  SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.dark);
 
   final container = ProviderContainer();
   final push = container.read(pushServiceProvider);
@@ -34,7 +32,11 @@ class RepBirdsApp extends ConsumerWidget {
     return MaterialApp.router(
       title: 'RepBirds',
       debugShowCheckedModeBanner: false,
-      theme: buildAppTheme(),
+      // Segue il tema chiaro/scuro del dispositivo.
+      themeMode: ThemeMode.system,
+      theme: buildAppTheme(AppPalette.light),
+      darkTheme: buildAppTheme(AppPalette.dark),
+      builder: (context, child) => AppThemeSync(child: child!),
       routerConfig: ref.watch(routerProvider),
       scaffoldMessengerKey: scaffoldMessengerKey,
       locale: const Locale('it'),

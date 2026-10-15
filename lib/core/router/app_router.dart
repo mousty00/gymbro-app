@@ -49,6 +49,7 @@ bool _isSharedLink(String loc) => [
 final routerProvider = Provider<GoRouter>((ref) {
   final refresh = ValueNotifier<int>(0);
   ref.listen(sessionProvider, (_, _) => refresh.value++);
+  ref.listen(splashDoneProvider, (_, _) => refresh.value++);
   ref.onDispose(refresh.dispose);
 
   return GoRouter(
@@ -62,7 +63,8 @@ final routerProvider = Provider<GoRouter>((ref) {
 
       // Un link aperto da fuori (scheda, profilo) prima che la sessione sia
       // pronta o prima del login: ci si torna appena si entra.
-      if (!session.hasValue) {
+      // Lo splash animato resta finché non finisce, anche con la sessione pronta.
+      if (!session.hasValue || !ref.read(splashDoneProvider)) {
         if (_isSharedLink(loc)) _pendingLocation = state.uri.toString();
         return loc == '/splash' ? null : '/splash';
       }

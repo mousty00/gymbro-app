@@ -68,9 +68,9 @@ class FloatingNavBar extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(6),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.92),
+        color: AppColors.card.withValues(alpha: 0.92),
         borderRadius: BorderRadius.circular(48),
-        border: Border.all(color: Colors.white),
+        border: Border.all(color: AppColors.isDark ? AppColors.stroke : AppColors.card),
         boxShadow: AppShadows.float,
       ),
       child: Row(
@@ -120,7 +120,7 @@ class _NavItem extends StatelessWidget {
                 ? [BoxShadow(color: AppColors.ink.withValues(alpha: 0.25), blurRadius: 16, offset: const Offset(0, 6))]
                 : null,
           ),
-          child: Icon(icon, color: selected ? Colors.white : AppColors.inkSoft, size: 24),
+          child: Icon(icon, color: selected ? AppColors.onInk : AppColors.inkSoft, size: 24),
         ),
       ),
     );

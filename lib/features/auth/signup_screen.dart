@@ -174,7 +174,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
             ],
           ),
           textAlign: TextAlign.center,
-          style: const TextStyle(color: AppColors.muted, fontSize: 12, height: 1.4),
+          style: TextStyle(color: AppColors.muted, fontSize: 12, height: 1.4),
         ),
         const SizedBox(height: 12),
         PrimaryButton(label: 'Crea account', loading: _loading, onPressed: _submit),

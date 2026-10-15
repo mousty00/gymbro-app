@@ -318,12 +318,12 @@ class _RunTrackerScreenState extends ConsumerState<RunTrackerScreen> {
                             color: AppColors.blue,
                           ),
                           const SizedBox(height: 4),
-                          Text('di ${formatDistance(_route!.distanceM)}', style: const TextStyle(color: AppColors.muted, fontSize: 12)),
+                          Text('di ${formatDistance(_route!.distanceM)}', style: TextStyle(color: AppColors.muted, fontSize: 12)),
                         ],
                         const SizedBox(height: 14),
                         switch (_phase) {
-                          _Phase.loading => const Padding(
-                              padding: EdgeInsets.all(12),
+                          _Phase.loading => Padding(
+                              padding: const EdgeInsets.all(12),
                               child: Text('Cerco il segnale GPS…', style: TextStyle(color: AppColors.inkSoft)),
                             ),
                           _Phase.ready => PrimaryButton(
@@ -372,7 +372,7 @@ class _Live extends StatelessWidget {
         child: Column(
           children: [
             Text(value, style: Theme.of(context).textTheme.titleLarge),
-            Text(label, style: const TextStyle(color: AppColors.muted, fontSize: 12)),
+            Text(label, style: TextStyle(color: AppColors.muted, fontSize: 12)),
           ],
         ),
       );

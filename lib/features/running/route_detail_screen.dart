@@ -113,7 +113,7 @@ class _RouteDetailScreenState extends ConsumerState<RouteDetailScreen> {
                               : mine
                                   ? (route.isPublic ? 'Pubblico: i tuoi amici lo vedono' : 'Privato: lo vedi solo tu')
                                   : 'Di @${route.owner.username}',
-                          style: const TextStyle(color: AppColors.inkSoft),
+                          style: TextStyle(color: AppColors.inkSoft),
                         ),
                         const SizedBox(height: 18),
                         Row(
@@ -173,7 +173,7 @@ class _Metric extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(value, style: Theme.of(context).textTheme.titleLarge),
-            Text(label, style: const TextStyle(color: AppColors.muted, fontSize: 13)),
+            Text(label, style: TextStyle(color: AppColors.muted, fontSize: 13)),
           ],
         ),
       );

@@ -57,18 +57,18 @@ class WorkoutShareCard extends StatelessWidget {
                 Expanded(
                   child: Text(
                     e.exerciseName ?? 'Esercizio',
-                    style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13.5, color: AppColors.ink),
+                    style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13.5, color: LightColors.ink),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
                 const SizedBox(width: 8),
-                Text(e.summary, style: const TextStyle(fontSize: 13, color: AppColors.inkSoft)),
+                Text(e.summary, style: const TextStyle(fontSize: 13, color: LightColors.inkSoft)),
               ],
             ),
           ),
         if (w.exercises.length > maxRows)
-          Text('+ altri ${w.exercises.length - maxRows}', style: const TextStyle(fontSize: 13, color: AppColors.muted)),
+          Text('+ altri ${w.exercises.length - maxRows}', style: const TextStyle(fontSize: 13, color: LightColors.muted)),
       ],
     );
   }
@@ -102,10 +102,10 @@ class SessionShareCard extends StatelessWidget {
           fit: BoxFit.scaleDown,
           child: Text(
             formatDuration(session.duration),
-            style: const TextStyle(fontSize: 44, height: 1, fontWeight: FontWeight.w800, color: AppColors.ink),
+            style: const TextStyle(fontSize: 44, height: 1, fontWeight: FontWeight.w800, color: LightColors.ink),
           ),
         ),
-        const Text('di allenamento', style: TextStyle(color: AppColors.inkSoft, fontSize: 14)),
+        const Text('di allenamento', style: TextStyle(color: LightColors.inkSoft, fontSize: 14)),
         const SizedBox(height: 16),
         Row(
           children: [
@@ -120,7 +120,7 @@ class SessionShareCard extends StatelessWidget {
           const SizedBox(height: 12),
           Text(
             '"${session.notes}"',
-            style: const TextStyle(fontStyle: FontStyle.italic, color: AppColors.inkSoft, fontSize: 13),
+            style: const TextStyle(fontStyle: FontStyle.italic, color: LightColors.inkSoft, fontSize: 13),
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),
@@ -193,7 +193,7 @@ class RouteShareCard extends StatelessWidget {
         Text('di @${author.username}', style: _subtitle),
         const SizedBox(height: 10),
         Expanded(
-          child: TrackShape(points: route.points, color: AppColors.blue),
+          child: TrackShape(points: route.points, color: LightColors.blue),
         ),
         const SizedBox(height: 10),
         Row(
@@ -225,7 +225,7 @@ class RunShareCard extends StatelessWidget {
         Text('@${run.user.username}', style: _subtitle),
         const SizedBox(height: 10),
         Expanded(
-          child: TrackShape(points: run.track, color: AppColors.pink),
+          child: TrackShape(points: run.track, color: LightColors.pink),
         ),
         const SizedBox(height: 10),
         Row(
@@ -261,7 +261,7 @@ class PostShareCard extends StatelessWidget {
             Expanded(
               child: Text(
                 '@${post.user.username}',
-                style: const TextStyle(fontWeight: FontWeight.w700, color: AppColors.ink),
+                style: const TextStyle(fontWeight: FontWeight.w700, color: LightColors.ink),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -274,8 +274,8 @@ class PostShareCard extends StatelessWidget {
             borderRadius: BorderRadius.circular(AppRadius.md),
             child: SizedBox.expand(
               child: AppImage.supports(image)
-                  ? AppImage(image!, fallback: const ColoredBox(color: AppColors.blueSoft))
-                  : const ColoredBox(color: AppColors.blueSoft),
+                  ? AppImage(image!, fallback: const ColoredBox(color: LightColors.blueSoft))
+                  : const ColoredBox(color: LightColors.blueSoft),
             ),
           ),
         ),
@@ -283,7 +283,7 @@ class PostShareCard extends StatelessWidget {
           const SizedBox(height: 10),
           Text(
             post.content,
-            style: const TextStyle(fontSize: 13.5, color: AppColors.ink),
+            style: const TextStyle(fontSize: 13.5, color: LightColors.ink),
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),
@@ -352,16 +352,16 @@ class _TrackPainter extends CustomPainter {
         ..color = color
         ..strokeWidth = 5,
     );
-    canvas.drawCircle(at(0), 6, Paint()..color = AppColors.mint);
-    canvas.drawCircle(at(points.length - 1), 6, Paint()..color = AppColors.ink);
+    canvas.drawCircle(at(0), 6, Paint()..color = LightColors.mint);
+    canvas.drawCircle(at(points.length - 1), 6, Paint()..color = LightColors.ink);
   }
 
   @override
   bool shouldRepaint(_TrackPainter old) => old.points != points || old.color != color;
 }
 
-const _title = TextStyle(fontSize: 26, height: 1.15, fontWeight: FontWeight.w800, color: AppColors.ink);
-const _subtitle = TextStyle(fontSize: 14, color: AppColors.inkSoft, fontWeight: FontWeight.w500);
+const _title = TextStyle(fontSize: 26, height: 1.15, fontWeight: FontWeight.w800, color: LightColors.ink);
+const _subtitle = TextStyle(fontSize: 14, color: LightColors.inkSoft, fontWeight: FontWeight.w500);
 
 class _CardFrame extends StatelessWidget {
   const _CardFrame({required this.label, required this.icon, required this.footer, required this.children});
@@ -381,21 +381,12 @@ class _CardFrame extends StatelessWidget {
           gradient: const LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [AppColors.skyTop, AppColors.skyMid, Colors.white],
+            colors: [LightColors.skyTop, LightColors.skyMid, Colors.white],
             stops: [0, 0.5, 1],
           ),
         ),
         child: Stack(
           children: [
-            Positioned(
-              top: -60,
-              right: -50,
-              child: Container(
-                width: 200,
-                height: 200,
-                decoration: BoxDecoration(shape: BoxShape.circle, color: AppColors.lilac.withValues(alpha: 0.18)),
-              ),
-            ),
             Padding(
               padding: const EdgeInsets.fromLTRB(22, 20, 22, 16),
               child: Column(
@@ -404,7 +395,7 @@ class _CardFrame extends StatelessWidget {
                   Row(
                     children: [
                       ShaderMask(
-                        shaderCallback: AppColors.brandGradient.createShader,
+                        shaderCallback: LightColors.brandGradient.createShader,
                         child: const Text(
                           'RepBirds',
                           style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: Colors.white),
@@ -416,7 +407,7 @@ class _CardFrame extends StatelessWidget {
                           alignment: Alignment.centerRight,
                           child: FittedBox(
                             fit: BoxFit.scaleDown,
-                            child: Tag(label, icon: icon, color: AppColors.blue),
+                            child: Tag(label, icon: icon, color: LightColors.blue),
                           ),
                         ),
                       ),
@@ -429,7 +420,7 @@ class _CardFrame extends StatelessWidget {
                   const SizedBox(height: 8),
                   Text(
                     footer.replaceFirst(RegExp('^https?://'), ''),
-                    style: const TextStyle(fontSize: 11, color: AppColors.muted, fontWeight: FontWeight.w600),
+                    style: const TextStyle(fontSize: 11, color: LightColors.muted, fontWeight: FontWeight.w600),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -464,12 +455,12 @@ class _Stat extends StatelessWidget {
                 fit: BoxFit.scaleDown,
                 child: Text(
                   value,
-                  style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: AppColors.ink),
+                  style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: LightColors.ink),
                   maxLines: 1,
                 ),
               ),
             ),
-            Text(label, style: const TextStyle(fontSize: 12, color: AppColors.muted)),
+            Text(label, style: const TextStyle(fontSize: 12, color: LightColors.muted)),
           ],
         ),
       ),

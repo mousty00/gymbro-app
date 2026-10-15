@@ -41,14 +41,15 @@ class _SkeletonState extends State<Skeleton> with SingleTickerProviderStateMixin
 /// Blocco grigio arrotondato che sostituisce testo, immagini o icone.
 /// `width`/`height` null = riempie lo spazio disponibile.
 class Bone extends StatelessWidget {
-  const Bone({super.key, this.width, this.height = 12, this.radius = 8, this.color = AppColors.stroke}) : circle = false;
+  const Bone({super.key, this.width, this.height = 12, this.radius = 8, this.color}) : circle = false;
 
-  const Bone.circle(double size, {super.key, this.color = AppColors.stroke}) : width = size, height = size, radius = 0, circle = true;
+  const Bone.circle(double size, {super.key, this.color}) : width = size, height = size, radius = 0, circle = true;
 
   final double? width;
   final double? height;
   final double radius;
-  final Color color;
+  /// Di default [AppColors.stroke].
+  final Color? color;
   final bool circle;
 
   @override
@@ -56,7 +57,7 @@ class Bone extends StatelessWidget {
     width: width,
     height: height,
     decoration: BoxDecoration(
-      color: color,
+      color: color ?? AppColors.stroke,
       shape: circle ? BoxShape.circle : BoxShape.rectangle,
       borderRadius: circle ? null : BorderRadius.circular(radius),
     ),

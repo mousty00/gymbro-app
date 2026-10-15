@@ -116,8 +116,8 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
                                     return _UserRow(
                                       user: other,
                                       trailing: PopupMenuButton<String>(
-                                        icon: const Icon(Icons.more_horiz_rounded, color: AppColors.muted),
-                                        color: Colors.white,
+                                        icon: Icon(Icons.more_horiz_rounded, color: AppColors.muted),
+                                        color: AppColors.card,
                                         onSelected: (_) => _block(list[i], other.username),
                                         itemBuilder: (_) => const [
                                           PopupMenuItem(value: 'block', child: Text('Blocca', style: TextStyle(color: AppColors.danger))),
@@ -171,7 +171,7 @@ class _SearchResults extends ConsumerWidget {
         if (snap.hasError) return ErrorBlock(message: '${snap.error}');
         final users = (snap.data ?? const []).where((u) => u.username != me).toList();
         if (users.isEmpty) {
-          return const Center(child: Text('Nessun utente trovato', style: TextStyle(color: AppColors.muted)));
+          return Center(child: Text('Nessun utente trovato', style: TextStyle(color: AppColors.muted)));
         }
         return ListView.separated(
           padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),

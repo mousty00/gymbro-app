@@ -67,7 +67,7 @@ class _StepIndicator extends StatelessWidget {
             height: 4,
             margin: const EdgeInsets.symmetric(horizontal: 3),
             decoration: BoxDecoration(
-              color: active ? AppColors.blue : Colors.white.withValues(alpha: 0.7),
+              color: active ? AppColors.blue : AppColors.card.withValues(alpha: 0.7),
               borderRadius: BorderRadius.circular(4),
             ),
           ),
@@ -83,17 +83,17 @@ class _Hero extends StatelessWidget {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, c) {
-        final orb = (c.maxHeight * 0.42).clamp(80.0, 150.0);
+        final logo = (c.maxHeight * 0.42).clamp(80.0, 150.0);
         return Stack(
           alignment: Alignment.center,
           children: [
-            GlassOrb(size: orb),
+            Align(alignment: const Alignment(0.2, -0.15), child: BrandMark(size: logo, animate: true)),
             const Align(
               alignment: Alignment(-1, -0.85),
               child: _FloatingChip(icon: Icons.fitness_center_rounded, title: 'Schede', subtitle: 'Su misura'),
             ),
             const Align(
-              alignment: Alignment(1, 0.05),
+              alignment: Alignment(1, 0.62),
               child: _FloatingChip(
                 icon: Icons.groups_rounded,
                 title: 'Gruppi',
@@ -102,7 +102,7 @@ class _Hero extends StatelessWidget {
               ),
             ),
             const Align(
-              alignment: Alignment(-0.7, 0.9),
+              alignment: Alignment(-1, 0.25),
               child: _FloatingChip(
                 icon: Icons.favorite_rounded,
                 title: 'Community',
@@ -130,7 +130,7 @@ class _FloatingChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.fromLTRB(8, 8, 16, 8),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.9),
+        color: AppColors.card.withValues(alpha: 0.9),
         borderRadius: BorderRadius.circular(22),
         boxShadow: AppShadows.soft,
       ),
@@ -144,7 +144,7 @@ class _FloatingChip extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(title, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
-              Text(subtitle, style: const TextStyle(color: AppColors.muted, fontSize: 12)),
+              Text(subtitle, style: TextStyle(color: AppColors.muted, fontSize: 12)),
             ],
           ),
         ],

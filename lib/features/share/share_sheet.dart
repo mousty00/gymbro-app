@@ -208,7 +208,7 @@ class _ShareSheetState extends State<_ShareSheet> {
                     const Icon(Icons.lock_outline_rounded, color: AppColors.lilac),
                     const SizedBox(width: 12),
                     Expanded(
-                      child: Text(c.privateHint!, style: const TextStyle(color: AppColors.inkSoft)),
+                      child: Text(c.privateHint!, style: TextStyle(color: AppColors.inkSoft)),
                     ),
                   ],
                 ),
@@ -267,6 +267,6 @@ class _Action extends StatelessWidget {
     onTap: onTap,
     leading: IconChip(icon: icon, color: color, size: 36),
     title: Text(label, style: const TextStyle(fontWeight: FontWeight.w600)),
-    trailing: const Icon(Icons.chevron_right_rounded, color: AppColors.muted),
+    trailing: Icon(Icons.chevron_right_rounded, color: AppColors.muted),
   );
 }

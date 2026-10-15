@@ -135,7 +135,7 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
                         padding: const EdgeInsets.fromLTRB(20, 4, 20, 20),
                         children: [
                           SoftCard(
-                            color: AppColors.ink,
+                            color: AppColors.inkCard,
                             padding: const EdgeInsets.all(22),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -165,7 +165,7 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
                                 ),
                                 const SizedBox(height: 8),
                                 Text('$doneSets / $totalSets serie completate',
-                                    style: TextStyle(color: Colors.white.withValues(alpha: 0.7), fontSize: 13)),
+                                    style: TextStyle(color: AppColors.onInk.withValues(alpha: 0.7), fontSize: 13)),
                               ],
                             ),
                           ),
@@ -191,7 +191,7 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
                                         Expanded(
                                           child: Text(e.exerciseName ?? 'Esercizio', style: t.titleMedium),
                                         ),
-                                        Text(e.summary, style: const TextStyle(color: AppColors.inkSoft)),
+                                        Text(e.summary, style: TextStyle(color: AppColors.inkSoft)),
                                       ],
                                     ),
                                     const SizedBox(height: 12),
@@ -263,7 +263,7 @@ class _SetDot extends StatelessWidget {
         ),
         child: done
             ? const Icon(Icons.check_rounded, color: Colors.white)
-            : Text('$index', style: const TextStyle(fontWeight: FontWeight.w700, color: AppColors.inkSoft)),
+            : Text('$index', style: TextStyle(fontWeight: FontWeight.w700, color: AppColors.inkSoft)),
       ),
     );
   }
@@ -287,7 +287,7 @@ class _RestCard extends StatelessWidget {
       duration: const Duration(milliseconds: 200),
       padding: const EdgeInsets.fromLTRB(18, 14, 12, 14),
       decoration: BoxDecoration(
-        color: resting ? AppColors.lilac : Colors.white.withValues(alpha: 0.7),
+        color: resting ? AppColors.lilac : AppColors.card.withValues(alpha: 0.7),
         borderRadius: BorderRadius.circular(AppRadius.md + 2),
       ),
       child: Row(

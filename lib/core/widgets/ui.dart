@@ -13,7 +13,7 @@ class SoftCard extends StatelessWidget {
     super.key,
     required this.child,
     this.padding = const EdgeInsets.all(18),
-    this.color = AppColors.card,
+    this.color,
     this.gradient,
     this.onTap,
     this.radius = AppRadius.lg,
@@ -22,7 +22,8 @@ class SoftCard extends StatelessWidget {
 
   final Widget child;
   final EdgeInsetsGeometry padding;
-  final Color color;
+  /// Di default [AppColors.card].
+  final Color? color;
   final Gradient? gradient;
   final VoidCallback? onTap;
   final double radius;
@@ -31,6 +32,7 @@ class SoftCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final shape = BorderRadius.circular(radius);
+    final color = this.color ?? AppColors.card;
     return DecoratedBox(
       decoration: BoxDecoration(
         color: gradient == null ? color : null,
@@ -75,7 +77,7 @@ class CircleIconButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final button = Material(
-      color: dark ? AppColors.ink : Colors.white,
+      color: dark ? AppColors.ink : AppColors.card,
       shape: const CircleBorder(),
       elevation: 0,
       child: InkWell(
@@ -87,7 +89,7 @@ class CircleIconButton extends StatelessWidget {
           child: Stack(
             alignment: Alignment.center,
             children: [
-              Icon(icon, size: size * 0.44, color: dark ? Colors.white : AppColors.ink),
+              Icon(icon, size: size * 0.44, color: dark ? AppColors.onInk : AppColors.ink),
               if (badge)
                 Positioned(
                   top: size * 0.24,
@@ -98,7 +100,7 @@ class CircleIconButton extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: AppColors.blue,
                       shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white, width: 1.5),
+                      border: Border.all(color: AppColors.card, width: 1.5),
                     ),
                   ),
                 ),
@@ -137,7 +139,7 @@ class PillActionButton extends StatelessWidget {
         boxShadow: AppShadows.float,
       ),
       child: Material(
-        color: Colors.white,
+        color: AppColors.card,
         shape: const StadiumBorder(),
         child: InkWell(
           customBorder: const StadiumBorder(),
@@ -152,13 +154,13 @@ class PillActionButton extends StatelessWidget {
                 Container(
                   width: 52,
                   height: 52,
-                  decoration: const BoxDecoration(color: AppColors.ink, shape: BoxShape.circle),
+                  decoration: BoxDecoration(color: AppColors.ink, shape: BoxShape.circle),
                   child: loading
-                      ? const Padding(
-                          padding: EdgeInsets.all(16),
-                          child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                      ? Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.onInk),
                         )
-                      : Icon(icon, color: Colors.white),
+                      : Icon(icon, color: AppColors.onInk),
                 ),
               ],
             ),
@@ -192,10 +194,10 @@ class PrimaryButton extends StatelessWidget {
       style: color == null ? null : FilledButton.styleFrom(backgroundColor: color),
       onPressed: loading ? null : onPressed,
       child: loading
-          ? const SizedBox(
+          ? SizedBox(
               width: 22,
               height: 22,
-              child: CircularProgressIndicator(strokeWidth: 2.2, color: Colors.white),
+              child: CircularProgressIndicator(strokeWidth: 2.2, color: AppColors.onInk),
             )
           : Row(
               mainAxisSize: MainAxisSize.min,
@@ -240,7 +242,7 @@ class UserAvatar extends ConsumerWidget {
       decoration: ring ? const BoxDecoration(shape: BoxShape.circle, gradient: AppColors.brandGradient) : null,
       child: Container(
         padding: ring ? const EdgeInsets.all(2.5) : EdgeInsets.zero,
-        decoration: ring ? const BoxDecoration(shape: BoxShape.circle, color: Colors.white) : null,
+        decoration: ring ? BoxDecoration(shape: BoxShape.circle, color: AppColors.card) : null,
         child: ClipOval(
           child: SizedBox.expand(
             child: hasImage
@@ -269,7 +271,7 @@ class _Initials extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Text(
         text,
-        style: TextStyle(fontSize: size * 0.4, fontWeight: FontWeight.w700, color: AppColors.ink),
+        style: TextStyle(fontSize: size * 0.4, fontWeight: FontWeight.w700, color: LightColors.ink),
       );
 }
 
@@ -291,7 +293,7 @@ class SectionHeader extends StatelessWidget {
           if (action != null)
             GestureDetector(
               onTap: onAction,
-              child: Text(action!, style: const TextStyle(color: AppColors.muted, fontWeight: FontWeight.w600)),
+              child: Text(action!, style: TextStyle(color: AppColors.muted, fontWeight: FontWeight.w600)),
             ),
         ],
       ),
@@ -349,7 +351,7 @@ class Tag extends StatelessWidget {
   }
 }
 
-/// Stato vuoto con sfera iridescente.
+/// Stato vuoto col logo dell'app.
 class EmptyState extends StatelessWidget {
   const EmptyState({super.key, required this.title, this.message, this.action, this.onAction});
 
@@ -366,8 +368,8 @@ class EmptyState extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const GlassOrb(size: 64),
-          const SizedBox(height: 4),
+          const BrandMark(size: 72),
+          const SizedBox(height: 16),
           Text(title, style: t.titleLarge, textAlign: TextAlign.center),
           if (message != null) ...[
             const SizedBox(height: 8),
@@ -392,16 +394,19 @@ class MiniBars extends StatelessWidget {
     super.key,
     required this.values,
     this.highlight,
-    this.color = Colors.white,
-    this.highlightColor = AppColors.ink,
+    this.color,
+    this.highlightColor,
     this.height = 64,
     this.labels,
   });
 
   final List<double> values;
   final int? highlight;
-  final Color color;
-  final Color highlightColor;
+  /// Di default [AppColors.card].
+  final Color? color;
+
+  /// Di default [AppColors.ink].
+  final Color? highlightColor;
   final double height;
   final List<String>? labels;
 
@@ -420,7 +425,7 @@ class MiniBars extends StatelessWidget {
                   height: 10 + (max == 0 ? 0 : (values[i] / max) * (height - 10)),
                   margin: const EdgeInsets.symmetric(horizontal: 4),
                   decoration: BoxDecoration(
-                    color: i == highlight ? highlightColor : color,
+                    color: i == highlight ? (highlightColor ?? AppColors.ink) : (color ?? AppColors.card),
                     borderRadius: BorderRadius.circular(20),
                   ),
                 ),
@@ -457,7 +462,7 @@ class SearchPill extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 4, 4, 4),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.card,
         borderRadius: BorderRadius.circular(40),
         boxShadow: AppShadows.soft,
       ),
@@ -482,8 +487,8 @@ class SearchPill extends StatelessWidget {
           Container(
             width: 46,
             height: 46,
-            decoration: const BoxDecoration(color: AppColors.bg, shape: BoxShape.circle),
-            child: const Icon(Icons.search_rounded, color: AppColors.ink),
+            decoration: BoxDecoration(color: AppColors.bg, shape: BoxShape.circle),
+            child: Icon(Icons.search_rounded, color: AppColors.ink),
           ),
         ],
       ),
@@ -533,7 +538,7 @@ void showMessage(BuildContext context, String message, {bool error = false}) {
     ..hideCurrentSnackBar()
     ..showSnackBar(
       SnackBar(
-        content: Text(message),
+        content: Text(message, style: error ? const TextStyle(color: Colors.white) : null),
         backgroundColor: error ? AppColors.danger : AppColors.ink,
       ),
     );
@@ -543,14 +548,14 @@ Future<bool> confirm(BuildContext context, {required String title, String? messa
   final res = await showDialog<bool>(
     context: context,
     builder: (ctx) => AlertDialog(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.card,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.lg)),
       title: Text(title),
       content: message == null ? null : Text(message),
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(ctx, false),
-          child: const Text('Annulla', style: TextStyle(color: AppColors.inkSoft)),
+          child: Text('Annulla', style: TextStyle(color: AppColors.inkSoft)),
         ),
         TextButton(
           onPressed: () => Navigator.pop(ctx, true),

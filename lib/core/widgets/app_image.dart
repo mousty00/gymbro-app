@@ -36,7 +36,7 @@ class AppImage extends StatelessWidget {
       width: width,
       height: height,
       errorBuilder: error,
-      loadingBuilder: (_, child, progress) => progress == null ? child : const ColoredBox(color: AppColors.bg),
+      loadingBuilder: (_, child, progress) => progress == null ? child : ColoredBox(color: AppColors.bg),
     );
   }
 }
