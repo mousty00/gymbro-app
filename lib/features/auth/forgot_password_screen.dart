@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/l10n/l10n.dart';
 import '../../core/network/api_exception.dart';
 import '../../core/widgets/ui.dart';
 import '../../data/auth_repository.dart';
@@ -49,7 +50,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
       await ref.read(authRepositoryProvider).sendResetOtp(_email.text.trim());
       if (!mounted) return;
       setState(() => _codeSent = true);
-      showMessage(context, 'Se l\'email esiste, riceverai un codice a breve.');
+      showMessage(context, tr('Se l\'email esiste, riceverai un codice a breve.'));
     });
   }
 
@@ -62,7 +63,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
             newPassword: _password.text,
           );
       if (!mounted) return;
-      showMessage(context, 'Password aggiornata. Accedi con la nuova password.');
+      showMessage(context, tr('Password aggiornata. Accedi con la nuova password.'));
       context.pushReplacement('/auth/login');
     });
   }
@@ -70,15 +71,15 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
   @override
   Widget build(BuildContext context) {
     return AuthScaffold(
-      title: _codeSent ? 'Nuova\npassword' : 'Password\ndimenticata?',
+      title: _codeSent ? tr('Nuova\npassword') : tr('Password\ndimenticata?'),
       subtitle: _codeSent
-          ? 'Inserisci il codice ricevuto via email e scegli una nuova password.'
-          : 'Ti mandiamo un codice per reimpostarla.',
+          ? tr('Inserisci il codice ricevuto via email e scegli una nuova password.')
+          : tr('Ti mandiamo un codice per reimpostarla.'),
       children: [
         Form(
           key: _emailForm,
           child: LabeledField(
-            label: 'Email',
+            label: tr('Email'),
             controller: _email,
             keyboardType: TextInputType.emailAddress,
             validator: validEmail,
@@ -91,18 +92,18 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
             child: Column(
               children: [
                 LabeledField(
-                  label: 'Codice',
+                  label: tr('Codice'),
                   controller: _otp,
                   keyboardType: TextInputType.number,
                   validator: requiredField,
                 ),
-                PasswordField(controller: _password, label: 'Nuova password', validator: validPassword),
+                PasswordField(controller: _password, label: tr('Nuova password'), validator: validPassword),
               ],
             ),
           ),
         const SizedBox(height: 8),
         PrimaryButton(
-          label: _codeSent ? 'Reimposta password' : 'Invia codice',
+          label: _codeSent ? tr('Reimposta password') : tr('Invia codice'),
           loading: _loading,
           onPressed: _codeSent ? _reset : _sendCode,
         ),
@@ -110,7 +111,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
           Center(
             child: TextButton(
               onPressed: _loading ? null : () => setState(() => _codeSent = false),
-              child: const Text('Cambia email'),
+              child: Text(tr('Cambia email')),
             ),
           ),
       ],

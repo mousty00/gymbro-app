@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:latlong2/latlong.dart';
 
+import '../../core/l10n/l10n.dart';
 import '../../core/network/api_exception.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/async_view.dart';
@@ -114,7 +115,7 @@ class _EditorState extends ConsumerState<_Editor> {
 
   void _add(LatLng p) {
     if (_waypoints.length >= 50) {
-      showMessage(context, 'Puoi mettere al massimo 50 punti', error: true);
+      showMessage(context, tr('Puoi mettere al massimo 50 punti'), error: true);
       return;
     }
     _waypoints.add(p);
@@ -134,7 +135,7 @@ class _EditorState extends ConsumerState<_Editor> {
 
   Future<void> _clear() async {
     if (_waypoints.isEmpty) return;
-    if (!await confirm(context, title: 'Cancellare il tracciato?', ok: 'Cancella', destructive: true)) return;
+    if (!await confirm(context, title: tr('Cancellare il tracciato?'), ok: tr('Cancella'), destructive: true)) return;
     _waypoints.clear();
     _changed();
   }
@@ -216,13 +217,13 @@ class _EditorState extends ConsumerState<_Editor> {
                       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                       decoration: BoxDecoration(color: AppColors.card, borderRadius: BorderRadius.circular(30), boxShadow: AppShadows.soft),
                       child: Text(
-                        _waypoints.isEmpty ? 'Tocca la mappa per mettere la partenza' : 'Tocca per aggiungere punti',
+                        _waypoints.isEmpty ? tr('Tocca la mappa per mettere la partenza') : tr('Tocca per aggiungere punti'),
                         style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
                       ),
                     ),
                   ),
                   const SizedBox(width: 10),
-                  CircleIconButton(icon: Icons.my_location_rounded, size: 44, tooltip: 'La mia posizione', onTap: _centerOnMe),
+                  CircleIconButton(icon: Icons.my_location_rounded, size: 44, tooltip: tr('La mia posizione'), onTap: _centerOnMe),
                 ],
               ),
             ),
@@ -248,9 +249,9 @@ class _EditorState extends ConsumerState<_Editor> {
                                     style: Theme.of(context).textTheme.headlineSmall),
                                 Text(
                                   plan == null
-                                      ? 'Almeno due punti'
+                                      ? tr('Almeno due punti')
                                       : [
-                                          if (plan.elevationGainM != null) '+${plan.elevationGainM} m di dislivello',
+                                          if (plan.elevationGainM != null) tr('+{meters} m di dislivello', {'meters': plan.elevationGainM}),
                                           estimateTime(plan.distanceM),
                                         ].join(' · '),
                                   style: TextStyle(color: AppColors.inkSoft, fontSize: 13),
@@ -264,18 +265,18 @@ class _EditorState extends ConsumerState<_Editor> {
                       ),
                       if (plan != null && !plan.snapped && _waypoints.length > 1) ...[
                         const SizedBox(height: 6),
-                        Text('Tratti in linea retta: metti più punti lungo le strade che vuoi fare.',
+                        Text(tr('Tratti in linea retta: metti più punti lungo le strade che vuoi fare.'),
                             style: TextStyle(color: AppColors.muted, fontSize: 12)),
                       ],
                       const SizedBox(height: 10),
                       Row(
                         children: [
-                          _ToolButton(icon: Icons.undo_rounded, label: 'Annulla', onTap: _waypoints.isEmpty ? null : _undo),
-                          _ToolButton(icon: Icons.loop_rounded, label: 'Chiudi giro', onTap: _waypoints.length < 2 ? null : _closeLoop),
-                          _ToolButton(icon: Icons.delete_outline_rounded, label: 'Cancella', onTap: _waypoints.isEmpty ? null : _clear),
+                          _ToolButton(icon: Icons.undo_rounded, label: tr('Annulla'), onTap: _waypoints.isEmpty ? null : _undo),
+                          _ToolButton(icon: Icons.loop_rounded, label: tr('Chiudi giro'), onTap: _waypoints.length < 2 ? null : _closeLoop),
+                          _ToolButton(icon: Icons.delete_outline_rounded, label: tr('Cancella'), onTap: _waypoints.isEmpty ? null : _clear),
                           _ToolButton(
                             icon: Icons.forest_rounded,
-                            label: 'Sentieri',
+                            label: tr('Sentieri'),
                             selected: _trails,
                             onTap: () {
                               setState(() => _trails = !_trails);
@@ -286,7 +287,7 @@ class _EditorState extends ConsumerState<_Editor> {
                       ),
                       const SizedBox(height: 10),
                       PrimaryButton(
-                        label: initial == null ? 'Salva percorso' : 'Salva modifiche',
+                        label: initial == null ? tr('Salva percorso') : tr('Salva modifiche'),
                         icon: Icons.check_rounded,
                         loading: _saving,
                         onPressed: plan == null || _planning ? null : _save,
@@ -377,31 +378,31 @@ class _DetailsSheetState extends State<_DetailsSheet> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text('Il tuo percorso', style: Theme.of(context).textTheme.headlineSmall),
+          Text(tr('Il tuo percorso'), style: Theme.of(context).textTheme.headlineSmall),
           const SizedBox(height: 14),
           TextField(
             controller: _name,
             autofocus: widget.initial == null,
             maxLength: 100,
             textCapitalization: TextCapitalization.sentences,
-            decoration: const InputDecoration(hintText: 'Nome, es. Giro del parco'),
+            decoration: InputDecoration(hintText: tr('Nome, es. Giro del parco')),
           ),
           TextField(
             controller: _description,
             maxLength: 500,
             maxLines: 2,
             textCapitalization: TextCapitalization.sentences,
-            decoration: const InputDecoration(hintText: 'Note (fondo, fontanelle, salite…)'),
+            decoration: InputDecoration(hintText: tr('Note (fondo, fontanelle, salite…)')),
           ),
           SwitchListTile(
             contentPadding: EdgeInsets.zero,
             value: _public,
             onChanged: (v) => setState(() => _public = v),
-            title: const Text('Pubblico', style: TextStyle(fontWeight: FontWeight.w700)),
-            subtitle: const Text('I tuoi amici lo vedono e possono salvarlo per correrlo da soli.'),
+            title: Text(tr('Pubblico'), style: const TextStyle(fontWeight: FontWeight.w700)),
+            subtitle: Text(tr('I tuoi amici lo vedono e possono salvarlo per correrlo da soli.')),
           ),
           const SizedBox(height: 8),
-          PrimaryButton(label: 'Salva', onPressed: _submit),
+          PrimaryButton(label: tr('Salva'), onPressed: _submit),
         ],
       ),
     );

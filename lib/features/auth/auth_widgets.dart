@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 
+import '../../core/l10n/l10n.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/backgrounds.dart';
 import '../../core/widgets/ui.dart';
@@ -118,14 +119,14 @@ class PasswordField extends StatefulWidget {
   const PasswordField({
     super.key,
     required this.controller,
-    this.label = 'Password',
+    this.label,
     this.validator,
     this.textInputAction = TextInputAction.done,
     this.onSubmitted,
   });
 
   final TextEditingController controller;
-  final String label;
+  final String? label;
   final String? Function(String?)? validator;
   final TextInputAction textInputAction;
   final ValueChanged<String>? onSubmitted;
@@ -140,7 +141,7 @@ class _PasswordFieldState extends State<PasswordField> {
   @override
   Widget build(BuildContext context) {
     return LabeledField(
-      label: widget.label,
+      label: widget.label ?? tr('Password'),
       controller: widget.controller,
       obscure: _hidden,
       validator: widget.validator,
@@ -155,18 +156,18 @@ class _PasswordFieldState extends State<PasswordField> {
   }
 }
 
-String? requiredField(String? v) => (v == null || v.trim().isEmpty) ? 'Campo obbligatorio' : null;
+String? requiredField(String? v) => (v == null || v.trim().isEmpty) ? tr('Campo obbligatorio') : null;
 
 String? validEmail(String? v) {
-  if (v == null || v.trim().isEmpty) return 'Inserisci la tua email';
+  if (v == null || v.trim().isEmpty) return tr('Inserisci la tua email');
   final ok = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(v.trim());
-  return ok ? null : 'Email non valida';
+  return ok ? null : tr('Email non valida');
 }
 
 String? validPassword(String? v) {
-  if (v == null || v.isEmpty) return 'Inserisci una password';
-  if (v.length < 8) return 'Almeno 8 caratteri';
+  if (v == null || v.isEmpty) return tr('Inserisci una password');
+  if (v.length < 8) return tr('Almeno 8 caratteri');
   // bcrypt usa solo i primi 72 byte: il backend rifiuta password più lunghe
-  if (utf8.encode(v).length > 72) return 'Massimo 72 caratteri';
+  if (utf8.encode(v).length > 72) return tr('Massimo 72 caratteri');
   return null;
 }

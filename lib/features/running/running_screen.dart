@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/l10n/l10n.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/utils/formatters.dart';
 import '../../core/widgets/async_view.dart';
@@ -27,7 +28,7 @@ class RunningScreen extends ConsumerStatefulWidget {
 class _RunningScreenState extends ConsumerState<RunningScreen> {
   late int _tab = widget.initialTab;
 
-  static const _tabs = ['Percorsi', 'Amici', 'Di gruppo', 'Corse'];
+  static List<String> get _tabs => [tr('Percorsi'), tr('Amici'), tr('Di gruppo'), tr('Corse')];
 
   Future<void> _refresh() async {
     ref.invalidate(myRoutesProvider);
@@ -45,13 +46,13 @@ class _RunningScreenState extends ConsumerState<RunningScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               TopBar(
-                title: 'Corsa',
+                title: tr('Corsa'),
                 actions: [
                   CircleIconButton(
                     icon: Icons.add_road_rounded,
                     size: 44,
                     dark: true,
-                    tooltip: 'Nuovo percorso',
+                    tooltip: tr('Nuovo percorso'),
                     onTap: () => context.push('/running/route/new'),
                   ),
                 ],
@@ -91,7 +92,7 @@ class _RunningScreenState extends ConsumerState<RunningScreen> {
               Padding(
                 padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
                 child: PillActionButton(
-                  label: 'Corsa libera',
+                  label: tr('Corsa libera'),
                   icon: Icons.directions_run_rounded,
                   onPressed: () => context.push('/running/run'),
                 ),
@@ -118,9 +119,9 @@ class _MyRoutes extends ConsumerWidget {
           ? ListView(children: [
               EmptyState(
                 icon: Icons.route_rounded,
-                title: 'Nessun percorso',
-                message: 'Disegna sulla mappa il giro che vuoi fare: resta salvato per rifarlo quando vuoi.',
-                action: 'Disegna un percorso',
+                title: tr('Nessun percorso'),
+                message: tr('Disegna sulla mappa il giro che vuoi fare: resta salvato per rifarlo quando vuoi.'),
+                action: tr('Disegna un percorso'),
                 onAction: () => context.push('/running/route/new'),
               ),
             ])
@@ -143,11 +144,11 @@ class _FriendsRoutes extends ConsumerWidget {
       value: ref.watch(friendsRoutesProvider),
       onRetry: () => ref.invalidate(friendsRoutesProvider),
       data: (routes) => routes.isEmpty
-          ? ListView(children: const [
+          ? ListView(children: [
               EmptyState(
                 icon: Icons.travel_explore_rounded,
-                title: 'Ancora niente',
-                message: 'Qui trovi i percorsi che i tuoi amici rendono pubblici. Puoi salvarli e correrli da solo.',
+                title: tr('Ancora niente'),
+                message: tr('Qui trovi i percorsi che i tuoi amici rendono pubblici. Puoi salvarli e correrli da solo.'),
               ),
             ])
           : ListView.separated(
@@ -170,11 +171,11 @@ class _Events extends ConsumerWidget {
       onRetry: () => ref.invalidate(runEventsProvider),
       data: (events) {
         if (events.isEmpty) {
-          return ListView(children: const [
+          return ListView(children: [
             EmptyState(
               icon: Icons.event_rounded,
-              title: 'Nessuna corsa di gruppo',
-              message: 'Apri uno dei tuoi percorsi e organizza una corsa: scegli giorno, ora e amici da invitare.',
+              title: tr('Nessuna corsa di gruppo'),
+              message: tr('Apri uno dei tuoi percorsi e organizza una corsa: scegli giorno, ora e amici da invitare.'),
             ),
           ]);
         }
@@ -184,9 +185,9 @@ class _Events extends ConsumerWidget {
         return ListView(
           padding: _listPadding,
           children: [
-            if (upcoming.isNotEmpty) const SectionHeader('In programma'),
+            if (upcoming.isNotEmpty) SectionHeader(tr('In programma')),
             for (final e in upcoming) Padding(padding: const EdgeInsets.only(bottom: 12), child: RunEventCard(event: e)),
-            if (past.isNotEmpty) const SectionHeader('Passate'),
+            if (past.isNotEmpty) SectionHeader(tr('Passate')),
             for (final e in past) Padding(padding: const EdgeInsets.only(bottom: 12), child: RunEventCard(event: e)),
           ],
         );
@@ -205,8 +206,8 @@ class _Runs extends ConsumerWidget {
       onRetry: () => ref.invalidate(myRunsProvider),
       data: (runs) {
         if (runs.isEmpty) {
-          return ListView(children: const [
-            EmptyState(icon: Icons.directions_run_rounded, title: 'Nessuna corsa', message: 'Le corse che registri compaiono qui, con mappa, tempi e passo.'),
+          return ListView(children: [
+            EmptyState(icon: Icons.directions_run_rounded, title: tr('Nessuna corsa'), message: tr('Le corse che registri compaiono qui, con mappa, tempi e passo.')),
           ]);
         }
         final total = runs.fold<int>(0, (sum, r) => sum + r.distanceM);
@@ -220,7 +221,7 @@ class _Runs extends ConsumerWidget {
                   const Icon(Icons.directions_run_rounded, color: Colors.white, size: 32),
                   const SizedBox(width: 14),
                   Expanded(
-                    child: Text('${runs.length} ${runs.length == 1 ? 'corsa' : 'corse'}',
+                    child: Text(runs.length == 1 ? tr('{n} corsa', {'n': runs.length}) : tr('{n} corse', {'n': runs.length}),
                         style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
                   ),
                   Text(formatDistance(total),
@@ -263,7 +264,7 @@ class RouteCard extends ConsumerWidget {
                   children: [
                     Expanded(child: Text(route.name, style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700))),
                     if (route.isMine(me))
-                      Tag(route.isPublic ? 'Pubblico' : 'Privato',
+                      Tag(route.isPublic ? tr('Pubblico') : tr('Privato'),
                           icon: route.isPublic ? Icons.public_rounded : Icons.lock_rounded,
                           color: route.isPublic ? AppColors.mint : AppColors.inkSoft),
                   ],
@@ -323,7 +324,7 @@ class RunEventCard extends StatelessWidget {
             children: [
               Tag(formatDayTime(event.startsAt), icon: Icons.schedule_rounded, color: AppColors.ink),
               const Spacer(),
-              if (event.isInvited) const Tag('Invito', color: AppColors.pink),
+              if (event.isInvited) Tag(tr('Invito'), color: AppColors.pink),
             ],
           ),
           const SizedBox(height: 12),
@@ -331,12 +332,12 @@ class RunEventCard extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             '${event.route.name} · ${formatDistance(event.route.distanceM)} · '
-            '$people ${people == 1 ? 'partecipante' : 'partecipanti'}',
+            '${people == 1 ? tr('{n} partecipante', {'n': people}) : tr('{n} partecipanti', {'n': people})}',
             style: TextStyle(color: AppColors.inkSoft),
           ),
           if (event.meetingPoint != null && event.meetingPoint!.isNotEmpty) ...[
             const SizedBox(height: 4),
-            Text('Ritrovo: ${event.meetingPoint}', style: TextStyle(color: AppColors.inkSoft)),
+            Text(tr('Ritrovo: {place}', {'place': event.meetingPoint}), style: TextStyle(color: AppColors.inkSoft)),
           ],
         ],
       ),

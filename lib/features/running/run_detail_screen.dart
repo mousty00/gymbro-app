@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/l10n/l10n.dart';
 import '../../core/network/api_exception.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/utils/formatters.dart';
@@ -43,16 +44,16 @@ class RunDetailScreen extends ConsumerWidget {
                       CircleIconButton(
                         icon: Icons.ios_share_rounded,
                         size: 44,
-                        tooltip: 'Condividi',
+                        tooltip: tr('Condividi'),
                         onTap: () => shareRun(context, run, mine: mine, loadGpx: () => repo.runGpx(run.id)),
                       ),
                       if (mine)
                         CircleIconButton(
                           icon: Icons.delete_outline_rounded,
                           size: 44,
-                          tooltip: 'Elimina',
+                          tooltip: tr('Elimina'),
                           onTap: () async {
-                            if (!await confirm(context, title: 'Eliminare la corsa?', ok: 'Elimina', destructive: true)) return;
+                            if (!await confirm(context, title: tr('Eliminare la corsa?'), ok: tr('Elimina'), destructive: true)) return;
                             try {
                               await repo.deleteRun(run.id);
                               ref.invalidate(myRunsProvider);
@@ -83,15 +84,15 @@ class RunDetailScreen extends ConsumerWidget {
                             children: [
                               Row(
                                 children: [
-                                  _Big(label: 'Distanza', value: formatDistance(run.distanceM)),
-                                  _Big(label: 'Tempo', value: formatSeconds(run.durationS)),
+                                  _Big(label: tr('Distanza'), value: formatDistance(run.distanceM)),
+                                  _Big(label: tr('Tempo'), value: formatSeconds(run.durationS)),
                                 ],
                               ),
                               const SizedBox(height: 14),
                               Row(
                                 children: [
-                                  _Big(label: 'Passo medio', value: '${formatPace(run.paceSPerKm)} /km'),
-                                  _Big(label: 'Dislivello', value: run.elevationGainM == null ? '–' : '+${run.elevationGainM} m'),
+                                  _Big(label: tr('Passo medio'), value: '${formatPace(run.paceSPerKm)} /km'),
+                                  _Big(label: tr('Dislivello'), value: run.elevationGainM == null ? '–' : '+${run.elevationGainM} m'),
                                 ],
                               ),
                             ],
@@ -102,13 +103,13 @@ class RunDetailScreen extends ConsumerWidget {
                           OutlinedButton.icon(
                             onPressed: () => context.push('/running/event/${run.eventId}'),
                             icon: const Icon(Icons.groups_rounded),
-                            label: const Text('Vedi la corsa di gruppo'),
+                            label: Text(tr('Vedi la corsa di gruppo')),
                           )
                         else if (run.routeId != null)
                           OutlinedButton.icon(
                             onPressed: () => context.push('/running/route/${run.routeId}'),
                             icon: const Icon(Icons.route_rounded),
-                            label: const Text('Vedi il percorso'),
+                            label: Text(tr('Vedi il percorso')),
                           ),
                       ],
                     ),

@@ -1,5 +1,7 @@
 import 'package:dio/dio.dart';
 
+import '../l10n/l10n.dart';
+
 /// Errore leggibile ricavato dall'`ErrorResponse` del backend
 /// (`{timestamp, status, error, message, details}`).
 class ApiException implements Exception {
@@ -19,17 +21,17 @@ class ApiException implements Exception {
   factory ApiException.fromDio(Object error) {
     if (error is ApiException) return error;
     if (error is! DioException) {
-      return ApiException('Qualcosa è andato storto. Riprova.');
+      return ApiException(tr('Qualcosa è andato storto. Riprova.'));
     }
     final response = error.response;
     if (response == null) {
       return ApiException(
-        'Impossibile raggiungere il server. Controlla la connessione.',
+        tr('Impossibile raggiungere il server. Controlla la connessione.'),
         unreachable: true,
       );
     }
     final data = response.data;
-    var message = 'Errore ${response.statusCode ?? ''}'.trim();
+    var message = tr('Errore {code}', {'code': response.statusCode ?? ''}).trim();
     final details = <String, String>{};
     if (data is Map) {
       final m = data['message'];
@@ -45,9 +47,9 @@ class ApiException implements Exception {
     final status = response.statusCode ?? 0;
     if (status == 429) {
       // rate limit sulle rotte /auth (20 richieste al minuto per IP)
-      message = 'Troppi tentativi. Aspetta un minuto e riprova.';
+      message = tr('Troppi tentativi. Aspetta un minuto e riprova.');
     } else if (status >= 500 && details.isEmpty) {
-      message = 'Il server ha avuto un problema. Riprova tra poco.';
+      message = tr('Il server ha avuto un problema. Riprova tra poco.');
     }
     return ApiException(message, statusCode: response.statusCode, details: details);
   }

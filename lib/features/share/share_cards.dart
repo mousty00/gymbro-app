@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:latlong2/latlong.dart' show LatLng;
 
+import '../../core/l10n/l10n.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/utils/formatters.dart';
 import '../../core/widgets/app_image.dart';
@@ -34,18 +35,18 @@ class WorkoutShareCard extends StatelessWidget {
     const maxRows = 5;
     final shown = w.exercises.take(maxRows).toList();
     return _CardFrame(
-      label: 'Scheda',
+      label: tr('Scheda'),
       icon: Icons.fitness_center_rounded,
       footer: ShareLinks.workout(w.id),
       children: [
         Text(w.name, style: _title, maxLines: 2, overflow: TextOverflow.ellipsis),
-        if (w.user != null) Text('di @${w.user!.username}', style: _subtitle),
+        if (w.user != null) Text(tr('di @{username}', {'username': w.user!.username}), style: _subtitle),
         const SizedBox(height: 14),
         Row(
           children: [
-            _Stat(value: '${w.exercises.length}', label: 'esercizi'),
-            _Stat(value: '$sets', label: 'serie'),
-            _Stat(value: minutes > 0 ? '~$minutes' : '—', label: 'minuti'),
+            _Stat(value: '${w.exercises.length}', label: tr('esercizi')),
+            _Stat(value: '$sets', label: tr('serie')),
+            _Stat(value: minutes > 0 ? '~$minutes' : '—', label: tr('minuti')),
           ],
         ),
         const SizedBox(height: 14),
@@ -56,7 +57,7 @@ class WorkoutShareCard extends StatelessWidget {
               children: [
                 Expanded(
                   child: Text(
-                    e.exerciseName ?? 'Esercizio',
+                    e.exerciseName ?? tr('Esercizio'),
                     style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13.5, color: LightColors.ink),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -68,7 +69,7 @@ class WorkoutShareCard extends StatelessWidget {
             ),
           ),
         if (w.exercises.length > maxRows)
-          Text('+ altri ${w.exercises.length - maxRows}', style: const TextStyle(fontSize: 13, color: LightColors.muted)),
+          Text(tr('+ altri {count}', {'count': w.exercises.length - maxRows}), style: const TextStyle(fontSize: 13, color: LightColors.muted)),
       ],
     );
   }
@@ -89,13 +90,13 @@ class SessionShareCard extends StatelessWidget {
     final w = workout;
     final sets = w?.exercises.fold<int>(0, (a, e) => a + e.sets) ?? 0;
     return _CardFrame(
-      label: 'Completato',
+      label: tr('Completato'),
       icon: Icons.emoji_events_rounded,
       footer: w != null ? ShareLinks.workout(w.id) : ShareLinks.webBaseUrl.replaceFirst(RegExp('^https?://'), ''),
       children: [
         Text(formatDate(session.startedAt), style: _subtitle),
         const SizedBox(height: 6),
-        Text(w?.name ?? 'Allenamento', style: _title, maxLines: 1, overflow: TextOverflow.ellipsis),
+        Text(w?.name ?? tr('Allenamento'), style: _title, maxLines: 1, overflow: TextOverflow.ellipsis),
         if (username != null) Text('@$username', style: _subtitle),
         const Spacer(),
         FittedBox(
@@ -105,15 +106,15 @@ class SessionShareCard extends StatelessWidget {
             style: const TextStyle(fontSize: 44, height: 1, fontWeight: FontWeight.w800, color: LightColors.ink),
           ),
         ),
-        const Text('di allenamento', style: TextStyle(color: LightColors.inkSoft, fontSize: 14)),
+        Text(tr('di allenamento'), style: const TextStyle(color: LightColors.inkSoft, fontSize: 14)),
         const SizedBox(height: 16),
         Row(
           children: [
             if (w != null) ...[
-              _Stat(value: '${w.exercises.length}', label: 'esercizi'),
-              _Stat(value: '$sets', label: 'serie'),
+              _Stat(value: '${w.exercises.length}', label: tr('esercizi')),
+              _Stat(value: '$sets', label: tr('serie')),
             ],
-            if (session.groupId != null) const _Stat(value: '👥', label: 'di gruppo'),
+            if (session.groupId != null) _Stat(value: '👥', label: tr('di gruppo')),
           ],
         ),
         if (session.notes?.isNotEmpty == true) ...[
@@ -143,7 +144,7 @@ class ProfileShareCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return _CardFrame(
-      label: 'Allenati con me',
+      label: tr('Allenati con me'),
       icon: Icons.waving_hand_rounded,
       footer: ShareLinks.profile(user.username),
       children: [
@@ -159,14 +160,14 @@ class ProfileShareCard extends StatelessWidget {
         const SizedBox(height: 18),
         Row(
           children: [
-            if (sessions != null) _Stat(value: '$sessions', label: 'sessioni', center: true),
+            if (sessions != null) _Stat(value: '$sessions', label: tr('sessioni'), center: true),
             if (trained != null)
               _Stat(
                 value: trained!.inHours > 0 ? '${trained!.inHours} h' : formatDuration(trained),
-                label: 'allenato',
+                label: tr('allenato'),
                 center: true,
               ),
-            if (friends != null) _Stat(value: '$friends', label: 'amici', center: true),
+            if (friends != null) _Stat(value: '$friends', label: tr('amici'), center: true),
           ],
         ),
         const Spacer(),
@@ -185,12 +186,12 @@ class RouteShareCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final author = route.originalAuthor ?? route.owner;
     return _CardFrame(
-      label: 'Percorso',
+      label: tr('Percorso'),
       icon: Icons.route_rounded,
       footer: ShareLinks.route(route.id),
       children: [
         Text(route.name, style: _title, maxLines: 1, overflow: TextOverflow.ellipsis),
-        Text('di @${author.username}', style: _subtitle),
+        Text(tr('di @{username}', {'username': author.username}), style: _subtitle),
         const SizedBox(height: 10),
         Expanded(
           child: TrackShape(points: route.points, color: LightColors.blue),
@@ -198,8 +199,8 @@ class RouteShareCard extends StatelessWidget {
         const SizedBox(height: 10),
         Row(
           children: [
-            _Stat(value: formatDistance(route.distanceM), label: 'distanza'),
-            _Stat(value: route.elevationGainM == null ? '–' : '+${route.elevationGainM} m', label: 'dislivello'),
+            _Stat(value: formatDistance(route.distanceM), label: tr('distanza')),
+            _Stat(value: route.elevationGainM == null ? '–' : '+${route.elevationGainM} m', label: tr('dislivello')),
           ],
         ),
       ],
@@ -216,7 +217,7 @@ class RunShareCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return _CardFrame(
-      label: 'Corsa',
+      label: tr('Corsa'),
       icon: Icons.directions_run_rounded,
       footer: ShareLinks.webBaseUrl,
       children: [
@@ -230,9 +231,9 @@ class RunShareCard extends StatelessWidget {
         const SizedBox(height: 10),
         Row(
           children: [
-            _Stat(value: formatDistance(run.distanceM), label: 'distanza'),
-            _Stat(value: formatSeconds(run.durationS), label: 'tempo'),
-            _Stat(value: formatPace(run.paceSPerKm), label: 'passo /km'),
+            _Stat(value: formatDistance(run.distanceM), label: tr('distanza')),
+            _Stat(value: formatSeconds(run.durationS), label: tr('tempo')),
+            _Stat(value: formatPace(run.paceSPerKm), label: tr('passo /km')),
           ],
         ),
       ],
@@ -250,7 +251,7 @@ class PostShareCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final image = post.image;
     return _CardFrame(
-      label: 'Post',
+      label: tr('Post'),
       icon: Icons.photo_camera_rounded,
       footer: ShareLinks.post(post.id),
       children: [

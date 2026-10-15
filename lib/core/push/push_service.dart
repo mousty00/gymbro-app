@@ -10,6 +10,7 @@ import '../../data/providers.dart';
 import '../../features/auth/session.dart';
 import '../../models/notification.dart';
 import '../config/env.dart';
+import '../l10n/l10n.dart';
 import '../router/app_router.dart';
 
 /// Per mostrare le push arrivate con l'app aperta (il sistema le mostra solo in background).
@@ -100,7 +101,7 @@ class PushService {
         behavior: SnackBarBehavior.floating,
         action: route == null
             ? null
-            : SnackBarAction(label: 'Apri', onPressed: () => _ref.read(routerProvider).push(route)),
+            : SnackBarAction(label: tr('Apri'), onPressed: () => _ref.read(routerProvider).push(route)),
       ));
   }
 

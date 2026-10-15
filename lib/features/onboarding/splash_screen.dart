@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/l10n/l10n.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/rep_bird.dart';
 import '../auth/session.dart';
@@ -131,12 +132,12 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with TickerProvider
                     child: session.hasError && _intro.isCompleted
                         ? Column(
                             children: [
-                              Text('Non riesco a contattare il server.',
+                              Text(tr('Non riesco a contattare il server.'),
                                   style: t.bodyMedium?.copyWith(color: Colors.white.withValues(alpha: 0.85))),
                               TextButton(
                                 style: TextButton.styleFrom(foregroundColor: Colors.white),
                                 onPressed: () => ref.invalidate(sessionProvider),
-                                child: const Text('Riprova'),
+                                child: Text(tr('Riprova')),
                               ),
                             ],
                           )

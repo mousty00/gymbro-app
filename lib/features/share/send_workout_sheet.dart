@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/l10n/l10n.dart';
 import '../../core/network/api_exception.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/skeleton.dart';
@@ -50,7 +51,7 @@ class _SendWorkoutSheetState extends ConsumerState<_SendWorkoutSheet> {
       Navigator.of(context).pop();
       messenger.showSnackBar(
         SnackBar(
-          content: Text(count == 1 ? 'Scheda inviata a 1 persona' : 'Scheda inviata a $count persone'),
+          content: Text(count == 1 ? tr('Scheda inviata a 1 persona') : tr('Scheda inviata a {count} persone', {'count': count})),
           backgroundColor: AppColors.ink,
         ),
       );
@@ -80,14 +81,14 @@ class _SendWorkoutSheetState extends ConsumerState<_SendWorkoutSheet> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Text(
-                'Invia "${widget.workout.name}"',
+                tr('Invia "{name}"', {'name': widget.workout.name}),
                 style: Theme.of(context).textTheme.titleLarge,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
               const SizedBox(height: 4),
               Text(
-                'Riceveranno una notifica e potranno allenarsi con questa scheda.',
+                tr('Riceveranno una notifica e potranno allenarsi con questa scheda.'),
                 style: TextStyle(color: AppColors.inkSoft),
               ),
               const SizedBox(height: 12),
@@ -95,15 +96,15 @@ class _SendWorkoutSheetState extends ConsumerState<_SendWorkoutSheet> {
                 child: loading
                     ? const SkeletonList(item: SkeletonTile(circle: true), count: 4, padding: EdgeInsets.zero)
                     : friendList.isEmpty && groupList.isEmpty
-                    ? const EmptyState(
+                    ? EmptyState(
                         icon: Icons.person_add_alt_1_rounded,
-                        title: 'Nessuno a cui inviarla',
-                        message: 'Aggiungi amici o entra in un gruppo per condividere le tue schede.',
+                        title: tr('Nessuno a cui inviarla'),
+                        message: tr('Aggiungi amici o entra in un gruppo per condividere le tue schede.'),
                       )
                     : ListView(
                         children: [
                           if (groupList.isNotEmpty) ...[
-                            const SectionHeader('Gruppi'),
+                            SectionHeader(tr('Gruppi')),
                             for (final g in groupList)
                               CheckboxListTile(
                                 contentPadding: EdgeInsets.zero,
@@ -116,7 +117,7 @@ class _SendWorkoutSheetState extends ConsumerState<_SendWorkoutSheet> {
                             const SizedBox(height: 8),
                           ],
                           if (friendList.isNotEmpty) ...[
-                            const SectionHeader('Amici'),
+                            SectionHeader(tr('Amici')),
                             for (final u in friendList)
                               CheckboxListTile(
                                 contentPadding: EdgeInsets.zero,
@@ -132,7 +133,7 @@ class _SendWorkoutSheetState extends ConsumerState<_SendWorkoutSheet> {
               ),
               const SizedBox(height: 8),
               PrimaryButton(
-                label: selected == 0 ? 'Scegli a chi inviarla' : 'Invia',
+                label: selected == 0 ? tr('Scegli a chi inviarla') : tr('Invia'),
                 icon: Icons.send_rounded,
                 loading: _sending,
                 onPressed: selected == 0 ? null : _send,

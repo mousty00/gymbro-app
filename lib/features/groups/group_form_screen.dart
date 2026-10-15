@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/l10n/l10n.dart';
 import '../../core/network/api_exception.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/utils/formatters.dart';
@@ -56,7 +57,7 @@ class _GroupFormScreenState extends ConsumerState<GroupFormScreen> {
   Future<void> _save() async {
     if (!_form.currentState!.validate()) return;
     if (_workoutId == null) {
-      showMessage(context, 'Scegli la scheda da fare insieme', error: true);
+      showMessage(context, tr('Scegli la scheda da fare insieme'), error: true);
       return;
     }
     setState(() => _loading = true);
@@ -82,7 +83,7 @@ class _GroupFormScreenState extends ConsumerState<GroupFormScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            const TopBar(title: 'Nuovo gruppo'),
+            TopBar(title: tr('Nuovo gruppo')),
             Expanded(
               child: Form(
                 key: _form,
@@ -90,10 +91,10 @@ class _GroupFormScreenState extends ConsumerState<GroupFormScreen> {
                   padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
                   children: [
                     LabeledField(
-                      label: 'Nome del gruppo',
+                      label: tr('Nome del gruppo'),
                       controller: _name,
-                      hint: 'es. Leg day del sabato',
-                      validator: (v) => v == null || v.trim().isEmpty ? 'Dai un nome al gruppo' : null,
+                      hint: tr('es. Leg day del sabato'),
+                      validator: (v) => v == null || v.trim().isEmpty ? tr('Dai un nome al gruppo') : null,
                     ),
                     SoftCard(
                       onTap: _pickWhen,
@@ -103,14 +104,14 @@ class _GroupFormScreenState extends ConsumerState<GroupFormScreen> {
                         children: [
                           const IconChip(icon: Icons.event_rounded, color: AppColors.lilac),
                           const SizedBox(width: 12),
-                          const Expanded(child: Text('Quando', style: TextStyle(fontWeight: FontWeight.w600))),
-                          Text(_when == null ? 'Scegli data e ora' : formatDayTime(_when),
+                          Expanded(child: Text(tr('Quando'), style: const TextStyle(fontWeight: FontWeight.w600))),
+                          Text(_when == null ? tr('Scegli data e ora') : formatDayTime(_when),
                               style: TextStyle(color: AppColors.inkSoft)),
                         ],
                       ),
                     ),
                     const SizedBox(height: 22),
-                    const SectionHeader('Scheda'),
+                    SectionHeader(tr('Scheda')),
                     AsyncView<List<Workout>>(
                       value: workouts,
                       onRetry: () => ref.invalidate(myWorkoutsProvider),
@@ -119,9 +120,9 @@ class _GroupFormScreenState extends ConsumerState<GroupFormScreen> {
                         if (list.isEmpty) {
                           return EmptyState(
                             icon: Icons.assignment_rounded,
-                            title: 'Nessuna scheda',
-                            message: 'Per allenarvi insieme serve una scheda.',
-                            action: 'Crea scheda',
+                            title: tr('Nessuna scheda'),
+                            message: tr('Per allenarvi insieme serve una scheda.'),
+                            action: tr('Crea scheda'),
                             onAction: () => context.push('/workout/new'),
                           );
                         }
@@ -150,7 +151,7 @@ class _GroupFormScreenState extends ConsumerState<GroupFormScreen> {
                                             ),
                                           ),
                                           Text(
-                                            '${w.exercises.length} esercizi',
+                                            w.exercises.length == 1 ? tr('{n} esercizio', {'n': 1}) : tr('{n} esercizi', {'n': w.exercises.length}),
                                             style: TextStyle(
                                               fontSize: 12,
                                               color: w.id == _workoutId ? AppColors.onInk.withValues(alpha: 0.7) : AppColors.muted,
@@ -172,7 +173,7 @@ class _GroupFormScreenState extends ConsumerState<GroupFormScreen> {
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
-              child: PrimaryButton(label: 'Crea gruppo', loading: _loading, onPressed: _save),
+              child: PrimaryButton(label: tr('Crea gruppo'), loading: _loading, onPressed: _save),
             ),
           ],
         ),

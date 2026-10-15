@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../l10n/l10n.dart';
+
 /// Colori fissi del tema chiaro. Servono anche dove il colore non deve
 /// seguire il tema del dispositivo (le card da condividere come immagine).
 abstract final class LightColors {
@@ -142,8 +144,8 @@ abstract final class AppColors {
   );
 }
 
-/// Tiene [AppColors] allineato al tema attivo (quello del dispositivo) e,
-/// quando il dispositivo passa da chiaro a scuro o viceversa con l'app aperta,
+/// Tiene [AppColors] e [L10n.lang] allineati a tema e lingua attivi e,
+/// quando cambiano (chiaro/scuro, o la lingua) con l'app aperta,
 /// ridisegna tutte le schermate senza perdere navigazione e stato.
 class AppThemeSync extends StatefulWidget {
   const AppThemeSync({super.key, required this.child});
@@ -156,14 +158,17 @@ class AppThemeSync extends StatefulWidget {
 
 class _AppThemeSyncState extends State<AppThemeSync> {
   Brightness? _brightness;
+  String? _lang;
 
   @override
   Widget build(BuildContext context) {
     final brightness = Theme.of(context).brightness;
+    final lang = Localizations.localeOf(context).languageCode;
     AppColors.use(AppPalette.of(brightness));
-    if (_brightness != null && _brightness != brightness) {
-      // Molti widget leggono AppColors in costruttori const o senza dipendere
-      // dal Theme: dopo il cambio vanno ricostruiti tutti.
+    L10n.lang = lang;
+    if ((_brightness != null && _brightness != brightness) || (_lang != null && _lang != lang)) {
+      // Molti widget leggono AppColors e tr() in costruttori const o senza
+      // dipendere da Theme/Localizations: dopo il cambio vanno ricostruiti tutti.
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
         void rebuild(Element el) {
@@ -175,6 +180,7 @@ class _AppThemeSyncState extends State<AppThemeSync> {
       });
     }
     _brightness = brightness;
+    _lang = lang;
     final dark = brightness == Brightness.dark;
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: dark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,

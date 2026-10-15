@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../core/network/api_exception.dart';
+import '../../core/l10n/l10n.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/ui.dart';
 import '../../data/providers.dart';
@@ -55,11 +56,11 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
 
   Future<void> _publish() async {
     if (_bytes == null) {
-      showMessage(context, 'Aggiungi una foto al post', error: true);
+      showMessage(context, tr('Aggiungi una foto al post'), error: true);
       return;
     }
     if (_text.text.trim().isEmpty) {
-      showMessage(context, 'Scrivi qualcosa sul tuo allenamento', error: true);
+      showMessage(context, tr('Scrivi qualcosa sul tuo allenamento'), error: true);
       return;
     }
     setState(() => _loading = true);
@@ -74,7 +75,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
       refreshPosts(ref);
       ref.invalidate(userPostsProvider(me.username));
       if (!mounted) return;
-      showMessage(context, 'Post pubblicato');
+      showMessage(context, tr('Post pubblicato'));
       context.pop();
     } on ApiException catch (e) {
       if (mounted) showMessage(context, e.message, error: true);
@@ -90,7 +91,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            const TopBar(title: 'Nuovo post'),
+            TopBar(title: tr('Nuovo post')),
             Expanded(
               child: ListView(
                 padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
@@ -113,7 +114,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                                 children: [
                                   IconChip(icon: Icons.add_photo_alternate_rounded, background: AppColors.card, size: 56),
                                   const SizedBox(height: 12),
-                                  const Text('Aggiungi una foto', style: TextStyle(fontWeight: FontWeight.w700)),
+                                  Text(tr('Aggiungi una foto'), style: const TextStyle(fontWeight: FontWeight.w700)),
                                 ],
                               )
                             : Align(
@@ -137,7 +138,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                         child: OutlinedButton.icon(
                           onPressed: () => _pick(ImageSource.gallery),
                           icon: const Icon(Icons.photo_library_outlined),
-                          label: const Text('Galleria'),
+                          label: Text(tr('Galleria')),
                         ),
                       ),
                       const SizedBox(width: 10),
@@ -145,7 +146,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                         child: OutlinedButton.icon(
                           onPressed: () => _pick(ImageSource.camera),
                           icon: const Icon(Icons.photo_camera_outlined),
-                          label: const Text('Fotocamera'),
+                          label: Text(tr('Fotocamera')),
                         ),
                       ),
                     ],
@@ -163,13 +164,13 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                             minLines: 4,
                             maxLines: 8,
                             maxLength: 2000,
-                            decoration: const InputDecoration(
-                              hintText: 'Com\'è andato l\'allenamento?',
+                            decoration: InputDecoration(
+                              hintText: tr('Com\'è andato l\'allenamento?'),
                               filled: false,
                               border: InputBorder.none,
                               enabledBorder: InputBorder.none,
                               focusedBorder: InputBorder.none,
-                              contentPadding: EdgeInsets.only(top: 10),
+                              contentPadding: const EdgeInsets.only(top: 10),
                             ),
                           ),
                         ),
@@ -182,7 +183,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
               child: PillActionButton(
-                label: 'Pubblica',
+                label: tr('Pubblica'),
                 icon: Icons.arrow_upward_rounded,
                 loading: _loading,
                 onPressed: _publish,

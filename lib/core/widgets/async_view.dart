@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../l10n/l10n.dart';
 import '../theme/app_theme.dart';
 import 'skeleton.dart';
 import 'ui.dart';
@@ -56,7 +57,7 @@ class ErrorBlock extends StatelessWidget {
             Text(message, textAlign: TextAlign.center, style: Theme.of(context).textTheme.bodyMedium),
             if (onRetry != null) ...[
               const SizedBox(height: 12),
-              TextButton(onPressed: onRetry, child: const Text('Riprova')),
+              TextButton(onPressed: onRetry, child: Text(tr('Riprova'))),
             ],
           ],
         ),

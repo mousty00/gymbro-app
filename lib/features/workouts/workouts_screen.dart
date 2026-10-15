@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/l10n/l10n.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/async_view.dart';
 import '../../core/widgets/backgrounds.dart';
@@ -52,19 +53,19 @@ class _WorkoutsScreenState extends ConsumerState<WorkoutsScreen> {
                               CircleIconButton(
                                 icon: Icons.arrow_back_rounded,
                                 size: 44,
-                                tooltip: 'Indietro',
+                                tooltip: tr('Indietro'),
                                 onTap: () => context.canPop() ? context.pop() : context.go('/profile'),
                               ),
                               const SizedBox(width: 14),
                             ],
                             Expanded(
-                              child: Text(widget.showBack ? 'Le mie schede' : 'Allenamenti',
+                              child: Text(widget.showBack ? tr('Le mie schede') : tr('Allenamenti'),
                                   style: Theme.of(context).textTheme.headlineMedium),
                             ),
                             CircleIconButton(
                               icon: Icons.add_rounded,
                               dark: true,
-                              tooltip: 'Nuova scheda',
+                              tooltip: tr('Nuova scheda'),
                               onTap: () => context.push('/workout/new'),
                             ),
                           ],
@@ -75,8 +76,8 @@ class _WorkoutsScreenState extends ConsumerState<WorkoutsScreen> {
                             Expanded(
                               child: _ShortcutCard(
                                 icon: Icons.sports_gymnastics_rounded,
-                                title: 'Esercizi',
-                                subtitle: 'Libreria',
+                                title: tr('Esercizi'),
+                                subtitle: tr('Libreria'),
                                 color: AppColors.pinkSoft,
                                 accent: AppColors.pink,
                                 onTap: () => context.push('/exercises'),
@@ -86,8 +87,8 @@ class _WorkoutsScreenState extends ConsumerState<WorkoutsScreen> {
                             Expanded(
                               child: _ShortcutCard(
                                 icon: Icons.history_rounded,
-                                title: 'Storico',
-                                subtitle: 'Sessioni',
+                                title: tr('Storico'),
+                                subtitle: tr('Sessioni'),
                                 color: AppColors.lilacSoft,
                                 accent: AppColors.lilac,
                                 onTap: () => context.push('/history'),
@@ -97,7 +98,7 @@ class _WorkoutsScreenState extends ConsumerState<WorkoutsScreen> {
                         ),
                         const SizedBox(height: 20),
                         SegmentedPill(
-                          options: const ['Le mie schede', 'Esplora'],
+                          options: [tr('Le mie schede'), tr('Esplora')],
                           index: _tab,
                           onChanged: (i) => setState(() => _tab = i),
                         ),
@@ -122,11 +123,11 @@ class _WorkoutsScreenState extends ConsumerState<WorkoutsScreen> {
                       return SliverToBoxAdapter(
                         child: EmptyState(
                           icon: _tab == 0 ? Icons.assignment_rounded : Icons.explore_rounded,
-                          title: _tab == 0 ? 'Nessuna scheda' : 'Niente da esplorare',
+                          title: _tab == 0 ? tr('Nessuna scheda') : tr('Niente da esplorare'),
                           message: _tab == 0
-                              ? 'Crea la tua prima scheda: esercizi, serie, giorni e orario.'
-                              : 'Le schede pubbliche della community appariranno qui.',
-                          action: _tab == 0 ? 'Crea scheda' : null,
+                              ? tr('Crea la tua prima scheda: esercizi, serie, giorni e orario.')
+                              : tr('Le schede pubbliche della community appariranno qui.'),
+                          action: _tab == 0 ? tr('Crea scheda') : null,
                           onAction: () => context.push('/workout/new'),
                         ),
                       );
@@ -243,7 +244,7 @@ class WorkoutCard extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(
                   showOwner && workout.user != null
-                      ? '@${workout.user!.username} · ${workout.exercises.length} esercizi'
+                      ? tr('@{username} · {count} esercizi', {'username': workout.user!.username, 'count': workout.exercises.length})
                       : '${weekdaysLabel(workout.dayOfWeek)}${workout.startTime != null ? ' · ${workout.startTime!.label}' : ''}',
                   style: TextStyle(color: AppColors.inkSoft, fontSize: 13),
                   overflow: TextOverflow.ellipsis,
@@ -256,7 +257,7 @@ class WorkoutCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Text('${workout.exercises.length}', style: Theme.of(context).textTheme.titleLarge),
-              Text(totalSets > 0 ? '$totalSets serie' : 'esercizi',
+              Text(totalSets > 0 ? tr('{count} serie', {'count': totalSets}) : tr('esercizi'),
                   style: TextStyle(color: AppColors.muted, fontSize: 12)),
             ],
           ),

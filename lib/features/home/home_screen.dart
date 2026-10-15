@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/l10n/l10n.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/utils/formatters.dart';
 import '../../core/widgets/backgrounds.dart';
@@ -64,14 +65,14 @@ class HomeScreen extends ConsumerWidget {
                     CircleIconButton(
                       icon: Icons.notifications_none_rounded,
                       badge: notifications > 0,
-                      tooltip: 'Notifiche',
+                      tooltip: tr('Notifiche'),
                       onTap: () => context.push('/notifications'),
                     ),
                     const SizedBox(width: 10),
                     CircleIconButton(
                       icon: Icons.add_rounded,
                       dark: true,
-                      tooltip: 'Crea',
+                      tooltip: tr('Crea'),
                       onTap: () => showQuickCreate(context),
                     ),
                   ],
@@ -126,21 +127,21 @@ class _TodaySection extends ConsumerWidget {
         _Row(
           icon: Icons.fitness_center_rounded,
           title: w.name,
-          subtitle: w.startTime != null ? 'Alle ${w.startTime!.label}' : 'Scheda',
+          subtitle: w.startTime != null ? tr('Alle {time}', {'time': w.startTime!.label}) : tr('Scheda'),
           onTap: () => context.push('/workout/${w.id}'),
         ),
       for (final g in groupsToday)
         _Row(
           icon: Icons.groups_rounded,
           title: g.name,
-          subtitle: 'Di gruppo alle ${formatTime(g.scheduledFor!.toLocal())}',
+          subtitle: tr('Di gruppo alle {time}', {'time': formatTime(g.scheduledFor!.toLocal())}),
           onTap: () => context.push('/group/${g.id}'),
         ),
       for (final e in runsToday)
         _Row(
           icon: Icons.directions_run_rounded,
           title: e.title,
-          subtitle: 'Corsa alle ${formatTime(e.startsAt!.toLocal())}',
+          subtitle: tr('Corsa alle {time}', {'time': formatTime(e.startsAt!.toLocal())}),
           onTap: () => context.push('/running/event/${e.id}'),
         ),
       for (final w in done)
@@ -148,7 +149,7 @@ class _TodaySection extends ConsumerWidget {
           icon: Icons.check_rounded,
           done: true,
           title: w.name,
-          subtitle: 'Fatta oggi',
+          subtitle: tr('Fatta oggi'),
           onTap: () => context.push('/workout/${w.id}'),
         ),
     ];
@@ -156,12 +157,15 @@ class _TodaySection extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text('Oggi', style: t.headlineMedium),
+        Text(tr('Oggi'), style: t.headlineMedium),
         const SizedBox(height: 2),
         Text(
           doneToday.isEmpty
               ? formatDay(now)
-              : '${formatDay(now)} · ${minutesToday > 0 ? formatDuration(Duration(minutes: minutesToday)) : 'allenamento'} fatto',
+              : tr('{day} · {amount} fatto', {
+                  'day': formatDay(now),
+                  'amount': minutesToday > 0 ? formatDuration(Duration(minutes: minutesToday)) : tr('allenamento'),
+                }),
           style: t.bodyMedium?.copyWith(color: AppColors.muted),
         ),
         const SizedBox(height: 16),
@@ -206,7 +210,7 @@ class _RestDay extends StatelessWidget {
           const SizedBox(width: 14),
           Expanded(
             child: Text(
-              allDone ? 'Hai finito per oggi. Ottimo lavoro!' : 'Niente in programma. Scegli una scheda.',
+              allDone ? tr('Hai finito per oggi. Ottimo lavoro!') : tr('Niente in programma. Scegli una scheda.'),
               style: const TextStyle(fontWeight: FontWeight.w600, height: 1.35),
             ),
           ),
@@ -255,8 +259,8 @@ class TodayWorkoutCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final details = [
-      if (workout.startTime != null) 'Alle ${workout.startTime!.label}',
-      '${workout.exercises.length} esercizi',
+      if (workout.startTime != null) tr('Alle {time}', {'time': workout.startTime!.label}),
+      workout.exercises.length == 1 ? tr('{n} esercizio', {'n': 1}) : tr('{n} esercizi', {'n': workout.exercises.length}),
     ].join(' · ');
     return SoftCard(
       color: AppColors.inkCard,
@@ -286,14 +290,14 @@ class TodayWorkoutCard extends StatelessWidget {
             child: InkWell(
               customBorder: const StadiumBorder(),
               onTap: () => context.push('/workout/${workout.id}/session'),
-              child: const Padding(
-                padding: EdgeInsets.fromLTRB(16, 12, 20, 12),
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 12, 20, 12),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.play_arrow_rounded, color: Colors.white),
-                    SizedBox(width: 4),
-                    Text('Inizia', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
+                    const Icon(Icons.play_arrow_rounded, color: Colors.white),
+                    const SizedBox(width: 4),
+                    Text(tr('Inizia'), style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
                   ],
                 ),
               ),
@@ -328,11 +332,11 @@ class _Shortcuts extends StatelessWidget {
         );
     return Row(
       children: [
-        chip(Icons.directions_run_rounded, 'Corsa', '/running'),
+        chip(Icons.directions_run_rounded, tr('Corsa'), '/running'),
         const SizedBox(width: 10),
-        chip(Icons.history_rounded, 'Storico', '/history'),
+        chip(Icons.history_rounded, tr('Storico'), '/history'),
         const SizedBox(width: 10),
-        chip(Icons.sports_gymnastics_rounded, 'Esercizi', '/exercises'),
+        chip(Icons.sports_gymnastics_rounded, tr('Esercizi'), '/exercises'),
       ],
     );
   }
@@ -360,7 +364,7 @@ class _WeekCard extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        SectionHeader('Questa settimana', action: 'Storico', onAction: () => context.push('/history')),
+        SectionHeader(tr('Questa settimana'), action: tr('Storico'), onAction: () => context.push('/history')),
         SoftCard(
           onTap: () => context.push('/history'),
           padding: const EdgeInsets.all(20),
@@ -374,7 +378,7 @@ class _WeekCard extends ConsumerWidget {
                   const SizedBox(width: 6),
                   Padding(
                     padding: const EdgeInsets.only(bottom: 4),
-                    child: Text(sessions == 1 ? 'allenamento' : 'allenamenti',
+                    child: Text(sessions == 1 ? tr('allenamento') : tr('allenamenti'),
                         style: const TextStyle(fontWeight: FontWeight.w600)),
                   ),
                   const Spacer(),
@@ -441,7 +445,7 @@ class _Upcoming extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        SectionHeader('In programma', action: 'Gruppi', onAction: () => context.go('/groups')),
+        SectionHeader(tr('In programma'), action: tr('Gruppi'), onAction: () => context.go('/groups')),
         SoftCard(
           padding: const EdgeInsets.symmetric(vertical: 4),
           child: Column(children: [
@@ -529,13 +533,13 @@ void showQuickCreate(BuildContext context) {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Crea', style: Theme.of(ctx).textTheme.headlineSmall),
+              Text(tr('Crea'), style: Theme.of(ctx).textTheme.headlineSmall),
               const SizedBox(height: 16),
-              item(Icons.photo_camera_rounded, AppColors.pink, 'Nuovo post', 'Condividi il tuo allenamento', '/posts/new'),
-              item(Icons.fitness_center_rounded, AppColors.blue, 'Nuova scheda', 'Esercizi, giorni e orario', '/workout/new'),
-              item(Icons.groups_rounded, AppColors.lilac, 'Allenamento di gruppo', 'Invita i tuoi amici', '/group/new'),
-              item(Icons.add_road_rounded, AppColors.blue, 'Percorso di corsa', 'Disegnalo sulla mappa', '/running/route/new'),
-              item(Icons.sports_gymnastics_rounded, AppColors.mint, 'Libreria esercizi', 'Crea o cerca esercizi', '/exercises'),
+              item(Icons.photo_camera_rounded, AppColors.pink, tr('Nuovo post'), tr('Condividi il tuo allenamento'), '/posts/new'),
+              item(Icons.fitness_center_rounded, AppColors.blue, tr('Nuova scheda'), tr('Esercizi, giorni e orario'), '/workout/new'),
+              item(Icons.groups_rounded, AppColors.lilac, tr('Allenamento di gruppo'), tr('Invita i tuoi amici'), '/group/new'),
+              item(Icons.add_road_rounded, AppColors.blue, tr('Percorso di corsa'), tr('Disegnalo sulla mappa'), '/running/route/new'),
+              item(Icons.sports_gymnastics_rounded, AppColors.mint, tr('Libreria esercizi'), tr('Crea o cerca esercizi'), '/exercises'),
             ],
           ),
         ),

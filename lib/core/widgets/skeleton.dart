@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../l10n/l10n.dart';
 import '../theme/app_theme.dart';
 import 'ui.dart';
 
@@ -28,7 +29,7 @@ class _SkeletonState extends State<Skeleton> with SingleTickerProviderStateMixin
   Widget build(BuildContext context) {
     final still = MediaQuery.maybeDisableAnimationsOf(context) ?? false;
     return Semantics(
-      label: 'Caricamento',
+      label: tr('Caricamento'),
       child: ExcludeSemantics(
         child: IgnorePointer(
           child: still ? widget.child : FadeTransition(opacity: _opacity, child: widget.child),

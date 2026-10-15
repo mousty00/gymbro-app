@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/l10n/l10n.dart';
 import '../../core/network/api_exception.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/async_view.dart';
@@ -111,7 +112,7 @@ class _WorkoutFormScreenState extends ConsumerState<WorkoutFormScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            TopBar(title: _editing ? 'Modifica scheda' : 'Nuova scheda'),
+            TopBar(title: _editing ? tr('Modifica scheda') : tr('Nuova scheda')),
             Expanded(
               child: Form(
                 key: _form,
@@ -119,24 +120,24 @@ class _WorkoutFormScreenState extends ConsumerState<WorkoutFormScreen> {
                   padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
                   children: [
                     LabeledField(
-                      label: 'Nome',
+                      label: tr('Nome'),
                       controller: _name,
-                      hint: 'es. Push day',
+                      hint: tr('es. Push day'),
                       validator: (v) {
-                        if (v == null || v.trim().isEmpty) return 'Dai un nome alla scheda';
-                        if (v.trim().length > 100) return 'Massimo 100 caratteri';
+                        if (v == null || v.trim().isEmpty) return tr('Dai un nome alla scheda');
+                        if (v.trim().length > 100) return tr('Massimo 100 caratteri');
                         return null;
                       },
                     ),
                     LabeledField(
-                      label: 'Descrizione',
+                      label: tr('Descrizione'),
                       controller: _description,
-                      hint: 'Obiettivo, note, intensità…',
+                      hint: tr('Obiettivo, note, intensità…'),
                       maxLines: 3,
                     ),
                     Padding(
                       padding: const EdgeInsets.only(left: 6, bottom: 10),
-                      child: Text('Giorni', style: TextStyle(fontWeight: FontWeight.w600, color: AppColors.inkSoft)),
+                      child: Text(tr('Giorni'), style: TextStyle(fontWeight: FontWeight.w600, color: AppColors.inkSoft)),
                     ),
                     Row(
                       children: [
@@ -162,8 +163,8 @@ class _WorkoutFormScreenState extends ConsumerState<WorkoutFormScreen> {
                         children: [
                           const IconChip(icon: Icons.schedule_rounded, color: AppColors.lilac),
                           const SizedBox(width: 12),
-                          const Expanded(child: Text('Orario di inizio', style: TextStyle(fontWeight: FontWeight.w600))),
-                          Text(_time?.label ?? 'Nessuno', style: TextStyle(color: AppColors.inkSoft)),
+                          Expanded(child: Text(tr('Orario di inizio'), style: const TextStyle(fontWeight: FontWeight.w600))),
+                          Text(_time?.label ?? tr('Nessuno'), style: TextStyle(color: AppColors.inkSoft)),
                           if (_time != null)
                             IconButton(
                               icon: const Icon(Icons.close_rounded, size: 18),
@@ -180,8 +181,8 @@ class _WorkoutFormScreenState extends ConsumerState<WorkoutFormScreen> {
                         contentPadding: EdgeInsets.zero,
                         value: _public,
                         onChanged: (v) => setState(() => _public = v),
-                        title: const Text('Scheda pubblica', style: TextStyle(fontWeight: FontWeight.w600)),
-                        subtitle: const Text('Visibile nella sezione Esplora'),
+                        title: Text(tr('Scheda pubblica'), style: const TextStyle(fontWeight: FontWeight.w600)),
+                        subtitle: Text(tr('Visibile nella sezione Esplora')),
                       ),
                     ),
                   ],
@@ -190,7 +191,7 @@ class _WorkoutFormScreenState extends ConsumerState<WorkoutFormScreen> {
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
-              child: PrimaryButton(label: _editing ? 'Salva modifiche' : 'Crea scheda', loading: _loading, onPressed: _save),
+              child: PrimaryButton(label: _editing ? tr('Salva modifiche') : tr('Crea scheda'), loading: _loading, onPressed: _save),
             ),
           ],
         ),

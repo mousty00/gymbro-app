@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/l10n/l10n.dart';
 import '../../core/network/api_exception.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/utils/formatters.dart';
@@ -63,11 +64,11 @@ class _RunEventFormScreenState extends ConsumerState<RunEventFormScreen> {
   Future<void> _save() async {
     if (!_form.currentState!.validate()) return;
     if (_routeId == null) {
-      showMessage(context, 'Scegli il percorso', error: true);
+      showMessage(context, tr('Scegli il percorso'), error: true);
       return;
     }
     if (_when == null) {
-      showMessage(context, 'Scegli giorno e ora', error: true);
+      showMessage(context, tr('Scegli giorno e ora'), error: true);
       return;
     }
     setState(() => _loading = true);
@@ -99,7 +100,7 @@ class _RunEventFormScreenState extends ConsumerState<RunEventFormScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            const TopBar(title: 'Corsa di gruppo'),
+            TopBar(title: tr('Corsa di gruppo')),
             Expanded(
               child: Form(
                 key: _form,
@@ -107,10 +108,10 @@ class _RunEventFormScreenState extends ConsumerState<RunEventFormScreen> {
                   padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
                   children: [
                     LabeledField(
-                      label: 'Titolo',
+                      label: tr('Titolo'),
                       controller: _title,
-                      hint: 'es. Lungo della domenica',
-                      validator: (v) => v == null || v.trim().isEmpty ? 'Dai un titolo alla corsa' : null,
+                      hint: tr('es. Lungo della domenica'),
+                      validator: (v) => v == null || v.trim().isEmpty ? tr('Dai un titolo alla corsa') : null,
                     ),
                     SoftCard(
                       onTap: _pickWhen,
@@ -120,20 +121,20 @@ class _RunEventFormScreenState extends ConsumerState<RunEventFormScreen> {
                         children: [
                           const IconChip(icon: Icons.event_rounded, color: AppColors.lilac),
                           const SizedBox(width: 12),
-                          const Expanded(child: Text('Quando', style: TextStyle(fontWeight: FontWeight.w600))),
-                          Text(_when == null ? 'Scegli data e ora' : formatDayTime(_when),
+                          Expanded(child: Text(tr('Quando'), style: const TextStyle(fontWeight: FontWeight.w600))),
+                          Text(_when == null ? tr('Scegli data e ora') : formatDayTime(_when),
                               style: TextStyle(color: AppColors.inkSoft)),
                         ],
                       ),
                     ),
                     const SizedBox(height: 14),
                     LabeledField(
-                      label: 'Punto di ritrovo',
+                      label: tr('Punto di ritrovo'),
                       controller: _meeting,
-                      hint: 'es. Ingresso del parco, lato fontana',
+                      hint: tr('es. Ingresso del parco, lato fontana'),
                     ),
-                    LabeledField(label: 'Note', controller: _notes, hint: 'Passo, cosa portare…', maxLines: 2),
-                    const SectionHeader('Percorso'),
+                    LabeledField(label: tr('Note'), controller: _notes, hint: tr('Passo, cosa portare…'), maxLines: 2),
+                    SectionHeader(tr('Percorso')),
                     AsyncView<List<RunRoute>>(
                       value: routes,
                       onRetry: () => ref.invalidate(myRoutesProvider),
@@ -141,9 +142,9 @@ class _RunEventFormScreenState extends ConsumerState<RunEventFormScreen> {
                         if (list.isEmpty) {
                           return EmptyState(
                             icon: Icons.route_rounded,
-                            title: 'Nessun percorso',
-                            message: 'Per correre insieme disegna prima il percorso.',
-                            action: 'Disegna un percorso',
+                            title: tr('Nessun percorso'),
+                            message: tr('Per correre insieme disegna prima il percorso.'),
+                            action: tr('Disegna un percorso'),
                             onAction: () => context.push('/running/route/new'),
                           );
                         }
@@ -185,14 +186,14 @@ class _RunEventFormScreenState extends ConsumerState<RunEventFormScreen> {
                       },
                     ),
                     const SizedBox(height: 10),
-                    const SectionHeader('Invita'),
+                    SectionHeader(tr('Invita')),
                     AsyncView<List<Friendship>>(
                       value: friends,
                       onRetry: () => ref.invalidate(friendsProvider),
                       data: (list) {
                         final people = list.map((f) => f.other(me)).toList();
                         if (people.isEmpty) {
-                          return Text('Aggiungi degli amici per invitarli; puoi anche correre da solo.',
+                          return Text(tr('Aggiungi degli amici per invitarli; puoi anche correre da solo.'),
                               style: TextStyle(color: AppColors.muted));
                         }
                         return Wrap(
@@ -216,7 +217,7 @@ class _RunEventFormScreenState extends ConsumerState<RunEventFormScreen> {
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
-              child: PrimaryButton(label: 'Crea la corsa', loading: _loading, onPressed: _save),
+              child: PrimaryButton(label: tr('Crea la corsa'), loading: _loading, onPressed: _save),
             ),
           ],
         ),

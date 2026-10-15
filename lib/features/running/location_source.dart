@@ -5,6 +5,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 
 import '../../core/config/env.dart';
+import '../../core/l10n/l10n.dart';
 import 'geo.dart';
 import 'run_recorder.dart';
 
@@ -43,20 +44,20 @@ class GpsLocation implements LocationSource {
   @override
   Future<void> ensureReady() async {
     if (!await Geolocator.isLocationServiceEnabled()) {
-      throw const LocationUnavailable('Attiva la localizzazione del telefono per registrare la corsa.');
+      throw LocationUnavailable(tr('Attiva la localizzazione del telefono per registrare la corsa.'));
     }
     var permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
     }
     if (permission == LocationPermission.deniedForever) {
-      throw const LocationUnavailable(
-        'RepBirds non ha accesso alla posizione. Consentilo nelle impostazioni per registrare la corsa.',
+      throw LocationUnavailable(
+        tr('RepBirds non ha accesso alla posizione. Consentilo nelle impostazioni per registrare la corsa.'),
         openSettings: true,
       );
     }
     if (permission == LocationPermission.denied || permission == LocationPermission.unableToDetermine) {
-      throw const LocationUnavailable('Serve la posizione per registrare la corsa.');
+      throw LocationUnavailable(tr('Serve la posizione per registrare la corsa.'));
     }
   }
 
@@ -78,10 +79,10 @@ class GpsLocation implements LocationSource {
           accuracy: LocationAccuracy.best,
           distanceFilter: 3,
           intervalDuration: const Duration(seconds: 1),
-          foregroundNotificationConfig: const ForegroundNotificationConfig(
-            notificationTitle: 'RepBirds sta registrando la corsa',
-            notificationText: 'Tocca per tornare alla corsa',
-            notificationChannelName: 'Corsa',
+          foregroundNotificationConfig: ForegroundNotificationConfig(
+            notificationTitle: tr('RepBirds sta registrando la corsa'),
+            notificationText: tr('Tocca per tornare alla corsa'),
+            notificationChannelName: tr('Corsa'),
             enableWakeLock: true,
             setOngoing: true,
           ),

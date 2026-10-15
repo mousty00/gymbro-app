@@ -1,12 +1,13 @@
+import '../core/l10n/l10n.dart';
 import 'json.dart';
 import 'user.dart';
 
 /// Giorni della settimana come li salva il backend (1 = lunedì … 7 = domenica).
-const weekdayShort = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'];
+List<String> get weekdayShort => [tr('Lun'), tr('Mar'), tr('Mer'), tr('Gio'), tr('Ven'), tr('Sab'), tr('Dom')];
 
 String weekdaysLabel(List<int> days) {
-  if (days.isEmpty) return 'Quando vuoi';
-  if (days.length == 7) return 'Tutti i giorni';
+  if (days.isEmpty) return tr('Quando vuoi');
+  if (days.length == 7) return tr('Tutti i giorni');
   final sorted = [...days]..sort();
   return sorted.where((d) => d >= 1 && d <= 7).map((d) => weekdayShort[d - 1]).join(' · ');
 }
@@ -124,6 +125,22 @@ const muscleGroups = [
   'Cardio',
   'Full body',
 ];
+
+/// Nome da mostrare di un gruppo muscolare: il valore salvato sul server resta
+/// in italiano, quelli scritti a mano dall'utente restano com'erano.
+String muscleGroupLabel(String group) => switch (group) {
+  'Petto' => tr('Petto'),
+  'Schiena' => tr('Schiena'),
+  'Spalle' => tr('Spalle'),
+  'Bicipiti' => tr('Bicipiti'),
+  'Tricipiti' => tr('Tricipiti'),
+  'Gambe' => tr('Gambe'),
+  'Glutei' => tr('Glutei'),
+  'Addome' => tr('Addome'),
+  'Cardio' => tr('Cardio'),
+  'Full body' => tr('Full body'),
+  _ => group,
+};
 
 class WorkoutExercise {
   const WorkoutExercise({

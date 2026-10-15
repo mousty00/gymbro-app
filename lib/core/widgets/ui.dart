@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../features/auth/session.dart';
+import '../l10n/l10n.dart';
 import '../theme/app_theme.dart';
 import 'app_image.dart';
 
@@ -448,10 +449,10 @@ class MiniBars extends StatelessWidget {
 
 /// Barra di ricerca a pillola con pulsante circolare.
 class SearchPill extends StatelessWidget {
-  const SearchPill({super.key, this.controller, this.hint = 'Cerca…', this.onChanged, this.onSubmitted});
+  const SearchPill({super.key, this.controller, this.hint, this.onChanged, this.onSubmitted});
 
   final TextEditingController? controller;
-  final String hint;
+  final String? hint;
   final ValueChanged<String>? onChanged;
   final ValueChanged<String>? onSubmitted;
 
@@ -473,7 +474,7 @@ class SearchPill extends StatelessWidget {
               onSubmitted: onSubmitted,
               textInputAction: TextInputAction.search,
               decoration: InputDecoration(
-                hintText: hint,
+                hintText: hint ?? tr('Cerca…'),
                 filled: false,
                 border: InputBorder.none,
                 enabledBorder: InputBorder.none,
@@ -542,7 +543,7 @@ void showMessage(BuildContext context, String message, {bool error = false}) {
     );
 }
 
-Future<bool> confirm(BuildContext context, {required String title, String? message, String ok = 'Conferma', bool destructive = false}) async {
+Future<bool> confirm(BuildContext context, {required String title, String? message, String? ok, bool destructive = false}) async {
   final res = await showDialog<bool>(
     context: context,
     builder: (ctx) => AlertDialog(
@@ -553,11 +554,11 @@ Future<bool> confirm(BuildContext context, {required String title, String? messa
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(ctx, false),
-          child: Text('Annulla', style: TextStyle(color: AppColors.inkSoft)),
+          child: Text(tr('Annulla'), style: TextStyle(color: AppColors.inkSoft)),
         ),
         TextButton(
           onPressed: () => Navigator.pop(ctx, true),
-          child: Text(ok, style: TextStyle(color: destructive ? AppColors.danger : AppColors.blue)),
+          child: Text(ok ?? tr('Conferma'), style: TextStyle(color: destructive ? AppColors.danger : AppColors.blue)),
         ),
       ],
     ),

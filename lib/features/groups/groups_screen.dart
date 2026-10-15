@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/l10n/l10n.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/utils/formatters.dart';
 import '../../core/widgets/async_view.dart';
@@ -41,20 +42,20 @@ class GroupsScreen extends ConsumerWidget {
                       children: [
                         Row(
                           children: [
-                            Expanded(child: Text('Gruppi', style: Theme.of(context).textTheme.headlineMedium)),
+                            Expanded(child: Text(tr('Gruppi'), style: Theme.of(context).textTheme.headlineMedium)),
                             CircleIconButton(
                               icon: Icons.add_rounded,
                               dark: true,
-                              tooltip: 'Nuovo gruppo',
+                              tooltip: tr('Nuovo gruppo'),
                               onTap: () => context.push('/group/new'),
                             ),
                           ],
                         ),
                         const SizedBox(height: 6),
-                        Text('Allenarsi insieme è più facile.', style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: AppColors.inkSoft)),
+                        Text(tr('Allenarsi insieme è più facile.'), style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: AppColors.inkSoft)),
                         const SizedBox(height: 18),
                         if (invites.isNotEmpty) ...[
-                          SectionHeader('Inviti · ${invites.length}'),
+                          SectionHeader(tr('Inviti · {count}', {'count': invites.length})),
                           for (final m in invites)
                             Padding(padding: const EdgeInsets.only(bottom: 10), child: GroupInviteTile(member: m)),
                           const SizedBox(height: 10),
@@ -78,9 +79,9 @@ class GroupsScreen extends ConsumerWidget {
                       return SliverToBoxAdapter(
                         child: EmptyState(
                           icon: Icons.groups_rounded,
-                          title: 'Nessun gruppo',
-                          message: 'Crea un allenamento di gruppo e invita i tuoi amici.',
-                          action: 'Crea gruppo',
+                          title: tr('Nessun gruppo'),
+                          message: tr('Crea un allenamento di gruppo e invita i tuoi amici.'),
+                          action: tr('Crea gruppo'),
                           onAction: () => context.push('/group/new'),
                         ),
                       );
@@ -133,7 +134,7 @@ class GroupCard extends StatelessWidget {
               if (group.scheduledFor != null)
                 Tag(formatDayTime(group.scheduledFor), color: past ? AppColors.inkSoft : AppColors.ink, icon: Icons.schedule_rounded)
               else
-                Tag('Da programmare', color: AppColors.inkSoft),
+                Tag(tr('Da programmare'), color: AppColors.inkSoft),
               const Spacer(),
               Container(
                 width: 38,
@@ -149,12 +150,12 @@ class GroupCard extends StatelessWidget {
           const SizedBox(height: 18),
           Text(group.name, style: Theme.of(context).textTheme.titleLarge),
           const SizedBox(height: 2),
-          Text('Scheda: ${group.workoutName}', style: TextStyle(color: AppColors.inkSoft)),
+          Text(tr('Scheda: {name}', {'name': group.workoutName}), style: TextStyle(color: AppColors.inkSoft)),
           const SizedBox(height: 14),
           Row(
             children: [
               Expanded(child: AvatarStack(users: members, size: 32)),
-              Text('${members.length} ${members.length == 1 ? 'persona' : 'persone'}',
+              Text(members.length == 1 ? tr('{n} persona', {'n': 1}) : tr('{n} persone', {'n': members.length}),
                   style: TextStyle(fontWeight: FontWeight.w600, color: AppColors.inkSoft, fontSize: 13)),
             ],
           ),

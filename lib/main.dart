@@ -3,6 +3,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
+import 'core/l10n/l10n.dart';
 import 'core/push/push_service.dart';
 import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
@@ -10,7 +11,8 @@ import 'features/auth/session.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await initializeDateFormatting('it');
+  await initializeDateFormatting();
+  await LanguageNotifier.load();
 
   final container = ProviderContainer();
   final push = container.read(pushServiceProvider);
@@ -39,8 +41,13 @@ class RepBirdsApp extends ConsumerWidget {
       builder: (context, child) => AppThemeSync(child: child!),
       routerConfig: ref.watch(routerProvider),
       scaffoldMessengerKey: scaffoldMessengerKey,
-      locale: const Locale('it'),
-      supportedLocales: const [Locale('it'), Locale('en')],
+      // Di base la lingua del dispositivo (inglese se non supportata); si cambia dal profilo.
+      locale: switch (ref.watch(languageProvider)) {
+        final lang? => Locale(lang),
+        null => null,
+      },
+      supportedLocales: L10n.locales,
+      localeResolutionCallback: L10n.resolve,
       localizationsDelegates: const [
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,

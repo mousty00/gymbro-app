@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/l10n/l10n.dart';
 import '../../core/network/api_exception.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/async_view.dart';
@@ -24,7 +25,7 @@ class _ExercisesScreenState extends ConsumerState<ExercisesScreen> {
   String? _group;
 
   Future<void> _delete(Exercise e) async {
-    if (!await confirm(context, title: 'Eliminare "${e.name}"?', ok: 'Elimina', destructive: true)) return;
+    if (!await confirm(context, title: tr('Eliminare "{name}"?', {'name': e.name}), ok: tr('Elimina'), destructive: true)) return;
     try {
       await ref.read(workoutRepositoryProvider).deleteExercise(e.id);
       ref.invalidate(exercisesProvider);
@@ -44,20 +45,20 @@ class _ExercisesScreenState extends ConsumerState<ExercisesScreen> {
         child: Column(
           children: [
             TopBar(
-              title: 'Esercizi',
+              title: tr('Esercizi'),
               actions: [
                 CircleIconButton(
                   icon: Icons.add_rounded,
                   dark: true,
                   size: 44,
-                  tooltip: 'Nuovo esercizio',
+                  tooltip: tr('Nuovo esercizio'),
                   onTap: () => showCreateExerciseSheet(context),
                 ),
               ],
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
-              child: SearchPill(hint: 'Cerca un esercizio', onChanged: (v) => setState(() => _query = v.toLowerCase())),
+              child: SearchPill(hint: tr('Cerca un esercizio'), onChanged: (v) => setState(() => _query = v.toLowerCase())),
             ),
             SizedBox(
               height: 40,
@@ -69,7 +70,7 @@ class _ExercisesScreenState extends ConsumerState<ExercisesScreen> {
                     Padding(
                       padding: const EdgeInsets.only(right: 8),
                       child: ChoiceChip(
-                        label: Text(g ?? 'Tutti'),
+                        label: Text(g == null ? tr('Tutti') : muscleGroupLabel(g)),
                         selected: _group == g,
                         showCheckmark: false,
                         onSelected: (_) => setState(() => _group = g),
@@ -96,9 +97,9 @@ class _ExercisesScreenState extends ConsumerState<ExercisesScreen> {
                       return ListView(children: [
                         EmptyState(
                           icon: Icons.fitness_center_rounded,
-                          title: 'Nessun esercizio',
-                          message: 'Crea un esercizio personalizzato da usare nelle tue schede.',
-                          action: 'Crea esercizio',
+                          title: tr('Nessun esercizio'),
+                          message: tr('Crea un esercizio personalizzato da usare nelle tue schede.'),
+                          action: tr('Crea esercizio'),
                           onAction: () => showCreateExerciseSheet(context),
                         ),
                       ]);
@@ -123,7 +124,7 @@ class _ExercisesScreenState extends ConsumerState<ExercisesScreen> {
                                   children: [
                                     Text(e.name, style: const TextStyle(fontWeight: FontWeight.w700)),
                                     Text(
-                                      [e.muscleGroup, if (e.description?.isNotEmpty == true) e.description!].join(' · '),
+                                      [muscleGroupLabel(e.muscleGroup), if (e.description?.isNotEmpty == true) e.description!].join(' · '),
                                       style: TextStyle(color: AppColors.inkSoft, fontSize: 13),
                                       maxLines: 2,
                                       overflow: TextOverflow.ellipsis,
@@ -131,7 +132,7 @@ class _ExercisesScreenState extends ConsumerState<ExercisesScreen> {
                                   ],
                                 ),
                               ),
-                              if (!e.isPublic) Tag('Privato', color: AppColors.inkSoft),
+                              if (!e.isPublic) Tag(tr('Privato'), color: AppColors.inkSoft),
                               if (mine)
                                 IconButton(
                                   icon: Icon(Icons.delete_outline_rounded, color: AppColors.muted),
@@ -195,7 +196,7 @@ class _CreateExerciseSheetState extends ConsumerState<_CreateExerciseSheet> {
 
   Future<void> _save() async {
     if (_name.text.trim().isEmpty) {
-      showMessage(context, 'Dai un nome all\'esercizio', error: true);
+      showMessage(context, tr('Dai un nome all\'esercizio'), error: true);
       return;
     }
     setState(() => _loading = true);
@@ -224,18 +225,18 @@ class _CreateExerciseSheetState extends ConsumerState<_CreateExerciseSheet> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text('Nuovo esercizio', style: Theme.of(context).textTheme.headlineSmall),
+            Text(tr('Nuovo esercizio'), style: Theme.of(context).textTheme.headlineSmall),
             const SizedBox(height: 16),
-            TextField(controller: _name, decoration: const InputDecoration(hintText: 'Nome (es. Panca piana)')),
+            TextField(controller: _name, decoration: InputDecoration(hintText: tr('Nome (es. Panca piana)'))),
             const SizedBox(height: 12),
             TextField(
               controller: _description,
               minLines: 2,
               maxLines: 4,
-              decoration: const InputDecoration(hintText: 'Descrizione (opzionale)'),
+              decoration: InputDecoration(hintText: tr('Descrizione (opzionale)')),
             ),
             const SizedBox(height: 16),
-            Text('Gruppo muscolare', style: TextStyle(fontWeight: FontWeight.w600, color: AppColors.inkSoft)),
+            Text(tr('Gruppo muscolare'), style: TextStyle(fontWeight: FontWeight.w600, color: AppColors.inkSoft)),
             const SizedBox(height: 10),
             Wrap(
               spacing: 8,
@@ -243,7 +244,7 @@ class _CreateExerciseSheetState extends ConsumerState<_CreateExerciseSheet> {
               children: [
                 for (final g in muscleGroups)
                   ChoiceChip(
-                    label: Text(g),
+                    label: Text(muscleGroupLabel(g)),
                     selected: _group == g,
                     showCheckmark: false,
                     onSelected: (_) => setState(() => _group = g),
@@ -255,11 +256,11 @@ class _CreateExerciseSheetState extends ConsumerState<_CreateExerciseSheet> {
               contentPadding: EdgeInsets.zero,
               value: _public,
               onChanged: (v) => setState(() => _public = v),
-              title: const Text('Visibile a tutti', style: TextStyle(fontWeight: FontWeight.w600)),
-              subtitle: const Text('Gli altri utenti potranno usarlo nelle loro schede'),
+              title: Text(tr('Visibile a tutti'), style: const TextStyle(fontWeight: FontWeight.w600)),
+              subtitle: Text(tr('Gli altri utenti potranno usarlo nelle loro schede')),
             ),
             const SizedBox(height: 12),
-            PrimaryButton(label: 'Crea esercizio', loading: _loading, onPressed: _save),
+            PrimaryButton(label: tr('Crea esercizio'), loading: _loading, onPressed: _save),
           ],
         ),
       ),

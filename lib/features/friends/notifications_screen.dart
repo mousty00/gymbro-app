@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/l10n/l10n.dart';
 import '../../core/network/api_exception.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/utils/formatters.dart';
@@ -58,7 +59,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            const TopBar(title: 'Notifiche'),
+            TopBar(title: tr('Notifiche')),
             Expanded(
               child: RefreshIndicator(
                 onRefresh: () async {
@@ -71,20 +72,20 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                     if (loading && r.isEmpty && i.isEmpty && a.isEmpty)
                       const SkeletonList(item: SkeletonTile(leading: 44, circle: true, trailing: true), count: 3, padding: EdgeInsets.zero)
                     else if (r.isEmpty && i.isEmpty && a.isEmpty)
-                      const EmptyState(icon: Icons.notifications_none_rounded, title: 'Tutto tranquillo', message: 'Nessuna richiesta, invito o attività.')
+                      EmptyState(icon: Icons.notifications_none_rounded, title: tr('Tutto tranquillo'), message: tr('Nessuna richiesta, invito o attività.'))
                     else ...[
                       if (r.isNotEmpty) ...[
-                        SectionHeader('Richieste di amicizia · ${r.length}'),
+                        SectionHeader(tr('Richieste di amicizia · {count}', {'count': r.length})),
                         for (final f in r) Padding(padding: const EdgeInsets.only(bottom: 10), child: FriendRequestTile(request: f)),
                         const SizedBox(height: 12),
                       ],
                       if (i.isNotEmpty) ...[
-                        SectionHeader('Inviti ai gruppi · ${i.length}'),
+                        SectionHeader(tr('Inviti ai gruppi · {count}', {'count': i.length})),
                         for (final m in i) Padding(padding: const EdgeInsets.only(bottom: 10), child: GroupInviteTile(member: m)),
                         const SizedBox(height: 12),
                       ],
                       if (a.isNotEmpty) ...[
-                        const SectionHeader('Attività'),
+                        SectionHeader(tr('Attività')),
                         for (final n in a) Padding(padding: const EdgeInsets.only(bottom: 10), child: ActivityTile(notification: n)),
                       ],
                     ],
@@ -177,7 +178,7 @@ class _FriendRequestTileState extends ConsumerState<FriendRequestTile> {
       ref.invalidate(friendRequestsProvider);
       ref.invalidate(friendsProvider);
       ref.invalidate(friendsPostsProvider);
-      if (mounted) showMessage(context, accept ? 'Ora siete amici!' : 'Richiesta rifiutata');
+      if (mounted) showMessage(context, accept ? tr('Ora siete amici!') : tr('Richiesta rifiutata'));
     } on ApiException catch (e) {
       if (mounted) showMessage(context, e.message, error: true);
     } finally {
@@ -201,7 +202,7 @@ class _FriendRequestTileState extends ConsumerState<FriendRequestTile> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text('@${from.username}', style: const TextStyle(fontWeight: FontWeight.w700)),
-                Text('vuole allenarsi con te · ${timeAgo(widget.request.createdAt)}',
+                Text(tr('vuole allenarsi con te · {time}', {'time': timeAgo(widget.request.createdAt)}),
                     style: TextStyle(color: AppColors.inkSoft, fontSize: 13)),
               ],
             ),
@@ -209,9 +210,9 @@ class _FriendRequestTileState extends ConsumerState<FriendRequestTile> {
           if (_busy)
             const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2))
           else ...[
-            CircleIconButton(icon: Icons.close_rounded, size: 40, tooltip: 'Rifiuta', onTap: () => _act(false)),
+            CircleIconButton(icon: Icons.close_rounded, size: 40, tooltip: tr('Rifiuta'), onTap: () => _act(false)),
             const SizedBox(width: 8),
-            CircleIconButton(icon: Icons.check_rounded, size: 40, dark: true, tooltip: 'Accetta', onTap: () => _act(true)),
+            CircleIconButton(icon: Icons.check_rounded, size: 40, dark: true, tooltip: tr('Accetta'), onTap: () => _act(true)),
           ],
         ],
       ),
@@ -239,7 +240,7 @@ class _GroupInviteTileState extends ConsumerState<GroupInviteTile> {
       ref.invalidate(groupInvitesProvider);
       ref.invalidate(groupsProvider);
       if (!mounted) return;
-      showMessage(context, accept ? 'Sei nel gruppo!' : 'Invito rifiutato');
+      showMessage(context, accept ? tr('Sei nel gruppo!') : tr('Invito rifiutato'));
       if (accept) context.push('/group/${widget.member.groupId}');
     } on ApiException catch (e) {
       if (mounted) showMessage(context, e.message, error: true);
@@ -263,7 +264,7 @@ class _GroupInviteTileState extends ConsumerState<GroupInviteTile> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  widget.member.groupName ?? 'Invito a un allenamento di gruppo',
+                  widget.member.groupName ?? tr('Invito a un allenamento di gruppo'),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(fontWeight: FontWeight.w700),
@@ -280,9 +281,9 @@ class _GroupInviteTileState extends ConsumerState<GroupInviteTile> {
           if (_busy)
             const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2))
           else ...[
-            CircleIconButton(icon: Icons.close_rounded, size: 40, tooltip: 'Rifiuta', onTap: () => _act(false)),
+            CircleIconButton(icon: Icons.close_rounded, size: 40, tooltip: tr('Rifiuta'), onTap: () => _act(false)),
             const SizedBox(width: 8),
-            CircleIconButton(icon: Icons.check_rounded, size: 40, dark: true, tooltip: 'Accetta', onTap: () => _act(true)),
+            CircleIconButton(icon: Icons.check_rounded, size: 40, dark: true, tooltip: tr('Accetta'), onTap: () => _act(true)),
           ],
         ],
       ),
@@ -294,7 +295,7 @@ class _GroupInviteTileState extends ConsumerState<GroupInviteTile> {
 /// backend non manda il riepilogo del gruppo.
 String _subtitle(GroupMember m) {
   final parts = [
-    if (m.groupCreatedBy != null) 'da @${m.groupCreatedBy}',
+    if (m.groupCreatedBy != null) tr('da @{username}', {'username': m.groupCreatedBy}),
     if (m.groupScheduledFor != null) formatDayTime(m.groupScheduledFor),
   ];
   return parts.isEmpty ? timeAgo(m.createdAt) : parts.join(' · ');

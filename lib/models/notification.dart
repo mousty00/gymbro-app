@@ -1,3 +1,4 @@
+import '../core/l10n/l10n.dart';
 import 'json.dart';
 import 'user.dart';
 
@@ -56,17 +57,25 @@ class AppNotification {
 
   /// Testo mostrato in lista, dopo "@utente".
   String get text => switch (kind) {
-        NotificationKind.friendRequest => 'ti ha inviato una richiesta di amicizia',
-        NotificationKind.friendAccepted => 'ha accettato la tua richiesta di amicizia',
-        NotificationKind.groupInvite => 'ti ha invitato${detail != null ? ' in $detail' : ' in un gruppo'}',
-        NotificationKind.groupInviteAccepted => 'è entrato${detail != null ? ' in $detail' : ' nel tuo gruppo'}',
-        NotificationKind.postLiked => 'ha messo mi piace al tuo post',
-        NotificationKind.postCommented => 'ha commentato: ${detail ?? ''}',
-        NotificationKind.runInvite => 'ti ha invitato a correre${detail != null ? ': $detail' : ''}',
-        NotificationKind.runInviteAccepted => 'parteciperà${detail != null ? ' a $detail' : ' alla tua corsa'}',
-        NotificationKind.routeSaved => 'ha salvato il tuo percorso${detail != null ? ' $detail' : ''}',
-        NotificationKind.workoutShared => 'ti ha mandato la scheda${detail != null ? ' $detail' : ''}',
-        NotificationKind.unknown => 'ha interagito con te',
+        NotificationKind.friendRequest => tr('ti ha inviato una richiesta di amicizia'),
+        NotificationKind.friendAccepted => tr('ha accettato la tua richiesta di amicizia'),
+        NotificationKind.groupInvite =>
+          detail != null ? tr('ti ha invitato in {group}', {'group': detail}) : tr('ti ha invitato in un gruppo'),
+        NotificationKind.groupInviteAccepted =>
+          detail != null ? tr('è entrato in {group}', {'group': detail}) : tr('è entrato nel tuo gruppo'),
+        NotificationKind.postLiked => tr('ha messo mi piace al tuo post'),
+        NotificationKind.postCommented => tr('ha commentato: {comment}', {'comment': detail ?? ''}),
+        NotificationKind.runInvite =>
+          detail != null ? tr('ti ha invitato a correre: {run}', {'run': detail}) : tr('ti ha invitato a correre'),
+        NotificationKind.runInviteAccepted =>
+          detail != null ? tr('parteciperà a {run}', {'run': detail}) : tr('parteciperà alla tua corsa'),
+        NotificationKind.routeSaved => detail != null
+            ? tr('ha salvato il tuo percorso {route}', {'route': detail})
+            : tr('ha salvato il tuo percorso'),
+        NotificationKind.workoutShared => detail != null
+            ? tr('ti ha mandato la scheda {workout}', {'workout': detail})
+            : tr('ti ha mandato la scheda'),
+        NotificationKind.unknown => tr('ha interagito con te'),
       };
 
   /// Dove porta il tap (sulla riga o sulla push), null se non c'è una schermata.

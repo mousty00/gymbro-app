@@ -8,6 +8,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
 import 'package:latlong2/latlong.dart';
 
+import '../../core/l10n/l10n.dart';
 import '../../core/network/api_exception.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/ui.dart';
@@ -86,7 +87,7 @@ class _RunTrackerScreenState extends ConsumerState<RunTrackerScreen> {
     setState(() => _phase = _Phase.ready);
     if (_position != null && _route == null) _map.move(_position!, 16);
     _subscription = source.fixes().listen(_onFix, onError: (Object e) {
-      if (mounted) showMessage(context, 'GPS non disponibile: $e', error: true);
+      if (mounted) showMessage(context, tr('GPS non disponibile: {error}', {'error': e}), error: true);
     });
   }
 
@@ -133,9 +134,9 @@ class _RunTrackerScreenState extends ConsumerState<RunTrackerScreen> {
     if (_recorder.track.length < 2 || _recorder.distance < 50) {
       final discard = await confirm(
         context,
-        title: 'Corsa troppo corta',
-        message: 'Servono almeno 50 metri per salvarla. Vuoi uscire senza salvare?',
-        ok: 'Esci',
+        title: tr('Corsa troppo corta'),
+        message: tr('Servono almeno 50 metri per salvarla. Vuoi uscire senza salvare?'),
+        ok: tr('Esci'),
         destructive: true,
       );
       if (discard && mounted) {
@@ -148,9 +149,9 @@ class _RunTrackerScreenState extends ConsumerState<RunTrackerScreen> {
     }
     final save = await confirm(
       context,
-      title: 'Finire la corsa?',
-      message: '${formatDistance(_recorder.distance)} in ${formatSeconds(moving.inSeconds)}',
-      ok: 'Salva',
+      title: tr('Finire la corsa?'),
+      message: tr('{distance} in {time}', {'distance': formatDistance(_recorder.distance), 'time': formatSeconds(moving.inSeconds)}),
+      ok: tr('Salva'),
     );
     if (!save) {
       if (_phase == _Phase.running) _recorder.resume(DateTime.now());
@@ -173,7 +174,7 @@ class _RunTrackerScreenState extends ConsumerState<RunTrackerScreen> {
     } on ApiException catch (e) {
       if (!mounted) return;
       setState(() => _phase = _Phase.paused);
-      showMessage(context, 'Non sono riuscito a salvare: ${e.message}. Riprova.', error: true);
+      showMessage(context, tr('Non sono riuscito a salvare: {error}. Riprova.', {'error': e.message}), error: true);
     }
   }
 
@@ -185,7 +186,7 @@ class _RunTrackerScreenState extends ConsumerState<RunTrackerScreen> {
 
   Future<bool> _confirmLeave() async {
     if (_phase != _Phase.running && _phase != _Phase.paused) return true;
-    return confirm(context, title: 'Abbandonare la corsa?', message: 'La corsa non verrà salvata.', ok: 'Abbandona', destructive: true);
+    return confirm(context, title: tr('Abbandonare la corsa?'), message: tr('La corsa non verrà salvata.'), ok: tr('Abbandona'), destructive: true);
   }
 
   @override
@@ -251,7 +252,7 @@ class _RunTrackerScreenState extends ConsumerState<RunTrackerScreen> {
                         const SizedBox(width: 10),
                         Expanded(
                           child: Text(
-                            _route?.name ?? 'Corsa libera',
+                            _route?.name ?? tr('Corsa libera'),
                             style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -260,7 +261,7 @@ class _RunTrackerScreenState extends ConsumerState<RunTrackerScreen> {
                           CircleIconButton(
                             icon: Icons.my_location_rounded,
                             size: 44,
-                            tooltip: 'Segui la posizione',
+                            tooltip: tr('Segui la posizione'),
                             onTap: () {
                               setState(() => _follow = true);
                               if (_position != null) _map.move(_position!, 16);
@@ -275,7 +276,7 @@ class _RunTrackerScreenState extends ConsumerState<RunTrackerScreen> {
                         padding: const EdgeInsets.all(14),
                         decoration: BoxDecoration(color: AppColors.danger, borderRadius: BorderRadius.circular(AppRadius.md)),
                         child: Text(
-                          'Sei fuori percorso (${_recorder.distanceFromRoute?.round() ?? '?'} m): torna sulla linea blu',
+                          tr('Sei fuori percorso ({meters} m): torna sulla linea blu', {'meters': _recorder.distanceFromRoute?.round() ?? '?'}),
                           style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700),
                         ),
                       ),
@@ -299,13 +300,13 @@ class _RunTrackerScreenState extends ConsumerState<RunTrackerScreen> {
                           style: Theme.of(context).textTheme.displayMedium?.copyWith(fontFeatures: const [FontFeature.tabularFigures()]),
                         ),
                         if (_phase == _Phase.paused)
-                          const Text('In pausa', style: TextStyle(color: AppColors.amber, fontWeight: FontWeight.w700)),
+                          Text(tr('In pausa'), style: const TextStyle(color: AppColors.amber, fontWeight: FontWeight.w700)),
                         const SizedBox(height: 12),
                         Row(
                           children: [
-                            _Live(label: 'Distanza', value: formatDistance(_recorder.distance)),
-                            _Live(label: 'Passo', value: formatPace(_recorder.currentPace())),
-                            _Live(label: 'Medio', value: formatPace(_recorder.averagePace(now))),
+                            _Live(label: tr('Distanza'), value: formatDistance(_recorder.distance)),
+                            _Live(label: tr('Passo'), value: formatPace(_recorder.currentPace())),
+                            _Live(label: tr('Medio'), value: formatPace(_recorder.averagePace(now))),
                           ],
                         ),
                         if (route.length > 1) ...[
@@ -318,32 +319,32 @@ class _RunTrackerScreenState extends ConsumerState<RunTrackerScreen> {
                             color: AppColors.blue,
                           ),
                           const SizedBox(height: 4),
-                          Text('di ${formatDistance(_route!.distanceM)}', style: TextStyle(color: AppColors.muted, fontSize: 12)),
+                          Text(tr('di {distance}', {'distance': formatDistance(_route!.distanceM)}), style: TextStyle(color: AppColors.muted, fontSize: 12)),
                         ],
                         const SizedBox(height: 14),
                         switch (_phase) {
                           _Phase.loading => Padding(
                               padding: const EdgeInsets.all(12),
-                              child: Text('Cerco il segnale GPS…', style: TextStyle(color: AppColors.inkSoft)),
+                              child: Text(tr('Cerco il segnale GPS…'), style: TextStyle(color: AppColors.inkSoft)),
                             ),
                           _Phase.ready => PrimaryButton(
-                              label: _position == null ? 'Inizia (cerco il GPS…)' : 'Inizia',
+                              label: _position == null ? tr('Inizia (cerco il GPS…)') : tr('Inizia'),
                               icon: Icons.play_arrow_rounded,
                               onPressed: _start,
                             ),
-                          _Phase.saving => const PrimaryButton(label: 'Salvo…', loading: true, onPressed: null),
+                          _Phase.saving => PrimaryButton(label: tr('Salvo…'), loading: true, onPressed: null),
                           _ => Row(
                               children: [
                                 Expanded(
                                   child: OutlinedButton.icon(
                                     onPressed: _togglePause,
                                     icon: Icon(_phase == _Phase.running ? Icons.pause_rounded : Icons.play_arrow_rounded),
-                                    label: Text(_phase == _Phase.running ? 'Pausa' : 'Riprendi'),
+                                    label: Text(_phase == _Phase.running ? tr('Pausa') : tr('Riprendi')),
                                   ),
                                 ),
                                 const SizedBox(width: 10),
                                 Expanded(
-                                  child: PrimaryButton(label: 'Fine', icon: Icons.stop_rounded, color: AppColors.danger, onPressed: _finish),
+                                  child: PrimaryButton(label: tr('Fine'), icon: Icons.stop_rounded, color: AppColors.danger, onPressed: _finish),
                                 ),
                               ],
                             ),
@@ -390,14 +391,14 @@ class _ErrorView extends StatelessWidget {
       body: SafeArea(
         child: Column(
           children: [
-            const TopBar(title: 'Corsa'),
+            TopBar(title: tr('Corsa')),
             Expanded(
               child: Center(
                 child: EmptyState(
                   icon: Icons.location_off_rounded,
-                  title: 'Non posso registrare',
+                  title: tr('Non posso registrare'),
                   message: message,
-                  action: openSettings ? 'Apri impostazioni' : null,
+                  action: openSettings ? tr('Apri impostazioni') : null,
                   onAction: openSettings ? Geolocator.openAppSettings : null,
                 ),
               ),

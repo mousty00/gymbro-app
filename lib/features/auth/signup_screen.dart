@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../core/l10n/l10n.dart';
 import '../../core/network/api_exception.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/utils/formatters.dart';
@@ -47,7 +48,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
       firstDate: DateTime(1920),
       // età minima 14 anni (consenso digitale in Italia), la controlla anche il backend
       lastDate: DateTime(now.year - 14, now.month, now.day),
-      helpText: 'Data di nascita',
+      helpText: tr('Data di nascita'),
     );
     if (picked != null) {
       setState(() {
@@ -70,7 +71,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
             birthDate: _birthDate!,
           );
       if (!mounted) return;
-      showMessage(context, 'Account creato! Ti abbiamo inviato un codice via email.');
+      showMessage(context, tr('Account creato! Ti abbiamo inviato un codice via email.'));
       context.pushReplacement(
         '/auth/verify?username=${Uri.encodeComponent(_username.text.trim())}'
         '&email=${Uri.encodeComponent(_email.text.trim())}',
@@ -85,8 +86,8 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
   @override
   Widget build(BuildContext context) {
     return AuthScaffold(
-      title: 'Crea il tuo\naccount',
-      subtitle: 'Pochi dati e sei pronto per il primo allenamento.',
+      title: tr('Crea il tuo\naccount'),
+      subtitle: tr('Pochi dati e sei pronto per il primo allenamento.'),
       children: [
         Form(
           key: _form,
@@ -94,17 +95,17 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
             child: Column(
               children: [
                 LabeledField(
-                  label: 'Username',
+                  label: tr('Username'),
                   controller: _username,
-                  hint: 'es. mario_lifts',
+                  hint: tr('es. mario_lifts'),
                   autofillHints: const [AutofillHints.newUsername],
                   validator: (v) {
                     final u = v?.trim() ?? '';
-                    if (u.isEmpty) return 'Scegli uno username';
-                    if (u.length < 3 || u.length > 50) return 'Da 3 a 50 caratteri';
+                    if (u.isEmpty) return tr('Scegli uno username');
+                    if (u.length < 3 || u.length > 50) return tr('Da 3 a 50 caratteri');
                     // stessa regola del backend: finisce in URL e chiavi di storage
                     if (!RegExp(r'^[A-Za-z0-9._-]+$').hasMatch(u)) {
-                      return 'Solo lettere, numeri, punto, trattino e underscore';
+                      return tr('Solo lettere, numeri, punto, trattino e underscore');
                     }
                     return null;
                   },
@@ -113,7 +114,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                   children: [
                     Expanded(
                       child: LabeledField(
-                        label: 'Nome',
+                        label: tr('Nome'),
                         controller: _firstName,
                         validator: requiredField,
                         autofillHints: const [AutofillHints.givenName],
@@ -122,7 +123,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                     const SizedBox(width: 12),
                     Expanded(
                       child: LabeledField(
-                        label: 'Cognome',
+                        label: tr('Cognome'),
                         controller: _lastName,
                         validator: requiredField,
                         autofillHints: const [AutofillHints.familyName],
@@ -131,21 +132,21 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                   ],
                 ),
                 LabeledField(
-                  label: 'Email',
+                  label: tr('Email'),
                   controller: _email,
-                  hint: 'nome@email.com',
+                  hint: tr('nome@email.com'),
                   keyboardType: TextInputType.emailAddress,
                   validator: validEmail,
                   autofillHints: const [AutofillHints.email],
                 ),
                 LabeledField(
-                  label: 'Data di nascita',
+                  label: tr('Data di nascita'),
                   controller: _birth,
-                  hint: 'Seleziona',
+                  hint: tr('Seleziona'),
                   readOnly: true,
                   onTap: _pickBirthDate,
                   suffix: const Icon(Icons.calendar_today_rounded, size: 18),
-                  validator: (_) => _birthDate == null ? 'Inserisci la data di nascita' : null,
+                  validator: (_) => _birthDate == null ? tr('Inserisci la data di nascita') : null,
                 ),
                 PasswordField(
                   controller: _password,
@@ -154,8 +155,8 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                 ),
                 PasswordField(
                   controller: _confirm,
-                  label: 'Conferma password',
-                  validator: (v) => v != _password.text ? 'Le password non coincidono' : null,
+                  label: tr('Conferma password'),
+                  validator: (v) => v != _password.text ? tr('Le password non coincidono') : null,
                   onSubmitted: (_) => _submit(),
                 ),
               ],
@@ -165,19 +166,19 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
         const SizedBox(height: 8),
         Text.rich(
           TextSpan(
-            text: 'Creando un account accetti i ',
+            text: tr('Creando un account accetti i '),
             children: [
-              _link('Termini di servizio', ShareLinks.terms),
-              const TextSpan(text: ' e la '),
-              _link('Privacy policy', ShareLinks.privacy),
-              const TextSpan(text: '. Niente contenuti offensivi: chi li pubblica viene rimosso.'),
+              _link(tr('Termini di servizio'), ShareLinks.terms),
+              TextSpan(text: tr(' e la ')),
+              _link(tr('Privacy policy'), ShareLinks.privacy),
+              TextSpan(text: tr('. Niente contenuti offensivi: chi li pubblica viene rimosso.')),
             ],
           ),
           textAlign: TextAlign.center,
           style: TextStyle(color: AppColors.muted, fontSize: 12, height: 1.4),
         ),
         const SizedBox(height: 12),
-        PrimaryButton(label: 'Crea account', loading: _loading, onPressed: _submit),
+        PrimaryButton(label: tr('Crea account'), loading: _loading, onPressed: _submit),
       ],
     );
   }

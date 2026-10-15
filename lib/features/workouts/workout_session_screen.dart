@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/l10n/l10n.dart';
 import '../../core/network/api_exception.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/utils/formatters.dart';
@@ -80,7 +81,7 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
   void _skipRest() => setState(() => _restLeft = 0);
 
   Future<void> _finish(Workout w) async {
-    final ok = await confirm(context, title: 'Terminare l\'allenamento?', message: 'La sessione verrà salvata nello storico.', ok: 'Termina');
+    final ok = await confirm(context, title: tr('Terminare l\'allenamento?'), message: tr('La sessione verrà salvata nello storico.'), ok: tr('Termina'));
     if (!ok) return;
     setState(() => _saving = true);
     try {
@@ -94,7 +95,7 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
       ref.invalidate(historyProvider);
       if (widget.groupId != null) ref.invalidate(groupHistoryProvider(widget.groupId!));
       if (!mounted) return;
-      showMessage(context, 'Allenamento salvato. Grande! 💪');
+      showMessage(context, tr('Allenamento salvato. Grande! 💪'));
       context.pop();
     } on ApiException catch (e) {
       if (mounted) showMessage(context, e.message, error: true);
@@ -112,7 +113,7 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
       canPop: false,
       onPopInvokedWithResult: (didPop, _) async {
         if (didPop) return;
-        final leave = await confirm(context, title: 'Abbandonare la sessione?', message: 'I progressi non verranno salvati.', ok: 'Esci', destructive: true);
+        final leave = await confirm(context, title: tr('Abbandonare la sessione?'), message: tr('I progressi non verranno salvati.'), ok: tr('Esci'), destructive: true);
         if (leave && context.mounted) context.pop();
       },
       child: Scaffold(
@@ -143,7 +144,7 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
                                   children: [
                                     Icon(Icons.timer_outlined, size: 16, color: Colors.white.withValues(alpha: 0.6)),
                                     const SizedBox(width: 6),
-                                    Text(widget.groupId != null ? 'Durata sessione di gruppo' : 'Durata allenamento',
+                                    Text(widget.groupId != null ? tr('Durata sessione di gruppo') : tr('Durata allenamento'),
                                         style: TextStyle(color: Colors.white.withValues(alpha: 0.6))),
                                   ],
                                 ),
@@ -163,7 +164,7 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
                                   ),
                                 ),
                                 const SizedBox(height: 8),
-                                Text('$doneSets / $totalSets serie completate',
+                                Text(tr('{done} / {total} serie completate', {'done': doneSets, 'total': totalSets}),
                                     style: TextStyle(color: AppColors.onInk.withValues(alpha: 0.7), fontSize: 13)),
                               ],
                             ),
@@ -188,7 +189,7 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
                                     Row(
                                       children: [
                                         Expanded(
-                                          child: Text(e.exerciseName ?? 'Esercizio', style: t.titleMedium),
+                                          child: Text(e.exerciseName ?? tr('Esercizio'), style: t.titleMedium),
                                         ),
                                         Text(e.summary, style: TextStyle(color: AppColors.inkSoft)),
                                       ],
@@ -215,7 +216,7 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
                             controller: _notes,
                             minLines: 2,
                             maxLines: 4,
-                            decoration: const InputDecoration(hintText: 'Note sulla sessione (opzionale)'),
+                            decoration: InputDecoration(hintText: tr('Note sulla sessione (opzionale)')),
                           ),
                         ],
                       ),
@@ -223,7 +224,7 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
                     Padding(
                       padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
                       child: PillActionButton(
-                        label: 'Termina e salva',
+                        label: tr('Termina e salva'),
                         icon: Icons.check_rounded,
                         loading: _saving,
                         onPressed: () => _finish(w),
@@ -313,7 +314,7 @@ class _RestCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  resting ? 'Recupero tra le serie' : 'Recupero',
+                  resting ? tr('Recupero tra le serie') : tr('Recupero'),
                   style: TextStyle(
                     fontWeight: FontWeight.w700,
                     color: resting ? Colors.white : AppColors.ink,
@@ -321,7 +322,7 @@ class _RestCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  resting ? 'Riposa, poi fai la prossima serie' : 'Parte da solo quando spunti una serie',
+                  resting ? tr('Riposa, poi fai la prossima serie') : tr('Parte da solo quando spunti una serie'),
                   style: TextStyle(fontSize: 12, color: resting ? Colors.white70 : AppColors.muted),
                 ),
               ],
@@ -339,12 +340,12 @@ class _RestCard extends StatelessWidget {
             ),
             const SizedBox(width: 4),
             IconButton(
-              tooltip: '+15 secondi',
+              tooltip: tr('+15 secondi'),
               onPressed: onAdd,
               icon: const Icon(Icons.add_rounded, color: Colors.white),
             ),
             IconButton(
-              tooltip: 'Salta recupero',
+              tooltip: tr('Salta recupero'),
               onPressed: onSkip,
               icon: const Icon(Icons.skip_next_rounded, color: Colors.white),
             ),

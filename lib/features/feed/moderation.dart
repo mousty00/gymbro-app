@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/network/api_exception.dart';
+import '../../core/l10n/l10n.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/ui.dart';
 import '../../data/providers.dart';
@@ -10,7 +11,14 @@ import '../../data/user_repository.dart';
 
 /// Segnala e blocca: richiesti da App Store e Play Store per i contenuti degli utenti.
 
-const _reasons = ['Spam', 'Contenuto offensivo o violento', 'Nudità o contenuti sessuali', 'Molestie', 'Altro'];
+/// (valore inviato al backend, etichetta mostrata)
+List<(String, String)> get _reasons => [
+      ('Spam', tr('Spam')),
+      ('Contenuto offensivo o violento', tr('Contenuto offensivo o violento')),
+      ('Nudità o contenuti sessuali', tr('Nudità o contenuti sessuali')),
+      ('Molestie', tr('Molestie')),
+      ('Altro', tr('Altro')),
+    ];
 
 /// [type]: POST, COMMENT o USER.
 Future<void> reportContent(BuildContext context, WidgetRef ref, {required String type, required String targetId}) async {
@@ -22,9 +30,9 @@ Future<void> reportContent(BuildContext context, WidgetRef ref, {required String
         children: [
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
-            child: Text('Perché lo segnali?', style: Theme.of(ctx).textTheme.headlineSmall),
+            child: Text(tr('Perché lo segnali?'), style: Theme.of(ctx).textTheme.headlineSmall),
           ),
-          for (final r in _reasons) ListTile(title: Text(r), onTap: () => Navigator.pop(ctx, r)),
+          for (final (r, label) in _reasons) ListTile(title: Text(label), onTap: () => Navigator.pop(ctx, r)),
         ],
       ),
     ),
@@ -32,7 +40,7 @@ Future<void> reportContent(BuildContext context, WidgetRef ref, {required String
   if (reason == null) return;
   try {
     await ref.read(userRepositoryProvider).report(type: type, targetId: targetId, reason: reason);
-    if (context.mounted) showMessage(context, 'Segnalazione inviata, la esamineremo entro 24 ore');
+    if (context.mounted) showMessage(context, tr('Segnalazione inviata, la esamineremo entro 24 ore'));
   } on ApiException catch (e) {
     if (context.mounted) showMessage(context, e.message, error: true);
   }
@@ -42,9 +50,9 @@ Future<void> reportContent(BuildContext context, WidgetRef ref, {required String
 Future<bool> blockUser(BuildContext context, WidgetRef ref, String username) async {
   final ok = await confirm(
     context,
-    title: 'Bloccare @$username?',
-    message: 'Non vedrai più i suoi post e commenti, e non potrà contattarti né mandarti richieste.',
-    ok: 'Blocca',
+    title: tr('Bloccare @{username}?', {'username': username}),
+    message: tr('Non vedrai più i suoi post e commenti, e non potrà contattarti né mandarti richieste.'),
+    ok: tr('Blocca'),
     destructive: true,
   );
   if (!ok) return false;
@@ -53,7 +61,7 @@ Future<bool> blockUser(BuildContext context, WidgetRef ref, String username) asy
     refreshPosts(ref);
     ref.invalidate(friendsProvider);
     ref.invalidate(userPostsProvider(username));
-    if (context.mounted) showMessage(context, '@$username bloccato');
+    if (context.mounted) showMessage(context, tr('@{username} bloccato', {'username': username}));
     return true;
   } on ApiException catch (e) {
     if (context.mounted) showMessage(context, e.message, error: true);
@@ -77,7 +85,7 @@ class ModerationMenu extends ConsumerWidget {
       icon: Icon(Icons.more_horiz_rounded, size: small ? 18 : 24, color: small ? AppColors.muted : null),
       padding: small ? EdgeInsets.zero : const EdgeInsets.all(8),
       constraints: const BoxConstraints(),
-      tooltip: 'Altro',
+      tooltip: tr('Altro'),
       color: AppColors.card,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.md)),
       onSelected: (v) async {
@@ -88,8 +96,8 @@ class ModerationMenu extends ConsumerWidget {
         }
       },
       itemBuilder: (_) => [
-        const PopupMenuItem(value: 'report', child: Text('Segnala')),
-        PopupMenuItem(value: 'block', child: Text('Blocca @$username', style: const TextStyle(color: AppColors.danger))),
+        PopupMenuItem(value: 'report', child: Text(tr('Segnala'))),
+        PopupMenuItem(value: 'block', child: Text(tr('Blocca @{username}', {'username': username}), style: const TextStyle(color: AppColors.danger))),
       ],
     );
   }

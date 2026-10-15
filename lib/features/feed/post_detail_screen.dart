@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/network/api_exception.dart';
+import '../../core/l10n/l10n.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/utils/formatters.dart';
 import '../../core/widgets/async_view.dart';
@@ -52,7 +53,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
   }
 
   Future<void> _deleteComment(SimpleComment c) async {
-    if (!await confirm(context, title: 'Eliminare il commento?', ok: 'Elimina', destructive: true)) return;
+    if (!await confirm(context, title: tr('Eliminare il commento?'), ok: tr('Elimina'), destructive: true)) return;
     try {
       await ref.read(postRepositoryProvider).deleteComment(c.id);
       ref.invalidate(postProvider(widget.postId));
@@ -73,11 +74,11 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text('Modifica post', style: Theme.of(ctx).textTheme.headlineSmall),
+            Text(tr('Modifica post'), style: Theme.of(ctx).textTheme.headlineSmall),
             const SizedBox(height: 16),
             TextField(controller: controller, maxLines: 5, minLines: 3, maxLength: 2000, autofocus: true),
             const SizedBox(height: 16),
-            PrimaryButton(label: 'Salva', onPressed: () => Navigator.pop(ctx, controller.text.trim())),
+            PrimaryButton(label: tr('Salva'), onPressed: () => Navigator.pop(ctx, controller.text.trim())),
           ],
         ),
       ),
@@ -94,7 +95,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
   }
 
   Future<void> _deletePost(Post post) async {
-    if (!await confirm(context, title: 'Eliminare il post?', message: 'L\'azione non si può annullare.', ok: 'Elimina', destructive: true)) {
+    if (!await confirm(context, title: tr('Eliminare il post?'), message: tr('L\'azione non si può annullare.'), ok: tr('Elimina'), destructive: true)) {
       return;
     }
     try {
@@ -118,13 +119,13 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
         child: Column(
           children: [
             TopBar(
-              title: 'Post',
+              title: tr('Post'),
               actions: [
                 if (post.value != null)
                   CircleIconButton(
                     icon: Icons.ios_share_rounded,
                     size: 44,
-                    tooltip: 'Condividi',
+                    tooltip: tr('Condividi'),
                     onTap: () => sharePost(context, post.value!),
                   ),
                 if (isMine)
@@ -133,9 +134,9 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                     color: AppColors.card,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.md)),
                     onSelected: (v) => v == 'edit' ? _editPost(post.value!) : _deletePost(post.value!),
-                    itemBuilder: (_) => const [
-                      PopupMenuItem(value: 'edit', child: Text('Modifica')),
-                      PopupMenuItem(value: 'delete', child: Text('Elimina', style: TextStyle(color: AppColors.danger))),
+                    itemBuilder: (_) => [
+                      PopupMenuItem(value: 'edit', child: Text(tr('Modifica'))),
+                      PopupMenuItem(value: 'delete', child: Text(tr('Elimina'), style: const TextStyle(color: AppColors.danger))),
                     ],
                   )
                 else if (post.value != null)
@@ -160,11 +161,11 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                     children: [
                       PostCard(post: p, openOnTap: false, onChanged: (_) => refreshPosts(ref)),
                       const SizedBox(height: 20),
-                      SectionHeader('Commenti · ${comments.length}'),
+                      SectionHeader(tr('Commenti · {count}', {'count': comments.length})),
                       if (comments.isEmpty)
                         Padding(
                           padding: const EdgeInsets.symmetric(vertical: 12),
-                          child: Text('Nessun commento. Scrivi il primo!', style: TextStyle(color: AppColors.muted)),
+                          child: Text(tr('Nessun commento. Scrivi il primo!'), style: TextStyle(color: AppColors.muted)),
                         ),
                       for (final c in comments)
                         _CommentTile(
@@ -289,13 +290,13 @@ class _CommentComposer extends StatelessWidget {
                 buildCounter: (_, {required currentLength, required isFocused, maxLength}) => null,
                 textInputAction: TextInputAction.send,
                 onSubmitted: (_) => onSend(),
-                decoration: const InputDecoration(
-                  hintText: 'Scrivi un commento…',
+                decoration: InputDecoration(
+                  hintText: tr('Scrivi un commento…'),
                   filled: false,
                   border: InputBorder.none,
                   enabledBorder: InputBorder.none,
                   focusedBorder: InputBorder.none,
-                  contentPadding: EdgeInsets.symmetric(vertical: 18),
+                  contentPadding: const EdgeInsets.symmetric(vertical: 18),
                 ),
               ),
             ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/l10n/l10n.dart';
 import '../../core/network/api_exception.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/utils/formatters.dart';
@@ -27,7 +28,7 @@ class HistoryScreen extends ConsumerWidget {
       body: SafeArea(
         child: Column(
           children: [
-            const TopBar(title: 'Storico'),
+            TopBar(title: tr('Storico')),
             Expanded(
               child: RefreshIndicator(
                 onRefresh: () => ref.refresh(historyProvider.future),
@@ -37,11 +38,11 @@ class HistoryScreen extends ConsumerWidget {
                   loading: const SkeletonList(item: SkeletonTile(leading: 48)),
                   data: (list) {
                     if (list.isEmpty) {
-                      return ListView(children: const [
+                      return ListView(children: [
                         EmptyState(
                           icon: Icons.history_rounded,
-                          title: 'Nessuna sessione',
-                          message: 'Completa un allenamento e lo troverai qui.',
+                          title: tr('Nessuna sessione'),
+                          message: tr('Completa un allenamento e lo troverai qui.'),
                         ),
                       ]);
                     }
@@ -55,10 +56,10 @@ class HistoryScreen extends ConsumerWidget {
                           child: Row(
                             children: [
                               Expanded(
-                                child: _Summary(value: '${list.length}', label: 'sessioni totali'),
+                                child: _Summary(value: '${list.length}', label: tr('sessioni totali')),
                               ),
                               Expanded(
-                                child: _Summary(value: formatDuration(total), label: 'tempo allenato'),
+                                child: _Summary(value: formatDuration(total), label: tr('tempo allenato')),
                               ),
                             ],
                           ),
@@ -70,7 +71,7 @@ class HistoryScreen extends ConsumerWidget {
                             child: Dismissible(
                               key: ValueKey(h.id),
                               direction: DismissDirection.endToStart,
-                              confirmDismiss: (_) => confirm(context, title: 'Eliminare la sessione?', ok: 'Elimina', destructive: true),
+                              confirmDismiss: (_) => confirm(context, title: tr('Eliminare la sessione?'), ok: tr('Elimina'), destructive: true),
                               onDismissed: (_) async {
                                 try {
                                   await ref.read(workoutRepositoryProvider).deleteHistory(h.id);
@@ -95,10 +96,10 @@ class HistoryScreen extends ConsumerWidget {
                                       child: Column(
                                         crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
-                                          Text(workouts[h.workoutId]?.name ?? 'Allenamento',
+                                          Text(workouts[h.workoutId]?.name ?? tr('Allenamento'),
                                               style: const TextStyle(fontWeight: FontWeight.w700)),
                                           Text(
-                                            [formatTime(h.startedAt), formatDuration(h.duration), if (h.groupId != null) 'di gruppo']
+                                            [formatTime(h.startedAt), formatDuration(h.duration), if (h.groupId != null) tr('di gruppo')]
                                                 .where((s) => s.isNotEmpty)
                                                 .join(' · '),
                                             style: TextStyle(color: AppColors.inkSoft, fontSize: 13),
@@ -113,7 +114,7 @@ class HistoryScreen extends ConsumerWidget {
                                     ),
                                     IconButton(
                                       icon: Icon(Icons.ios_share_rounded, color: AppColors.inkSoft),
-                                      tooltip: 'Condividi',
+                                      tooltip: tr('Condividi'),
                                       onPressed: () => shareSession(context, h,
                                           workout: workouts[h.workoutId], username: me.username),
                                     ),
@@ -159,7 +160,7 @@ class _DateBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final d = date;
-    const months = ['gen', 'feb', 'mar', 'apr', 'mag', 'giu', 'lug', 'ago', 'set', 'ott', 'nov', 'dic'];
+    final months = [tr('gen'), tr('feb'), tr('mar'), tr('apr'), tr('mag'), tr('giu'), tr('lug'), tr('ago'), tr('set'), tr('ott'), tr('nov'), tr('dic')];
     return Container(
       width: 52,
       height: 56,

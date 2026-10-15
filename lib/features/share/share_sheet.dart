@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:share_plus/share_plus.dart';
 
+import '../../core/l10n/l10n.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/ui.dart';
 import '../feed/create_post_screen.dart';
@@ -117,7 +118,7 @@ class _ShareSheetState extends State<_ShareSheet> {
         ),
       );
     } catch (_) {
-      if (mounted) showMessage(context, 'Non è stato possibile condividere', error: true);
+      if (mounted) showMessage(context, tr('Non è stato possibile condividere'), error: true);
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -142,7 +143,7 @@ class _ShareSheetState extends State<_ShareSheet> {
 
   Future<void> _copyLink() async {
     await Clipboard.setData(ClipboardData(text: c.link!));
-    if (mounted) showMessage(context, 'Link copiato');
+    if (mounted) showMessage(context, tr('Link copiato'));
   }
 
   void _sendInApp() {
@@ -169,7 +170,7 @@ class _ShareSheetState extends State<_ShareSheet> {
               ),
             ),
             const SizedBox(height: 14),
-            Text('Condividi', style: Theme.of(context).textTheme.titleLarge),
+            Text(tr('Condividi'), style: Theme.of(context).textTheme.titleLarge),
             const SizedBox(height: 14),
             if (c.outside) ...[
               Center(
@@ -192,7 +193,7 @@ class _ShareSheetState extends State<_ShareSheet> {
               const SizedBox(height: 18),
               Builder(
                 builder: (buttonContext) => PrimaryButton(
-                  label: c.link == null ? 'WhatsApp, Instagram e altre app' : 'Invia link (WhatsApp, Telegram…)',
+                  label: c.link == null ? tr('WhatsApp, Instagram e altre app') : tr('Invia link (WhatsApp, Telegram…)'),
                   icon: Icons.ios_share_rounded,
                   loading: _busy,
                   onPressed: () => _shareOutside(buttonContext, image: c.link == null),
@@ -223,14 +224,14 @@ class _ShareSheetState extends State<_ShareSheet> {
                     _Action(
                       icon: Icons.send_rounded,
                       color: AppColors.blue,
-                      label: 'Invia ad amici o gruppi',
+                      label: tr('Invia ad amici o gruppi'),
                       onTap: _busy ? null : _sendInApp,
                     ),
                   if (c.outside && c.allowFeed)
                     _Action(
                       icon: Icons.dynamic_feed_rounded,
                       color: AppColors.pink,
-                      label: 'Pubblica nel feed',
+                      label: tr('Pubblica nel feed'),
                       onTap: _busy ? null : _postToFeed,
                     ),
                   if (c.outside && c.link != null)
@@ -238,12 +239,12 @@ class _ShareSheetState extends State<_ShareSheet> {
                       builder: (actionContext) => _Action(
                         icon: Icons.image_rounded,
                         color: AppColors.lilac,
-                        label: 'Condividi immagine (Instagram…)',
+                        label: tr('Condividi immagine (Instagram…)'),
                         onTap: _busy ? null : () => _shareOutside(actionContext, image: true),
                       ),
                     ),
                   if (c.outside && c.link != null)
-                    _Action(icon: Icons.link_rounded, color: AppColors.mint, label: 'Copia link', onTap: _copyLink),
+                    _Action(icon: Icons.link_rounded, color: AppColors.mint, label: tr('Copia link'), onTap: _copyLink),
                   for (final a in c.extraActions)
                     Builder(
                       builder: (actionContext) => _Action(

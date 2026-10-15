@@ -5,6 +5,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/config/env.dart';
+import '../../core/l10n/l10n.dart';
 import '../../core/network/api_exception.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/utils/formatters.dart';
@@ -38,7 +39,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     try {
       await ref.read(userRepositoryProvider).updateProfileImage(await file.readAsBytes(), file.name);
       await ref.read(sessionProvider.notifier).reloadProfile();
-      if (mounted) showMessage(context, 'Foto profilo aggiornata');
+      if (mounted) showMessage(context, tr('Foto profilo aggiornata'));
     } on ApiException catch (e) {
       if (mounted) showMessage(context, e.message, error: true);
     } finally {
@@ -47,16 +48,16 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   }
 
   Future<void> _logout() async {
-    if (!await confirm(context, title: 'Vuoi uscire?', ok: 'Esci')) return;
+    if (!await confirm(context, title: tr('Vuoi uscire?'), ok: tr('Esci dall\'account'))) return;
     await ref.read(sessionProvider.notifier).logout();
   }
 
   Future<void> _deleteAccount() async {
     final ok = await confirm(
       context,
-      title: 'Eliminare l\'account?',
-      message: 'Schede, post e storico verranno cancellati definitivamente.',
-      ok: 'Elimina account',
+      title: tr('Eliminare l\'account?'),
+      message: tr('Schede, post e storico verranno cancellati definitivamente.'),
+      ok: tr('Elimina account'),
       destructive: true,
     );
     if (!ok) return;
@@ -87,15 +88,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Text('Account', style: Theme.of(ctx).textTheme.headlineSmall),
+                Text(tr('Account'), style: Theme.of(ctx).textTheme.headlineSmall),
                 const SizedBox(height: 14),
                 SoftCard(
                   child: Column(
                     children: [
-                      _InfoRow(label: 'Email', value: me.email ?? '—'),
-                      if (me.birthDate != null) _InfoRow(label: 'Data di nascita', value: formatDate(me.birthDate)),
-                      if (me.createdAt != null) _InfoRow(label: 'Iscritto da', value: formatMonthYear(me.createdAt)),
-                      if (Env.serverLabel != null) _InfoRow(label: 'Server', value: Env.serverLabel!),
+                      _InfoRow(label: tr('Email'), value: me.email ?? '—'),
+                      if (me.birthDate != null) _InfoRow(label: tr('Data di nascita'), value: formatDate(me.birthDate)),
+                      if (me.createdAt != null) _InfoRow(label: tr('Iscritto da'), value: formatMonthYear(me.createdAt)),
+                      if (Env.serverLabel != null) _InfoRow(label: tr('Server'), value: Env.serverLabel!),
                     ],
                   ),
                 ),
@@ -107,25 +108,31 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       _MenuRow(
                         icon: Icons.sports_gymnastics_rounded,
                         color: AppColors.mint,
-                        label: 'Libreria esercizi',
+                        label: tr('Libreria esercizi'),
                         onTap: () => go(() => context.push('/exercises')),
+                      ),
+                      _MenuRow(
+                        icon: Icons.language_rounded,
+                        color: AppColors.lilac,
+                        label: tr('Lingua'),
+                        onTap: () => go(_chooseLanguage),
                       ),
                       _MenuRow(
                         icon: Icons.privacy_tip_outlined,
                         color: AppColors.blue,
-                        label: 'Privacy policy',
+                        label: tr('Privacy policy'),
                         onTap: () => go(() => launchUrl(Uri.parse(ShareLinks.privacy))),
                       ),
                       _MenuRow(
                         icon: Icons.description_outlined,
                         color: AppColors.inkSoft,
-                        label: 'Termini di servizio',
+                        label: tr('Termini di servizio'),
                         onTap: () => go(() => launchUrl(Uri.parse(ShareLinks.terms))),
                       ),
                       _MenuRow(
                         icon: Icons.logout_rounded,
                         color: AppColors.ink,
-                        label: 'Esci',
+                        label: tr('Esci dall\'account'),
                         onTap: () => go(_logout),
                         last: true,
                       ),
@@ -135,8 +142,35 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 const SizedBox(height: 8),
                 TextButton(
                   onPressed: () => go(_deleteAccount),
-                  child: const Text('Elimina account', style: TextStyle(color: AppColors.danger)),
+                  child: Text(tr('Elimina account'), style: const TextStyle(color: AppColors.danger)),
                 ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _chooseLanguage() {
+    showModalBottomSheet<void>(
+      context: context,
+      builder: (ctx) {
+        final current = ref.read(languageProvider);
+        void pick(String? lang) {
+          Navigator.pop(ctx);
+          ref.read(languageProvider.notifier).set(lang);
+        }
+
+        return SafeArea(
+          child: RadioGroup<String?>(
+            groupValue: current,
+            onChanged: pick,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                RadioListTile<String?>(value: null, title: Text(tr('Lingua del dispositivo'))),
+                for (final e in L10n.languages.entries) RadioListTile<String?>(value: e.key, title: Text(e.value)),
               ],
             ),
           ),
@@ -174,12 +208,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     Expanded(child: Text('@${me.username}', style: t.titleLarge, overflow: TextOverflow.ellipsis)),
                     CircleIconButton(
                       icon: Icons.ios_share_rounded,
-                      tooltip: 'Condividi profilo',
+                      tooltip: tr('Condividi profilo'),
                       onTap: () => shareProfile(context, me,
                           mine: true, sessions: history.length, trained: total, friends: friends.length),
                     ),
                     const SizedBox(width: 10),
-                    CircleIconButton(icon: Icons.settings_outlined, tooltip: 'Account', onTap: _showSettings),
+                    CircleIconButton(icon: Icons.settings_outlined, tooltip: tr('Account'), onTap: _showSettings),
                   ],
                 ),
                 const SizedBox(height: 20),
@@ -215,9 +249,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceAround,
                         children: [
-                          _Counter(value: '${posts.value?.length ?? '–'}', label: 'Post'),
-                          _Counter(value: '${history.length}', label: 'Sessioni', onTap: () => context.push('/history')),
-                          _Counter(value: '${friends.length}', label: 'Amici', onTap: () => context.push('/friends')),
+                          _Counter(value: '${posts.value?.length ?? '–'}', label: tr('Post')),
+                          _Counter(value: '${history.length}', label: tr('Sessioni'), onTap: () => context.push('/history')),
+                          _Counter(value: '${friends.length}', label: tr('Amici'), onTap: () => context.push('/friends')),
                         ],
                       ),
                     ),
@@ -234,29 +268,29 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   ],
                 ),
                 if (total > Duration.zero)
-                  Text('${formatDuration(total)} di allenamento', style: t.bodyMedium?.copyWith(color: AppColors.muted)),
+                  Text(tr('{duration} di allenamento', {'duration': formatDuration(total)}), style: t.bodyMedium?.copyWith(color: AppColors.muted)),
                 const SizedBox(height: 16),
                 Row(
                   children: [
                     Expanded(
                       child: _PillButton(
                         icon: Icons.fitness_center_rounded,
-                        label: 'Schede · ${workouts.length}',
+                        label: tr('Schede · {count}', {'count': workouts.length}),
                         onTap: () => context.push('/profile/workouts'),
                       ),
                     ),
                     const SizedBox(width: 8),
                     Expanded(
-                      child: _PillButton(icon: Icons.history_rounded, label: 'Storico', onTap: () => context.push('/history')),
+                      child: _PillButton(icon: Icons.history_rounded, label: tr('Storico'), onTap: () => context.push('/history')),
                     ),
                     const SizedBox(width: 8),
                     Expanded(
-                      child: _PillButton(icon: Icons.people_alt_rounded, label: 'Amici', onTap: () => context.push('/friends')),
+                      child: _PillButton(icon: Icons.people_alt_rounded, label: tr('Amici'), onTap: () => context.push('/friends')),
                     ),
                   ],
                 ),
                 const SizedBox(height: 28),
-                SectionHeader('I miei post', action: 'Nuovo post', onAction: () => context.push('/posts/new')),
+                SectionHeader(tr('I miei post'), action: tr('Nuovo post'), onAction: () => context.push('/posts/new')),
                 AsyncView<List<Post>>(
                   value: posts,
                   onRetry: () => ref.invalidate(userPostsProvider(me.username)),
@@ -269,8 +303,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                             children: [
                               Icon(Icons.photo_camera_rounded, size: 32, color: AppColors.muted),
                               const SizedBox(height: 8),
-                              const Text('Condividi il tuo primo allenamento',
-                                  style: TextStyle(fontWeight: FontWeight.w600)),
+                              Text(tr('Condividi il tuo primo allenamento'),
+                                  style: const TextStyle(fontWeight: FontWeight.w600)),
                             ],
                           ),
                         )

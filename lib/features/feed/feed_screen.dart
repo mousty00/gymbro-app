@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/l10n/l10n.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/async_view.dart';
 import '../../core/widgets/backgrounds.dart';
@@ -45,25 +46,25 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
                         Row(
                           children: [
                             Expanded(
-                              child: Text('Community', style: Theme.of(context).textTheme.headlineMedium),
+                              child: Text(tr('Community'), style: Theme.of(context).textTheme.headlineMedium),
                             ),
                             CircleIconButton(
                               icon: Icons.person_search_rounded,
-                              tooltip: 'Trova amici',
+                              tooltip: tr('Trova amici'),
                               onTap: () => context.push('/friends'),
                             ),
                             const SizedBox(width: 10),
                             CircleIconButton(
                               icon: Icons.add_rounded,
                               dark: true,
-                              tooltip: 'Nuovo post',
+                              tooltip: tr('Nuovo post'),
                               onTap: () => context.push('/posts/new'),
                             ),
                           ],
                         ),
                         const SizedBox(height: 18),
                         SegmentedPill(
-                          options: const ['Amici', 'Esplora'],
+                          options: [tr('Amici'), tr('Esplora')],
                           index: _friends ? 0 : 1,
                           onChanged: (i) => setState(() => _friends = i == 0),
                         ),
@@ -87,11 +88,11 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
                       return SliverToBoxAdapter(
                         child: EmptyState(
                           icon: Icons.dynamic_feed_rounded,
-                          title: _friends ? 'Ancora nessun post' : 'Nessun post per ora',
+                          title: _friends ? tr('Ancora nessun post') : tr('Nessun post per ora'),
                           message: _friends
-                              ? 'Quando i tuoi amici pubblicano un allenamento lo vedrai qui.'
-                              : 'Sii il primo a condividere un allenamento.',
-                          action: _friends ? 'Trova amici' : 'Pubblica un post',
+                              ? tr('Quando i tuoi amici pubblicano un allenamento lo vedrai qui.')
+                              : tr('Sii il primo a condividere un allenamento.'),
+                          action: _friends ? tr('Trova amici') : tr('Pubblica un post'),
                           onAction: () => context.push(_friends ? '/friends' : '/posts/new'),
                         ),
                       );

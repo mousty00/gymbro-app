@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/l10n/l10n.dart';
 import '../../core/network/api_exception.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/async_view.dart';
@@ -27,7 +28,7 @@ class WorkoutDetailScreen extends ConsumerWidget {
 
   Future<void> _delete(BuildContext context, WidgetRef ref) async {
     if (!await confirm(context,
-        title: 'Eliminare la scheda?', message: 'Verranno rimossi anche i suoi esercizi.', ok: 'Elimina', destructive: true)) {
+        title: tr('Eliminare la scheda?'), message: tr('Verranno rimossi anche i suoi esercizi.'), ok: tr('Elimina'), destructive: true)) {
       return;
     }
     try {
@@ -95,20 +96,20 @@ class WorkoutDetailScreen extends ConsumerWidget {
                       CircleIconButton(
                         icon: Icons.ios_share_rounded,
                         size: 44,
-                        tooltip: 'Condividi',
+                        tooltip: tr('Condividi'),
                         onTap: () => shareWorkout(context, w, mine: mine),
                       ),
                       if (mine) ...[
                         CircleIconButton(
                           icon: Icons.edit_rounded,
                           size: 44,
-                          tooltip: 'Modifica',
+                          tooltip: tr('Modifica'),
                           onTap: () => context.push('/workout/${w.id}/edit', extra: w),
                         ),
                         CircleIconButton(
                           icon: Icons.delete_outline_rounded,
                           size: 44,
-                          tooltip: 'Elimina',
+                          tooltip: tr('Elimina'),
                           onTap: () => _delete(context, ref),
                         ),
                       ],
@@ -124,7 +125,7 @@ class WorkoutDetailScreen extends ConsumerWidget {
                             Tag(weekdaysLabel(w.dayOfWeek), icon: Icons.event_repeat_rounded),
                             if (w.startTime != null)
                               Tag(w.startTime!.label, icon: Icons.schedule_rounded, color: AppColors.lilac),
-                            Tag(w.isPublic ? 'Pubblica' : 'Privata',
+                            Tag(w.isPublic ? tr('Pubblica') : tr('Privata'),
                                 icon: w.isPublic ? Icons.public_rounded : Icons.lock_outline_rounded,
                                 color: AppColors.inkSoft),
                           ],
@@ -135,7 +136,7 @@ class WorkoutDetailScreen extends ConsumerWidget {
                           const SizedBox(height: 6),
                           GestureDetector(
                             onTap: () => context.push('/u/${w.user!.username}'),
-                            child: Text('di @${w.user!.username}',
+                            child: Text(tr('di @{username}', {'username': w.user!.username}),
                                 style: const TextStyle(color: AppColors.blue, fontWeight: FontWeight.w600)),
                           ),
                         ],
@@ -146,25 +147,25 @@ class WorkoutDetailScreen extends ConsumerWidget {
                         const SizedBox(height: 20),
                         Row(
                           children: [
-                            _Metric(value: '${w.exercises.length}', label: 'Esercizi'),
+                            _Metric(value: '${w.exercises.length}', label: tr('Esercizi')),
                             const SizedBox(width: 10),
-                            _Metric(value: '$totalSets', label: 'Serie'),
+                            _Metric(value: '$totalSets', label: tr('Serie')),
                             const SizedBox(width: 10),
-                            _Metric(value: estMinutes > 0 ? '~$estMinutes' : '—', label: 'Minuti'),
+                            _Metric(value: estMinutes > 0 ? '~$estMinutes' : '—', label: tr('Minuti')),
                           ],
                         ),
                         const SizedBox(height: 22),
                         SectionHeader(
-                          'Esercizi',
-                          action: mine ? '+ Aggiungi' : null,
+                          tr('Esercizi'),
+                          action: mine ? tr('+ Aggiungi') : null,
                           onAction: () => _addExercise(context, ref, w),
                         ),
                         if (w.exercises.isEmpty)
                           EmptyState(
                             icon: Icons.playlist_add_rounded,
-                            title: 'Scheda vuota',
-                            message: mine ? 'Aggiungi il primo esercizio dalla libreria.' : null,
-                            action: mine ? 'Aggiungi esercizio' : null,
+                            title: tr('Scheda vuota'),
+                            message: mine ? tr('Aggiungi il primo esercizio dalla libreria.') : null,
+                            action: mine ? tr('Aggiungi esercizio') : null,
                             onAction: () => _addExercise(context, ref, w),
                           ),
                         for (final e in w.exercises)
@@ -182,7 +183,7 @@ class WorkoutDetailScreen extends ConsumerWidget {
                           OutlinedButton.icon(
                             onPressed: () => context.push('/group/new?workout=${w.id}'),
                             icon: const Icon(Icons.groups_rounded),
-                            label: const Text('Allenati in gruppo con questa scheda'),
+                            label: Text(tr('Allenati in gruppo con questa scheda')),
                           ),
                         ],
                       ],
@@ -192,7 +193,7 @@ class WorkoutDetailScreen extends ConsumerWidget {
                     Padding(
                       padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
                       child: PillActionButton(
-                        label: 'Inizia allenamento',
+                        label: tr('Inizia allenamento'),
                         icon: Icons.play_arrow_rounded,
                         onPressed: () => context.push('/workout/${w.id}/session'),
                       ),
@@ -259,13 +260,13 @@ class _ExerciseRow extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(exercise.exerciseName ?? 'Esercizio', style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
+                Text(exercise.exerciseName ?? tr('Esercizio'), style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
                 const SizedBox(height: 2),
                 Text(exercise.summary, style: TextStyle(color: AppColors.inkSoft, fontSize: 13)),
               ],
             ),
           ),
-          Tag('${exercise.restSeconds}s recupero', icon: Icons.hourglass_bottom_rounded, color: AppColors.lilac),
+          Tag(tr('{seconds}s recupero', {'seconds': exercise.restSeconds}), icon: Icons.hourglass_bottom_rounded, color: AppColors.lilac),
         ],
       ),
     );
@@ -273,7 +274,7 @@ class _ExerciseRow extends StatelessWidget {
     return Dismissible(
       key: ValueKey(exercise.id),
       direction: DismissDirection.endToStart,
-      confirmDismiss: (_) => confirm(context, title: 'Rimuovere l\'esercizio?', ok: 'Rimuovi', destructive: true),
+      confirmDismiss: (_) => confirm(context, title: tr('Rimuovere l\'esercizio?'), ok: tr('Rimuovi'), destructive: true),
       onDismissed: (_) => onDelete(),
       background: Container(
         alignment: Alignment.centerRight,

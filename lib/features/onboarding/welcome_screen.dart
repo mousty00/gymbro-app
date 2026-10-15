@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/l10n/l10n.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/backgrounds.dart';
 import '../../core/widgets/ui.dart';
@@ -21,26 +22,26 @@ class WelcomeScreen extends StatelessWidget {
               children: [
                 const _StepIndicator(),
                 const SizedBox(height: 28),
-                Text('Allenati.\nInsieme.\nO da solo.', style: t.displayMedium),
+                Text(tr('Allenati.\nInsieme.\nO da solo.'), style: t.displayMedium),
                 const SizedBox(height: 14),
                 Text(
-                  'Crea le tue schede, organizza sessioni con gli amici e condividi i progressi con la community.',
+                  tr('Crea le tue schede, organizza sessioni con gli amici e condividi i progressi con la community.'),
                   style: t.bodyLarge?.copyWith(color: AppColors.inkSoft, height: 1.45),
                 ),
                 const Expanded(child: _Hero()),
-                PillActionButton(label: 'Inizia', onPressed: () => context.push('/auth/signup')),
+                PillActionButton(label: tr('Inizia'), onPressed: () => context.push('/auth/signup')),
                 const SizedBox(height: 18),
                 Center(
                   child: GestureDetector(
                     onTap: () => context.push('/auth/login'),
                     child: Text.rich(
                       TextSpan(
-                        text: 'Hai già un account? ',
+                        text: tr('Hai già un account? '),
                         style: t.bodyMedium,
-                        children: const [
+                        children: [
                           TextSpan(
-                            text: 'Accedi',
-                            style: TextStyle(color: AppColors.blue, fontWeight: FontWeight.w700),
+                            text: tr('Accedi'),
+                            style: const TextStyle(color: AppColors.blue, fontWeight: FontWeight.w700),
                           ),
                         ],
                       ),
@@ -87,25 +88,25 @@ class _Hero extends StatelessWidget {
           alignment: Alignment.center,
           children: [
             Align(alignment: const Alignment(0.2, -0.15), child: BrandMark(size: logo, animate: true)),
-            const Align(
-              alignment: Alignment(-1, -0.85),
-              child: _FloatingChip(icon: Icons.fitness_center_rounded, title: 'Schede', subtitle: 'Su misura'),
+            Align(
+              alignment: const Alignment(-1, -0.85),
+              child: _FloatingChip(icon: Icons.fitness_center_rounded, title: tr('Schede'), subtitle: tr('Su misura')),
             ),
-            const Align(
-              alignment: Alignment(1, 0.62),
+            Align(
+              alignment: const Alignment(1, 0.62),
               child: _FloatingChip(
                 icon: Icons.groups_rounded,
-                title: 'Gruppi',
-                subtitle: 'Allenati in compagnia',
+                title: tr('Gruppi'),
+                subtitle: tr('Allenati in compagnia'),
                 color: AppColors.lilac,
               ),
             ),
-            const Align(
-              alignment: Alignment(-1, 0.25),
+            Align(
+              alignment: const Alignment(-1, 0.25),
               child: _FloatingChip(
                 icon: Icons.favorite_rounded,
-                title: 'Community',
-                subtitle: 'Condividi i progressi',
+                title: tr('Community'),
+                subtitle: tr('Condividi i progressi'),
                 color: AppColors.pink,
               ),
             ),

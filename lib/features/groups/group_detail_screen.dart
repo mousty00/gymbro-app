@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/l10n/l10n.dart';
 import '../../core/network/api_exception.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/utils/formatters.dart';
@@ -36,7 +37,7 @@ class GroupDetailScreen extends ConsumerWidget {
     try {
       await ref.read(groupRepositoryProvider).invite(groupId: g.id, username: username);
       _refresh(ref);
-      if (context.mounted) showMessage(context, 'Invito inviato a @$username');
+      if (context.mounted) showMessage(context, tr('Invito inviato a @{username}', {'username': username}));
     } on ApiException catch (e) {
       if (context.mounted) showMessage(context, e.message, error: true);
     }
@@ -45,8 +46,8 @@ class GroupDetailScreen extends ConsumerWidget {
   Future<void> _removeMember(BuildContext context, WidgetRef ref, GroupMember m, {required bool self}) async {
     final ok = await confirm(
       context,
-      title: self ? 'Uscire dal gruppo?' : 'Rimuovere @${m.user.username}?',
-      ok: self ? 'Esci' : 'Rimuovi',
+      title: self ? tr('Uscire dal gruppo?') : tr('Rimuovere @{username}?', {'username': m.user.username}),
+      ok: self ? tr('Esci') : tr('Rimuovi'),
       destructive: true,
     );
     if (!ok) return;
@@ -64,7 +65,7 @@ class GroupDetailScreen extends ConsumerWidget {
   }
 
   Future<void> _delete(BuildContext context, WidgetRef ref) async {
-    if (!await confirm(context, title: 'Eliminare il gruppo?', ok: 'Elimina', destructive: true)) return;
+    if (!await confirm(context, title: tr('Eliminare il gruppo?'), ok: tr('Elimina'), destructive: true)) return;
     try {
       await ref.read(groupRepositoryProvider).delete(groupId);
       ref.invalidate(groupsProvider);
@@ -96,12 +97,12 @@ class GroupDetailScreen extends ConsumerWidget {
                     title: '',
                     actions: [
                       if (isOwner)
-                        CircleIconButton(icon: Icons.delete_outline_rounded, size: 44, tooltip: 'Elimina', onTap: () => _delete(context, ref))
+                        CircleIconButton(icon: Icons.delete_outline_rounded, size: 44, tooltip: tr('Elimina'), onTap: () => _delete(context, ref))
                       else if (myMembership != null)
                         CircleIconButton(
                           icon: Icons.logout_rounded,
                           size: 44,
-                          tooltip: 'Esci dal gruppo',
+                          tooltip: tr('Esci dal gruppo'),
                           onTap: () => _removeMember(context, ref, myMembership, self: true),
                         ),
                     ],
@@ -123,7 +124,7 @@ class GroupDetailScreen extends ConsumerWidget {
                           const SizedBox(height: 12),
                           Text(g.name, style: Theme.of(context).textTheme.displaySmall),
                           const SizedBox(height: 6),
-                          Text('Organizzato da @${g.createdBy.username}', style: TextStyle(color: AppColors.inkSoft)),
+                          Text(tr('Organizzato da @{username}', {'username': g.createdBy.username}), style: TextStyle(color: AppColors.inkSoft)),
                           const SizedBox(height: 20),
                           SoftCard(
                             onTap: () => context.push('/workout/${g.workoutId}'),
@@ -135,7 +136,7 @@ class GroupDetailScreen extends ConsumerWidget {
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      Text('Scheda', style: TextStyle(color: AppColors.muted, fontSize: 12)),
+                                      Text(tr('Scheda'), style: TextStyle(color: AppColors.muted, fontSize: 12)),
                                       Text(g.workoutName, style: const TextStyle(fontWeight: FontWeight.w700)),
                                     ],
                                   ),
@@ -146,26 +147,26 @@ class GroupDetailScreen extends ConsumerWidget {
                           ),
                           const SizedBox(height: 22),
                           SectionHeader(
-                            'Partecipanti',
-                            action: isOwner ? '+ Invita' : null,
+                            tr('Partecipanti'),
+                            action: isOwner ? tr('+ Invita') : null,
                             onAction: () => _invite(context, ref, g),
                           ),
-                          _MemberTile(username: g.createdBy.username, image: g.createdBy.image, status: 'Organizzatore'),
+                          _MemberTile(username: g.createdBy.username, image: g.createdBy.image, status: tr('Organizzatore')),
                           for (final m in g.members)
                             _MemberTile(
                               username: m.user.username,
                               image: m.user.image,
                               status: switch (m.status) {
-                                GroupMemberStatus.accepted => 'Partecipa',
-                                GroupMemberStatus.invited => 'Invitato',
-                                GroupMemberStatus.rejected => 'Ha rifiutato',
+                                GroupMemberStatus.accepted => tr('Partecipa'),
+                                GroupMemberStatus.invited => tr('Invitato'),
+                                GroupMemberStatus.rejected => tr('Ha rifiutato'),
                                 GroupMemberStatus.unknown => '',
                               },
                               muted: m.status != GroupMemberStatus.accepted,
                               onRemove: isOwner ? () => _removeMember(context, ref, m, self: false) : null,
                             ),
                           const SizedBox(height: 22),
-                          const SectionHeader('Sessioni del gruppo'),
+                          SectionHeader(tr('Sessioni del gruppo')),
                           AsyncView<List<WorkoutHistory>>(
                             value: history,
                             loading: const SkeletonList(item: SkeletonTile(leading: 34), count: 2, spacing: 8, padding: EdgeInsets.zero),
@@ -173,7 +174,7 @@ class GroupDetailScreen extends ConsumerWidget {
                             data: (list) => list.isEmpty
                                 ? Padding(
                                     padding: const EdgeInsets.symmetric(vertical: 8),
-                                    child: Text('Ancora nessuna sessione registrata.', style: TextStyle(color: AppColors.muted)),
+                                    child: Text(tr('Ancora nessuna sessione registrata.'), style: TextStyle(color: AppColors.muted)),
                                   )
                                 : Column(
                                     children: [
@@ -203,7 +204,7 @@ class GroupDetailScreen extends ConsumerWidget {
                   Padding(
                     padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
                     child: PillActionButton(
-                      label: 'Inizia la sessione di gruppo',
+                      label: tr('Inizia la sessione di gruppo'),
                       icon: Icons.play_arrow_rounded,
                       onPressed: () => context.push('/workout/${g.workoutId}/session?group=${g.id}'),
                     ),
@@ -282,14 +283,14 @@ class _InviteSheetState extends ConsumerState<_InviteSheet> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text('Invita', style: Theme.of(context).textTheme.headlineSmall),
+            Text(tr('Invita'), style: Theme.of(context).textTheme.headlineSmall),
             const SizedBox(height: 14),
             Row(
               children: [
                 Expanded(
                   child: TextField(
                     controller: _username,
-                    decoration: const InputDecoration(hintText: 'Username'),
+                    decoration: InputDecoration(hintText: tr('Username')),
                     onSubmitted: (v) => v.trim().isEmpty ? null : Navigator.pop(context, v.trim()),
                   ),
                 ),
@@ -304,7 +305,7 @@ class _InviteSheetState extends ConsumerState<_InviteSheet> {
               ],
             ),
             const SizedBox(height: 16),
-            const Text('I tuoi amici', style: TextStyle(fontWeight: FontWeight.w700)),
+            Text(tr('I tuoi amici'), style: const TextStyle(fontWeight: FontWeight.w700)),
             const SizedBox(height: 8),
             Expanded(
               child: AsyncView<List<Friendship>>(
@@ -314,7 +315,7 @@ class _InviteSheetState extends ConsumerState<_InviteSheet> {
                 data: (list) {
                   final candidates = list.map((f) => f.other(me.username)).where((u) => !already.contains(u.username)).toList();
                   if (candidates.isEmpty) {
-                    return Center(child: Text('Nessun amico da invitare', style: TextStyle(color: AppColors.muted)));
+                    return Center(child: Text(tr('Nessun amico da invitare'), style: TextStyle(color: AppColors.muted)));
                   }
                   return ListView(
                     children: [
@@ -323,7 +324,7 @@ class _InviteSheetState extends ConsumerState<_InviteSheet> {
                           contentPadding: EdgeInsets.zero,
                           leading: UserAvatar(username: u.username, imageUrl: u.image, size: 40),
                           title: Text('@${u.username}', style: const TextStyle(fontWeight: FontWeight.w600)),
-                          trailing: const Tag('Invita'),
+                          trailing: Tag(tr('Invita')),
                           onTap: () => Navigator.pop(context, u.username),
                         ),
                     ],

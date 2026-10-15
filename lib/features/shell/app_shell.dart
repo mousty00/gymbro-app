@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/l10n/l10n.dart';
 import '../../core/theme/app_theme.dart';
 
 /// Contenitore delle 5 tab con la barra di navigazione flottante a pillola.
@@ -9,13 +10,13 @@ class AppShell extends StatelessWidget {
 
   final StatefulNavigationShell shell;
 
-  static const _items = [
-    (Icons.home_rounded, 'Home'),
-    (Icons.dynamic_feed_rounded, 'Community'),
-    (Icons.fitness_center_rounded, 'Allenamenti'),
-    (Icons.groups_rounded, 'Gruppi'),
-    (Icons.person_rounded, 'Profilo'),
-  ];
+  static List<(IconData, String)> get _items => [
+        (Icons.home_rounded, tr('Home')),
+        (Icons.dynamic_feed_rounded, tr('Community')),
+        (Icons.fitness_center_rounded, tr('Allenamenti')),
+        (Icons.groups_rounded, tr('Gruppi')),
+        (Icons.person_rounded, tr('Profilo')),
+      ];
 
   @override
   Widget build(BuildContext context) {

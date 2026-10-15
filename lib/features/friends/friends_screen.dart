@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/l10n/l10n.dart';
 import '../../core/network/api_exception.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/async_view.dart';
@@ -52,7 +53,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
   }
 
   Future<void> _block(Friendship f, String username) async {
-    if (!await confirm(context, title: 'Bloccare @$username?', message: 'Non vedrete più i rispettivi contenuti.', ok: 'Blocca', destructive: true)) {
+    if (!await confirm(context, title: tr('Bloccare @{username}?', {'username': username}), message: tr('Non vedrete più i rispettivi contenuti.'), ok: tr('Blocca'), destructive: true)) {
       return;
     }
     try {
@@ -75,10 +76,10 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            const TopBar(title: 'Amici'),
+            TopBar(title: tr('Amici')),
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 8, 20, 14),
-              child: SearchPill(controller: _search, hint: 'Cerca per username', onChanged: _onSearch),
+              child: SearchPill(controller: _search, hint: tr('Cerca per username'), onChanged: _onSearch),
             ),
             if (_query.isNotEmpty)
               Expanded(child: _SearchResults(future: _results, me: me.username))
@@ -86,7 +87,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: SegmentedPill(
-                  options: ['Amici', requestCount > 0 ? 'Richieste · $requestCount' : 'Richieste'],
+                  options: [tr('Amici'), requestCount > 0 ? tr('Richieste · {count}', {'count': requestCount}) : tr('Richieste')],
                   index: _tab,
                   onChanged: (i) => setState(() => _tab = i),
                 ),
@@ -101,11 +102,11 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
                           onRetry: () => ref.invalidate(friendsProvider),
                           loading: const SkeletonList(item: SkeletonTile(leading: 44, circle: true, padding: EdgeInsets.symmetric(horizontal: 14, vertical: 10)), padding: EdgeInsets.fromLTRB(20, 0, 20, 24)),
                           data: (list) => list.isEmpty
-                              ? ListView(children: const [
+                              ? ListView(children: [
                                   EmptyState(
                                     icon: Icons.person_search_rounded,
-                                    title: 'Nessun amico, per ora',
-                                    message: 'Cerca qualcuno per username e mandagli una richiesta.',
+                                    title: tr('Nessun amico, per ora'),
+                                    message: tr('Cerca qualcuno per username e mandagli una richiesta.'),
                                   ),
                                 ])
                               : ListView.separated(
@@ -120,8 +121,8 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
                                         icon: Icon(Icons.more_horiz_rounded, color: AppColors.muted),
                                         color: AppColors.card,
                                         onSelected: (_) => _block(list[i], other.username),
-                                        itemBuilder: (_) => const [
-                                          PopupMenuItem(value: 'block', child: Text('Blocca', style: TextStyle(color: AppColors.danger))),
+                                        itemBuilder: (_) => [
+                                          PopupMenuItem(value: 'block', child: Text(tr('Blocca'), style: const TextStyle(color: AppColors.danger))),
                                         ],
                                       ),
                                     );
@@ -136,7 +137,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
                           onRetry: () => ref.invalidate(friendRequestsProvider),
                           loading: const SkeletonList(item: SkeletonTile(leading: 44, circle: true, trailing: true, padding: EdgeInsets.symmetric(horizontal: 14, vertical: 10)), padding: EdgeInsets.fromLTRB(20, 0, 20, 24)),
                           data: (list) => list.isEmpty
-                              ? ListView(children: const [EmptyState(icon: Icons.inbox_rounded, title: 'Nessuna richiesta in attesa')])
+                              ? ListView(children: [EmptyState(icon: Icons.inbox_rounded, title: tr('Nessuna richiesta in attesa'))])
                               : ListView.separated(
                                   padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
                                   itemCount: list.length,
@@ -172,7 +173,7 @@ class _SearchResults extends ConsumerWidget {
         if (snap.hasError) return ErrorBlock(message: '${snap.error}');
         final users = (snap.data ?? const []).where((u) => u.username != me).toList();
         if (users.isEmpty) {
-          return Center(child: Text('Nessun utente trovato', style: TextStyle(color: AppColors.muted)));
+          return Center(child: Text(tr('Nessun utente trovato'), style: TextStyle(color: AppColors.muted)));
         }
         return ListView.separated(
           padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
@@ -181,7 +182,7 @@ class _SearchResults extends ConsumerWidget {
           itemBuilder: (_, i) => _UserRow(
             user: users[i],
             trailing: friendNames.contains(users[i].username)
-                ? const Tag('Amici', color: AppColors.mint, icon: Icons.check_rounded)
+                ? Tag(tr('Amici'), color: AppColors.mint, icon: Icons.check_rounded)
                 : AddFriendButton(username: users[i].username),
           ),
         );
@@ -247,7 +248,7 @@ class _AddFriendButtonState extends ConsumerState<AddFriendButton> {
     try {
       await ref.read(friendshipRepositoryProvider).add(widget.username);
       if (mounted) setState(() => _sent = true);
-      if (mounted) showMessage(context, 'Richiesta inviata a @${widget.username}');
+      if (mounted) showMessage(context, tr('Richiesta inviata a @{username}', {'username': widget.username}));
     } on ApiException catch (e) {
       if (mounted) showMessage(context, e.message, error: true);
     } finally {
@@ -259,7 +260,7 @@ class _AddFriendButtonState extends ConsumerState<AddFriendButton> {
   Widget build(BuildContext context) {
     if (widget.large) {
       return PrimaryButton(
-        label: _sent ? 'Richiesta inviata' : 'Aggiungi agli amici',
+        label: _sent ? tr('Richiesta inviata') : tr('Aggiungi agli amici'),
         icon: _sent ? Icons.check_rounded : Icons.person_add_alt_1_rounded,
         loading: _busy,
         onPressed: _sent ? null : _send,
@@ -272,7 +273,7 @@ class _AddFriendButtonState extends ConsumerState<AddFriendButton> {
         backgroundColor: _sent ? AppColors.mint : AppColors.ink,
       ),
       onPressed: _sent || _busy ? null : _send,
-      child: Text(_sent ? 'Inviata' : 'Aggiungi', style: const TextStyle(fontSize: 13)),
+      child: Text(_sent ? tr('Inviata') : tr('Aggiungi'), style: const TextStyle(fontSize: 13)),
     );
   }
 }

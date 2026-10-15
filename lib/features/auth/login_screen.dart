@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/config/env.dart';
+import '../../core/l10n/l10n.dart';
 import '../../core/network/api_exception.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/ui.dart';
@@ -43,12 +44,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       if (!mounted) return;
       if (e.unreachable) {
         setState(() => _unreachable = true);
-        showMessage(context, 'Server non raggiungibile (${Env.apiBaseUrl})', error: true);
+        showMessage(context, tr('Server non raggiungibile ({url})', {'url': Env.apiBaseUrl}), error: true);
       } else if (e.isEmailNotVerified) {
-        showMessage(context, 'Verifica prima la tua email con il codice che ti abbiamo inviato.');
+        showMessage(context, tr('Verifica prima la tua email con il codice che ti abbiamo inviato.'));
         context.push('/auth/verify?username=${Uri.encodeComponent(_username.text.trim())}');
       } else {
-        showMessage(context, e.statusCode == 401 ? 'Username o password non corretti' : e.message, error: true);
+        showMessage(context, e.statusCode == 401 ? tr('Username o password non corretti') : e.message, error: true);
       }
     } finally {
       if (mounted) setState(() => _loading = false);
@@ -69,8 +70,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return AuthScaffold(
-      title: 'Bentornato',
-      subtitle: 'Accedi per riprendere i tuoi allenamenti.',
+      title: tr('Bentornato'),
+      subtitle: tr('Accedi per riprendere i tuoi allenamenti.'),
       children: [
         if (Env.useMock)
           Padding(
@@ -78,8 +79,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             child: SoftCard(
               color: AppColors.lilacSoft,
               child: Text(
-                'Modalità demo: qualunque username e password funzionano. '
-                'Usa "nonverificato" per provare la verifica email, la password "sbagliata" per l\'errore.',
+                tr('Modalità demo: qualunque username e password funzionano. Usa "nonverificato" per provare la verifica email, la password "sbagliata" per l\'errore.'),
                 style: TextStyle(color: AppColors.inkSoft, height: 1.4),
               ),
             ),
@@ -93,12 +93,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Non riesco a contattare ${Env.apiBaseUrl}. '
-                    'Vuoi provare l\'app con i dati demo?',
+                    tr('Non riesco a contattare {url}. Vuoi provare l\'app con i dati demo?', {'url': Env.apiBaseUrl}),
                     style: TextStyle(color: AppColors.inkSoft, height: 1.4),
                   ),
                   const SizedBox(height: 12),
-                  PillActionButton(icon: Icons.science_rounded, label: 'Usa dati demo', onPressed: _useDemo),
+                  PillActionButton(icon: Icons.science_rounded, label: tr('Usa dati demo'), onPressed: _useDemo),
                 ],
               ),
             ),
@@ -109,9 +108,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             child: Column(
               children: [
                 LabeledField(
-                  label: 'Username',
+                  label: tr('Username'),
                   controller: _username,
-                  hint: 'il_tuo_username',
+                  hint: tr('il_tuo_username'),
                   validator: requiredField,
                   autofillHints: const [AutofillHints.username],
                 ),
@@ -124,20 +123,20 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           alignment: Alignment.centerRight,
           child: TextButton(
             onPressed: () => context.push('/auth/forgot'),
-            child: const Text('Password dimenticata?'),
+            child: Text(tr('Password dimenticata?')),
           ),
         ),
         const SizedBox(height: 16),
-        PrimaryButton(label: 'Accedi', loading: _loading, onPressed: _submit),
+        PrimaryButton(label: tr('Accedi'), loading: _loading, onPressed: _submit),
         const SizedBox(height: 20),
         Center(
           child: TextButton(
             onPressed: () => context.pushReplacement('/auth/signup'),
             child: Text.rich(
               TextSpan(
-                text: 'Non hai un account? ',
+                text: tr('Non hai un account? '),
                 style: TextStyle(color: AppColors.inkSoft, fontWeight: FontWeight.w500),
-                children: const [TextSpan(text: 'Registrati', style: TextStyle(color: AppColors.blue))],
+                children: [TextSpan(text: tr('Registrati'), style: const TextStyle(color: AppColors.blue))],
               ),
             ),
           ),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/l10n/l10n.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/app_image.dart';
 import '../../core/widgets/async_view.dart';
@@ -48,7 +49,7 @@ class UserProfileScreen extends ConsumerWidget {
                     CircleIconButton(
                       icon: Icons.ios_share_rounded,
                       size: 44,
-                      tooltip: 'Condividi profilo',
+                      tooltip: tr('Condividi profilo'),
                       onTap: () => shareProfile(context, user.value!),
                     ),
                   if (user.value != null && username != me.username)
@@ -71,11 +72,11 @@ class UserProfileScreen extends ConsumerWidget {
                       ProfileHeader(user: u),
                       const SizedBox(height: 20),
                       if (isFriend)
-                        const Center(child: Tag('Siete amici', color: AppColors.mint, icon: Icons.check_rounded))
+                        Center(child: Tag(tr('Siete amici'), color: AppColors.mint, icon: Icons.check_rounded))
                       else
                         AddFriendButton(username: u.username, large: true),
                       const SizedBox(height: 24),
-                      const SectionHeader('Post'),
+                      SectionHeader(tr('Post')),
                       AsyncView<List<Post>>(
                         value: posts,
                         onRetry: () => ref.invalidate(userPostsProvider(username)),
@@ -145,7 +146,7 @@ class PostGrid extends StatelessWidget {
     if (posts.isEmpty) {
       return Padding(
         padding: const EdgeInsets.symmetric(vertical: 16),
-        child: Center(child: Text('Ancora nessun post', style: TextStyle(color: AppColors.muted))),
+        child: Center(child: Text(tr('Ancora nessun post'), style: TextStyle(color: AppColors.muted))),
       );
     }
     return GridView.builder(

@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../core/l10n/l10n.dart';
 import '../core/network/api_client.dart';
 import '../core/storage/token_storage.dart';
 import '../models/json.dart';
@@ -41,7 +42,7 @@ class AuthRepository {
       'lastName': lastName,
       'birthDate': formatLocalDate(birthDate),
     });
-    return res['message'] as String? ?? 'Registrazione completata';
+    return res['message'] as String? ?? tr('Registrazione completata');
   }
 
   Future<void> verifyOtp({required String username, required String otp}) =>

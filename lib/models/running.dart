@@ -1,5 +1,6 @@
 import 'package:latlong2/latlong.dart';
 
+import '../core/l10n/l10n.dart';
 import 'json.dart';
 import 'user.dart';
 
@@ -212,7 +213,7 @@ class RunActivity {
   final List<LatLng> track;
   final String? notes;
 
-  String get title => eventTitle ?? routeName ?? 'Corsa libera';
+  String get title => eventTitle ?? routeName ?? tr('Corsa libera');
 
   factory RunActivity.fromJson(Json j) => RunActivity(
         id: '${j['id']}',

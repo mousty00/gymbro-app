@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/l10n/l10n.dart';
 import '../../core/network/api_exception.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/ui.dart';
@@ -36,14 +37,14 @@ class _VerifyOtpScreenState extends ConsumerState<VerifyOtpScreen> {
 
   Future<void> _verify() async {
     if (_username.text.trim().isEmpty || _otp.text.trim().isEmpty) {
-      showMessage(context, 'Inserisci username e codice', error: true);
+      showMessage(context, tr('Inserisci username e codice'), error: true);
       return;
     }
     setState(() => _loading = true);
     try {
       await ref.read(authRepositoryProvider).verifyOtp(username: _username.text.trim(), otp: _otp.text.trim());
       if (!mounted) return;
-      showMessage(context, 'Email verificata! Ora puoi accedere.');
+      showMessage(context, tr('Email verificata! Ora puoi accedere.'));
       context.pushReplacement('/auth/login');
     } on ApiException catch (e) {
       if (mounted) showMessage(context, e.message, error: true);
@@ -55,13 +56,13 @@ class _VerifyOtpScreenState extends ConsumerState<VerifyOtpScreen> {
   Future<void> _resend() async {
     final err = validEmail(_email.text);
     if (err != null) {
-      showMessage(context, 'Inserisci l\'email per ricevere un nuovo codice', error: true);
+      showMessage(context, tr('Inserisci l\'email per ricevere un nuovo codice'), error: true);
       return;
     }
     setState(() => _sending = true);
     try {
       await ref.read(authRepositoryProvider).sendVerifyOtp(_email.text.trim());
-      if (mounted) showMessage(context, 'Nuovo codice inviato');
+      if (mounted) showMessage(context, tr('Nuovo codice inviato'));
     } on ApiException catch (e) {
       if (mounted) showMessage(context, e.message, error: true);
     } finally {
@@ -72,13 +73,13 @@ class _VerifyOtpScreenState extends ConsumerState<VerifyOtpScreen> {
   @override
   Widget build(BuildContext context) {
     return AuthScaffold(
-      title: 'Controlla\nla tua email',
-      subtitle: 'Inserisci il codice a 6 cifre che ti abbiamo inviato per attivare l\'account.',
+      title: tr('Controlla\nla tua email'),
+      subtitle: tr('Inserisci il codice a 6 cifre che ti abbiamo inviato per attivare l\'account.'),
       children: [
-        if (widget.username.isEmpty) LabeledField(label: 'Username', controller: _username),
+        if (widget.username.isEmpty) LabeledField(label: tr('Username'), controller: _username),
         Padding(
           padding: const EdgeInsets.only(left: 6, bottom: 8),
-          child: Text('Codice', style: TextStyle(fontWeight: FontWeight.w600, color: AppColors.inkSoft)),
+          child: Text(tr('Codice'), style: TextStyle(fontWeight: FontWeight.w600, color: AppColors.inkSoft)),
         ),
         TextField(
           controller: _otp,
@@ -91,23 +92,23 @@ class _VerifyOtpScreenState extends ConsumerState<VerifyOtpScreen> {
           onSubmitted: (_) => _verify(),
         ),
         const SizedBox(height: 24),
-        PrimaryButton(label: 'Verifica', loading: _loading, onPressed: _verify),
+        PrimaryButton(label: tr('Verifica'), loading: _loading, onPressed: _verify),
         const SizedBox(height: 28),
         SoftCard(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('Non hai ricevuto il codice?', style: TextStyle(fontWeight: FontWeight.w700)),
+              Text(tr('Non hai ricevuto il codice?'), style: const TextStyle(fontWeight: FontWeight.w700)),
               const SizedBox(height: 12),
               TextField(
                 controller: _email,
                 keyboardType: TextInputType.emailAddress,
-                decoration: const InputDecoration(hintText: 'La tua email'),
+                decoration: InputDecoration(hintText: tr('La tua email')),
               ),
               const SizedBox(height: 12),
               OutlinedButton(
                 onPressed: _sending ? null : _resend,
-                child: Text(_sending ? 'Invio…' : 'Invia un nuovo codice'),
+                child: Text(_sending ? tr('Invio…') : tr('Invia un nuovo codice')),
               ),
             ],
           ),

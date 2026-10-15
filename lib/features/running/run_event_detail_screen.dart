@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/l10n/l10n.dart';
 import '../../core/network/api_exception.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/utils/formatters.dart';
@@ -48,7 +49,7 @@ class RunEventDetailScreen extends ConsumerWidget {
       builder: (_) => _InviteSheet(event: event),
     );
     if (username == null || !context.mounted) return;
-    await _act(context, ref, () => ref.read(runningRepositoryProvider).invite(event.id, username), done: 'Invito inviato a @$username');
+    await _act(context, ref, () => ref.read(runningRepositoryProvider).invite(event.id, username), done: tr('Invito inviato a @{username}', {'username': username}));
   }
 
   @override
@@ -74,9 +75,9 @@ class RunEventDetailScreen extends ConsumerWidget {
                         CircleIconButton(
                           icon: Icons.delete_outline_rounded,
                           size: 44,
-                          tooltip: 'Elimina',
+                          tooltip: tr('Elimina'),
                           onTap: () async {
-                            if (!await confirm(context, title: 'Annullare la corsa?', ok: 'Annulla corsa', destructive: true)) return;
+                            if (!await confirm(context, title: tr('Annullare la corsa?'), ok: tr('Annulla corsa'), destructive: true)) return;
                             if (context.mounted) await _act(context, ref, () => repo.deleteEvent(event.id), pop: true);
                           },
                         )
@@ -84,7 +85,7 @@ class RunEventDetailScreen extends ConsumerWidget {
                         CircleIconButton(
                           icon: Icons.logout_rounded,
                           size: 44,
-                          tooltip: 'Non partecipo più',
+                          tooltip: tr('Non partecipo più'),
                           onTap: () => _act(context, ref, () => repo.removeParticipant(mine.id), pop: true),
                         ),
                     ],
@@ -105,7 +106,7 @@ class RunEventDetailScreen extends ConsumerWidget {
                           const SizedBox(height: 12),
                           Text(event.title, style: Theme.of(context).textTheme.displaySmall),
                           const SizedBox(height: 6),
-                          Text('Organizzata da @${event.createdBy.username}', style: TextStyle(color: AppColors.inkSoft)),
+                          Text(tr('Organizzata da @{username}', {'username': event.createdBy.username}), style: TextStyle(color: AppColors.inkSoft)),
                           const SizedBox(height: 18),
                           RouteMap(
                             route: event.route.points,
@@ -145,7 +146,7 @@ class RunEventDetailScreen extends ConsumerWidget {
                           ),
                           if (event.meetingPoint != null && event.meetingPoint!.isNotEmpty) ...[
                             const SizedBox(height: 10),
-                            _InfoRow(icon: Icons.place_rounded, text: 'Ritrovo: ${event.meetingPoint}'),
+                            _InfoRow(icon: Icons.place_rounded, text: tr('Ritrovo: {place}', {'place': event.meetingPoint})),
                           ],
                           if (event.notes != null && event.notes!.isNotEmpty) ...[
                             const SizedBox(height: 10),
@@ -158,21 +159,21 @@ class RunEventDetailScreen extends ConsumerWidget {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.stretch,
                                 children: [
-                                  Text('@${event.createdBy.username} ti ha invitato', style: Theme.of(context).textTheme.titleMedium),
+                                  Text(tr('@{username} ti ha invitato', {'username': event.createdBy.username}), style: Theme.of(context).textTheme.titleMedium),
                                   const SizedBox(height: 12),
                                   Row(
                                     children: [
                                       Expanded(
                                         child: OutlinedButton(
                                           onPressed: () => _act(context, ref, () => repo.reject(event.id), pop: true),
-                                          child: const Text('Rifiuta'),
+                                          child: Text(tr('Rifiuta')),
                                         ),
                                       ),
                                       const SizedBox(width: 10),
                                       Expanded(
                                         child: PrimaryButton(
-                                          label: 'Partecipo',
-                                          onPressed: () => _act(context, ref, () => repo.accept(event.id), done: 'Ci vediamo lì!'),
+                                          label: tr('Partecipo'),
+                                          onPressed: () => _act(context, ref, () => repo.accept(event.id), done: tr('Ci vediamo lì!')),
                                         ),
                                       ),
                                     ],
@@ -183,29 +184,29 @@ class RunEventDetailScreen extends ConsumerWidget {
                           ],
                           const SizedBox(height: 22),
                           SectionHeader(
-                            'Partecipanti',
-                            action: event.isOwner ? '+ Invita' : null,
+                            tr('Partecipanti'),
+                            action: event.isOwner ? tr('+ Invita') : null,
                             onAction: () => _invite(context, ref, event),
                           ),
-                          _PersonTile(username: event.createdBy.username, image: event.createdBy.image, status: 'Organizza'),
+                          _PersonTile(username: event.createdBy.username, image: event.createdBy.image, status: tr('Organizza')),
                           for (final p in event.participants)
                             _PersonTile(
                               username: p.user.username,
                               image: p.user.image,
-                              status: p.status == RunParticipantStatus.accepted ? 'Partecipa' : 'Invitato',
+                              status: p.status == RunParticipantStatus.accepted ? tr('Partecipa') : tr('Invitato'),
                               muted: p.status != RunParticipantStatus.accepted,
                               onRemove: event.isOwner
                                   ? () => _act(context, ref, () => repo.removeParticipant(p.id))
                                   : null,
                             ),
                           const SizedBox(height: 22),
-                          const SectionHeader('Risultati'),
+                          SectionHeader(tr('Risultati')),
                           AsyncView<List<RunActivity>>(
                             value: runs,
                             loading: const SkeletonList(item: SkeletonTile(trailing: true), count: 2, spacing: 8, padding: EdgeInsets.zero),
                             onRetry: () => ref.invalidate(eventRunsProvider(event.id)),
                             data: (list) => list.isEmpty
-                                ? Text('Nessuno ha ancora registrato la corsa.', style: TextStyle(color: AppColors.muted))
+                                ? Text(tr('Nessuno ha ancora registrato la corsa.'), style: TextStyle(color: AppColors.muted))
                                 : Column(
                                     children: [
                                       for (final r in list)
@@ -221,7 +222,7 @@ class RunEventDetailScreen extends ConsumerWidget {
                     Padding(
                       padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
                       child: PillActionButton(
-                        label: 'Inizia la corsa',
+                        label: tr('Inizia la corsa'),
                         icon: Icons.directions_run_rounded,
                         onPressed: () => context.push('/running/run?event=${event.id}&route=${event.route.id}'),
                       ),
@@ -318,14 +319,14 @@ class _InviteSheetState extends ConsumerState<_InviteSheet> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text('Invita', style: Theme.of(context).textTheme.headlineSmall),
+            Text(tr('Invita'), style: Theme.of(context).textTheme.headlineSmall),
             const SizedBox(height: 14),
             Row(
               children: [
                 Expanded(
                   child: TextField(
                     controller: _username,
-                    decoration: const InputDecoration(hintText: 'Username'),
+                    decoration: InputDecoration(hintText: tr('Username')),
                     onSubmitted: _send,
                   ),
                 ),
@@ -334,7 +335,7 @@ class _InviteSheetState extends ConsumerState<_InviteSheet> {
               ],
             ),
             const SizedBox(height: 16),
-            const Text('I tuoi amici', style: TextStyle(fontWeight: FontWeight.w700)),
+            Text(tr('I tuoi amici'), style: const TextStyle(fontWeight: FontWeight.w700)),
             const SizedBox(height: 8),
             Expanded(
               child: AsyncView<List<Friendship>>(
@@ -343,7 +344,7 @@ class _InviteSheetState extends ConsumerState<_InviteSheet> {
                 data: (list) {
                   final candidates = list.map((f) => f.other(me)).where((u) => !already.contains(u.username)).toList();
                   if (candidates.isEmpty) {
-                    return Center(child: Text('Nessun amico da invitare', style: TextStyle(color: AppColors.muted)));
+                    return Center(child: Text(tr('Nessun amico da invitare'), style: TextStyle(color: AppColors.muted)));
                   }
                   return ListView(
                     children: [
@@ -352,7 +353,7 @@ class _InviteSheetState extends ConsumerState<_InviteSheet> {
                           contentPadding: EdgeInsets.zero,
                           leading: UserAvatar(username: u.username, imageUrl: u.image, size: 40),
                           title: Text('@${u.username}', style: const TextStyle(fontWeight: FontWeight.w600)),
-                          trailing: const Tag('Invita'),
+                          trailing: Tag(tr('Invita')),
                           onTap: () => Navigator.pop(context, u.username),
                         ),
                     ],

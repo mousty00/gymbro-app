@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/l10n/l10n.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/async_view.dart';
 import '../../core/widgets/ui.dart';
@@ -45,7 +46,7 @@ class _ExerciseEditorState extends ConsumerState<_ExerciseEditor> {
 
   void _save() {
     if (_exerciseId == null) {
-      showMessage(context, 'Scegli un esercizio', error: true);
+      showMessage(context, tr('Scegli un esercizio'), error: true);
       return;
     }
     Navigator.pop(
@@ -79,12 +80,12 @@ class _ExerciseEditorState extends ConsumerState<_ExerciseEditor> {
               child: Row(
                 children: [
                   Expanded(
-                    child: Text(widget.initial == null ? 'Aggiungi esercizio' : 'Modifica esercizio', style: t.headlineSmall),
+                    child: Text(widget.initial == null ? tr('Aggiungi esercizio') : tr('Modifica esercizio'), style: t.headlineSmall),
                   ),
                   CircleIconButton(
                     icon: Icons.add_rounded,
                     size: 40,
-                    tooltip: 'Nuovo esercizio',
+                    tooltip: tr('Nuovo esercizio'),
                     onTap: () async {
                       final created = await showCreateExerciseSheet(context);
                       if (created != null) {
@@ -101,7 +102,7 @@ class _ExerciseEditorState extends ConsumerState<_ExerciseEditor> {
             const SizedBox(height: 14),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: SearchPill(hint: 'Cerca esercizio', onChanged: (v) => setState(() => _query = v.toLowerCase())),
+              child: SearchPill(hint: tr('Cerca esercizio'), onChanged: (v) => setState(() => _query = v.toLowerCase())),
             ),
             const SizedBox(height: 10),
             Expanded(
@@ -118,7 +119,7 @@ class _ExerciseEditorState extends ConsumerState<_ExerciseEditor> {
                       .where((e) => _query.isEmpty || e.name.toLowerCase().contains(_query) || e.muscleGroup.toLowerCase().contains(_query))
                       .toList();
                   if (filtered.isEmpty) {
-                    return Center(child: Text('Nessun esercizio trovato', style: TextStyle(color: AppColors.muted)));
+                    return Center(child: Text(tr('Nessun esercizio trovato'), style: TextStyle(color: AppColors.muted)));
                   }
                   return ListView.builder(
                     padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
@@ -151,7 +152,7 @@ class _ExerciseEditorState extends ConsumerState<_ExerciseEditor> {
                                     ),
                                   ),
                                   Text(
-                                    e.muscleGroup,
+                                    muscleGroupLabel(e.muscleGroup),
                                     style: TextStyle(fontSize: 12, color: selected ? AppColors.onInk.withValues(alpha: 0.7) : AppColors.muted),
                                   ),
                                 ],
@@ -184,9 +185,9 @@ class _ExerciseEditorState extends ConsumerState<_ExerciseEditor> {
                       ),
                     Row(
                       children: [
-                        Expanded(child: Stepper2(label: 'Serie', value: '$_sets', onMinus: () => setState(() => _sets = (_sets - 1).clamp(1, 20)), onPlus: () => setState(() => _sets = (_sets + 1).clamp(1, 20)))),
+                        Expanded(child: Stepper2(label: tr('Serie'), value: '$_sets', onMinus: () => setState(() => _sets = (_sets - 1).clamp(1, 20)), onPlus: () => setState(() => _sets = (_sets + 1).clamp(1, 20)))),
                         const SizedBox(width: 8),
-                        Expanded(child: Stepper2(label: 'Ripetizioni', value: '$_reps', onMinus: () => setState(() => _reps = (_reps - 1).clamp(1, 100)), onPlus: () => setState(() => _reps = (_reps + 1).clamp(1, 100)))),
+                        Expanded(child: Stepper2(label: tr('Ripetizioni'), value: '$_reps', onMinus: () => setState(() => _reps = (_reps - 1).clamp(1, 100)), onPlus: () => setState(() => _reps = (_reps + 1).clamp(1, 100)))),
                       ],
                     ),
                     const SizedBox(height: 8),
@@ -194,7 +195,7 @@ class _ExerciseEditorState extends ConsumerState<_ExerciseEditor> {
                       children: [
                         Expanded(
                           child: Stepper2(
-                            label: 'Peso (kg)',
+                            label: tr('Peso (kg)'),
                             value: _weight == _weight.roundToDouble() ? '${_weight.toInt()}' : _weight.toStringAsFixed(1),
                             onMinus: () => setState(() => _weight = (_weight - 2.5).clamp(0, 500)),
                             onPlus: () => setState(() => _weight = (_weight + 2.5).clamp(0, 500)),
@@ -203,7 +204,7 @@ class _ExerciseEditorState extends ConsumerState<_ExerciseEditor> {
                         const SizedBox(width: 8),
                         Expanded(
                           child: Stepper2(
-                            label: 'Recupero',
+                            label: tr('Recupero'),
                             value: '${_rest}s',
                             onMinus: () => setState(() => _rest = (_rest - 15).clamp(0, 600)),
                             onPlus: () => setState(() => _rest = (_rest + 15).clamp(0, 600)),
@@ -212,7 +213,7 @@ class _ExerciseEditorState extends ConsumerState<_ExerciseEditor> {
                       ],
                     ),
                     const SizedBox(height: 14),
-                    PrimaryButton(label: widget.initial == null ? 'Aggiungi alla scheda' : 'Salva', onPressed: _save),
+                    PrimaryButton(label: widget.initial == null ? tr('Aggiungi alla scheda') : tr('Salva'), onPressed: _save),
                   ],
                 ),
               ),

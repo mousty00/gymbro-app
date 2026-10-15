@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/l10n/l10n.dart';
 import '../../core/network/api_exception.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/async_view.dart';
@@ -34,7 +35,7 @@ class _RouteDetailScreenState extends ConsumerState<RouteDetailScreen> {
       final copy = await ref.read(runningRepositoryProvider).copyRoute(route.id);
       ref.invalidate(myRoutesProvider);
       if (!mounted) return;
-      showMessage(context, 'Salvato nei tuoi percorsi');
+      showMessage(context, tr('Salvato nei tuoi percorsi'));
       context.pushReplacement('/running/route/${copy.id}');
     } on ApiException catch (e) {
       if (mounted) showMessage(context, e.message, error: true);
@@ -46,9 +47,9 @@ class _RouteDetailScreenState extends ConsumerState<RouteDetailScreen> {
   Future<void> _delete(RunRoute route) async {
     final ok = await confirm(
       context,
-      title: 'Eliminare "${route.name}"?',
-      message: 'Vengono eliminate anche le corse di gruppo organizzate su questo percorso. Le corse già registrate restano.',
-      ok: 'Elimina',
+      title: tr('Eliminare "{name}"?', {'name': route.name}),
+      message: tr('Vengono eliminate anche le corse di gruppo organizzate su questo percorso. Le corse già registrate restano.'),
+      ok: tr('Elimina'),
       destructive: true,
     );
     if (!ok) return;
@@ -83,7 +84,7 @@ class _RouteDetailScreenState extends ConsumerState<RouteDetailScreen> {
                       CircleIconButton(
                         icon: Icons.ios_share_rounded,
                         size: 44,
-                        tooltip: 'Condividi',
+                        tooltip: tr('Condividi'),
                         onTap: () => shareRoute(context, route,
                             loadGpx: () => ref.read(runningRepositoryProvider).routeGpx(route.id)),
                       ),
@@ -91,10 +92,10 @@ class _RouteDetailScreenState extends ConsumerState<RouteDetailScreen> {
                         CircleIconButton(
                           icon: Icons.edit_outlined,
                           size: 44,
-                          tooltip: 'Modifica',
+                          tooltip: tr('Modifica'),
                           onTap: () => context.push('/running/route/${route.id}/edit'),
                         ),
-                        CircleIconButton(icon: Icons.delete_outline_rounded, size: 44, tooltip: 'Elimina', onTap: () => _delete(route)),
+                        CircleIconButton(icon: Icons.delete_outline_rounded, size: 44, tooltip: tr('Elimina'), onTap: () => _delete(route)),
                       ],
                     ],
                   ),
@@ -108,18 +109,18 @@ class _RouteDetailScreenState extends ConsumerState<RouteDetailScreen> {
                         const SizedBox(height: 6),
                         Text(
                           route.originalAuthor != null
-                              ? 'Disegnato da @${route.originalAuthor!.username}'
+                              ? tr('Disegnato da @{username}', {'username': route.originalAuthor!.username})
                               : mine
-                                  ? (route.isPublic ? 'Pubblico: i tuoi amici lo vedono' : 'Privato: lo vedi solo tu')
-                                  : 'Di @${route.owner.username}',
+                                  ? (route.isPublic ? tr('Pubblico: i tuoi amici lo vedono') : tr('Privato: lo vedi solo tu'))
+                                  : tr('Di @{username}', {'username': route.owner.username}),
                           style: TextStyle(color: AppColors.inkSoft),
                         ),
                         const SizedBox(height: 18),
                         Row(
                           children: [
-                            _Metric(label: 'Distanza', value: formatDistance(route.distanceM)),
-                            _Metric(label: 'Dislivello', value: route.elevationGainM == null ? '–' : '+${route.elevationGainM} m'),
-                            _Metric(label: 'Tempo', value: estimateTime(route.distanceM)),
+                            _Metric(label: tr('Distanza'), value: formatDistance(route.distanceM)),
+                            _Metric(label: tr('Dislivello'), value: route.elevationGainM == null ? '–' : '+${route.elevationGainM} m'),
+                            _Metric(label: tr('Tempo'), value: estimateTime(route.distanceM)),
                           ],
                         ),
                         if (route.description != null && route.description!.isNotEmpty) ...[
@@ -131,13 +132,13 @@ class _RouteDetailScreenState extends ConsumerState<RouteDetailScreen> {
                           OutlinedButton.icon(
                             onPressed: () => context.push('/running/event/new?route=${route.id}'),
                             icon: const Icon(Icons.groups_rounded),
-                            label: const Text('Organizza una corsa di gruppo'),
+                            label: Text(tr('Organizza una corsa di gruppo')),
                           )
                         else if (route.isPublic)
                           OutlinedButton.icon(
                             onPressed: _copying ? null : () => _copy(route),
                             icon: const Icon(Icons.bookmark_add_outlined),
-                            label: const Text('Salva nei miei percorsi'),
+                            label: Text(tr('Salva nei miei percorsi')),
                           ),
                       ],
                     ),
@@ -145,7 +146,7 @@ class _RouteDetailScreenState extends ConsumerState<RouteDetailScreen> {
                   Padding(
                     padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
                     child: PillActionButton(
-                      label: 'Corri questo percorso',
+                      label: tr('Corri questo percorso'),
                       icon: Icons.directions_run_rounded,
                       onPressed: () => context.push('/running/run?route=${route.id}'),
                     ),
