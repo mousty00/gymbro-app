@@ -135,23 +135,23 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
                         padding: const EdgeInsets.fromLTRB(20, 4, 20, 20),
                         children: [
                           SoftCard(
-                            color: AppColors.ink,
+                            color: AppColors.inkCard,
                             padding: const EdgeInsets.all(22),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Row(
                                   children: [
-                                    Icon(Icons.timer_outlined, size: 16, color: AppColors.onInk.withValues(alpha: 0.6)),
+                                    Icon(Icons.timer_outlined, size: 16, color: Colors.white.withValues(alpha: 0.6)),
                                     const SizedBox(width: 6),
                                     Text(widget.groupId != null ? 'Durata sessione di gruppo' : 'Durata allenamento',
-                                        style: TextStyle(color: AppColors.onInk.withValues(alpha: 0.6))),
+                                        style: TextStyle(color: Colors.white.withValues(alpha: 0.6))),
                                   ],
                                 ),
                                 const SizedBox(height: 6),
                                 Text(
                                   formatClock(_elapsed),
-                                  style: t.displayLarge?.copyWith(color: AppColors.onInk, fontFeatures: const [FontFeature.tabularFigures()]),
+                                  style: t.displayLarge?.copyWith(color: Colors.white, fontFeatures: const [FontFeature.tabularFigures()]),
                                 ),
                                 const SizedBox(height: 16),
                                 ClipRRect(
@@ -159,7 +159,7 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
                                   child: LinearProgressIndicator(
                                     value: progress,
                                     minHeight: 8,
-                                    backgroundColor: AppColors.onInk.withValues(alpha: 0.12),
+                                    backgroundColor: Colors.white.withValues(alpha: 0.12),
                                     color: AppColors.lilac,
                                   ),
                                 ),

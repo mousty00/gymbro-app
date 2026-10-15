@@ -126,6 +126,13 @@ abstract final class AppColors {
   /// Testo e icone sopra [ink].
   static Color get onInk => _palette.onInk;
 
+  /// Card in evidenza (allenamento di oggi, timer della sessione): scura in
+  /// entrambi i temi, col testo bianco sopra.
+  static Color get inkCard => isDark ? const Color(0xFF252A41) : _palette.ink;
+
+  /// Colore del logo: sfondo dello splash.
+  static const brand = Color(0xFF6366F1);
+
   static const blue = Color(0xFF4C7CF5);
   static Color get blueSoft => _palette.blueSoft;
   static const lilac = Color(0xFF8E7CF8);

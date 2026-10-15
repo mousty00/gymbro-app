@@ -15,6 +15,8 @@ class SkyBackground extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Nel tema scuro niente gradiente né macchie: sfondo a tinta unita.
+    if (AppColors.isDark) return ColoredBox(color: AppColors.bg, child: child);
     return Stack(
       children: [
         Positioned.fill(child: ColoredBox(color: AppColors.bg)),

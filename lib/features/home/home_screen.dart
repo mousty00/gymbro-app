@@ -259,7 +259,7 @@ class TodayWorkoutCard extends StatelessWidget {
       '${workout.exercises.length} esercizi',
     ].join(' · ');
     return SoftCard(
-      color: AppColors.ink,
+      color: AppColors.inkCard,
       onTap: () => context.push('/workout/${workout.id}'),
       padding: const EdgeInsets.fromLTRB(20, 20, 16, 20),
       child: Row(
@@ -272,10 +272,10 @@ class TodayWorkoutCard extends StatelessWidget {
                   workout.name,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: TextStyle(color: AppColors.onInk, fontSize: 22, fontWeight: FontWeight.w700),
+                  style: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w700),
                 ),
                 const SizedBox(height: 6),
-                Text(details, style: TextStyle(color: AppColors.onInk.withValues(alpha: 0.65), fontSize: 14)),
+                Text(details, style: TextStyle(color: Colors.white.withValues(alpha: 0.65), fontSize: 14)),
               ],
             ),
           ),
