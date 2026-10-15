@@ -38,6 +38,9 @@ class SessionController extends AsyncNotifier<User?> {
     state = AsyncData(user);
   }
 
+  /// Dopo una modifica del profilo, con l'utente restituito dal server.
+  void setUser(User user) => state = AsyncData(user);
+
   Future<void> reloadProfile() async {
     final user = await _repo.profile();
     state = AsyncData(user);

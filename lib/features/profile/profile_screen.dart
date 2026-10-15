@@ -108,6 +108,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   child: Column(
                     children: [
                       _MenuRow(
+                        icon: Icons.edit_rounded,
+                        color: AppColors.blue,
+                        label: tr('Modifica profilo'),
+                        onTap: () => go(() => context.push('/profile/edit')),
+                      ),
+                      _MenuRow(
                         icon: Icons.language_rounded,
                         color: AppColors.lilac,
                         label: tr('Lingua'),

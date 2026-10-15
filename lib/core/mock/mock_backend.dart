@@ -74,6 +74,7 @@ class MockBackend extends Interceptor {
   String _id(String prefix) => '$prefix${_seq++}';
 
   late Map<String, dynamic> _me;
+  String? _pendingEmail;
   final _users = <Map<String, dynamic>>[];
   final _exercises = <Map<String, dynamic>>[];
   final _workouts = <Map<String, dynamic>>[];
@@ -416,6 +417,31 @@ class MockBackend extends Interceptor {
       return _ok('Image updated');
     }
     if (match('DELETE', '/users/me')) return _ok('Account deleted');
+    if (match('PUT', '/users/me')) {
+      final username = '${body['username']}';
+      if (username != _me['username'] && _users.any((u) => u['username'] == username)) {
+        throw _MockError(409, "Username '$username' already exists");
+      }
+      _me
+        ..['username'] = username
+        ..['firstName'] = body['firstName']
+        ..['lastName'] = body['lastName']
+        ..['birthDate'] = body['birthDate'];
+      return {'message': 'Profile updated', 'result': _me, 'token': 'mock-token', 'refreshToken': 'mock-refresh'};
+    }
+    if (match('POST', '/users/me/email')) {
+      final email = '${body['email']}';
+      if (_users.any((u) => u['email'] == email)) throw _MockError(409, "Email '$email' already exists");
+      _pendingEmail = email;
+      return _ok('A code has been sent to the new email');
+    }
+    if (match('POST', '/users/me/email/verify')) {
+      if (_pendingEmail == null) throw _MockError(400, 'OTP expired');
+      if (body['otp'] == '000000') throw _MockError(400, 'Invalid OTP');
+      _me['email'] = _pendingEmail;
+      _pendingEmail = null;
+      return _me;
+    }
 
     // Post
     if (match('GET', '/posts')) {

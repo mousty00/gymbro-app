@@ -28,6 +28,7 @@ import '../../features/running/run_event_form_screen.dart';
 import '../../features/running/run_tracker_screen.dart';
 import '../../features/running/running_screen.dart';
 import '../../features/shell/app_shell.dart';
+import '../../features/profile/edit_profile_screen.dart';
 import '../../features/shell/sections.dart';
 import '../../features/workouts/workout_detail_screen.dart';
 import '../../features/workouts/workout_form_screen.dart';
@@ -139,6 +140,11 @@ final routerProvider = Provider<GoRouter>((ref) {
           workoutId: s.pathParameters['id']!,
           groupId: s.uri.queryParameters['group'],
         ),
+      ),
+      GoRoute(
+        parentNavigatorKey: _rootKey,
+        path: '/profile/edit',
+        builder: (_, _) => const EditProfileScreen(),
       ),
       GoRoute(
         parentNavigatorKey: _rootKey,

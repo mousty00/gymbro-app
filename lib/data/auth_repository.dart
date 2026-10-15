@@ -45,6 +45,30 @@ class AuthRepository {
     return res['message'] as String? ?? tr('Registrazione completata');
   }
 
+  /// Username, nome e data di nascita. Il backend risponde con token nuovi (lo username è
+  /// il soggetto del token): vanno salvati al posto dei vecchi.
+  Future<User> updateProfile({
+    required String username,
+    required String firstName,
+    required String lastName,
+    required DateTime birthDate,
+  }) async {
+    final res = await _api.put<Json>('/users/me', data: {
+      'username': username,
+      'firstName': firstName,
+      'lastName': lastName,
+      'birthDate': formatLocalDate(birthDate),
+    });
+    await _tokens.save(access: res['token'] as String, refresh: res['refreshToken'] as String);
+    return User.fromJson(Map<String, dynamic>.from(res['result'] as Map));
+  }
+
+  /// Manda un codice alla nuova email; quella attuale resta valida finché non lo confermi.
+  Future<void> requestEmailChange(String email) => _api.post<dynamic>('/users/me/email', data: {'email': email});
+
+  Future<User> confirmEmailChange(String otp) async =>
+      User.fromJson(await _api.post<Json>('/users/me/email/verify', data: {'otp': otp}));
+
   Future<void> verifyOtp({required String username, required String otp}) =>
       _api.post<Json>('/auth/verify-otp', data: {'username': username, 'otp': otp});
 
