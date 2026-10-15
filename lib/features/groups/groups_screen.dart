@@ -78,6 +78,7 @@ class GroupsScreen extends ConsumerWidget {
                     if (list.isEmpty) {
                       return SliverToBoxAdapter(
                         child: EmptyState(
+                          icon: Icons.groups_rounded,
                           title: 'Nessun gruppo',
                           message: 'Crea un allenamento di gruppo e invita i tuoi amici.',
                           action: 'Crea gruppo',

@@ -71,7 +71,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                     if (loading && r.isEmpty && i.isEmpty && a.isEmpty)
                       const SkeletonList(item: SkeletonTile(leading: 44, circle: true, trailing: true), count: 3, padding: EdgeInsets.zero)
                     else if (r.isEmpty && i.isEmpty && a.isEmpty)
-                      const EmptyState(title: 'Tutto tranquillo', message: 'Nessuna richiesta, invito o attività.')
+                      const EmptyState(icon: Icons.notifications_none_rounded, title: 'Tutto tranquillo', message: 'Nessuna richiesta, invito o attività.')
                     else ...[
                       if (r.isNotEmpty) ...[
                         SectionHeader('Richieste di amicizia · ${r.length}'),

@@ -118,6 +118,7 @@ class _GroupFormScreenState extends ConsumerState<GroupFormScreen> {
                       data: (list) {
                         if (list.isEmpty) {
                           return EmptyState(
+                            icon: Icons.assignment_rounded,
                             title: 'Nessuna scheda',
                             message: 'Per allenarvi insieme serve una scheda.',
                             action: 'Crea scheda',

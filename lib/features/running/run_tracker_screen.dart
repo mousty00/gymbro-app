@@ -394,6 +394,7 @@ class _ErrorView extends StatelessWidget {
             Expanded(
               child: Center(
                 child: EmptyState(
+                  icon: Icons.location_off_rounded,
                   title: 'Non posso registrare',
                   message: message,
                   action: openSettings ? 'Apri impostazioni' : null,

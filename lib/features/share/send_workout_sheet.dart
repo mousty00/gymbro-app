@@ -96,6 +96,7 @@ class _SendWorkoutSheetState extends ConsumerState<_SendWorkoutSheet> {
                     ? const SkeletonList(item: SkeletonTile(circle: true), count: 4, padding: EdgeInsets.zero)
                     : friendList.isEmpty && groupList.isEmpty
                     ? const EmptyState(
+                        icon: Icons.person_add_alt_1_rounded,
                         title: 'Nessuno a cui inviarla',
                         message: 'Aggiungi amici o entra in un gruppo per condividere le tue schede.',
                       )

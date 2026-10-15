@@ -103,6 +103,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
                           data: (list) => list.isEmpty
                               ? ListView(children: const [
                                   EmptyState(
+                                    icon: Icons.person_search_rounded,
                                     title: 'Nessun amico, per ora',
                                     message: 'Cerca qualcuno per username e mandagli una richiesta.',
                                   ),
@@ -135,7 +136,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
                           onRetry: () => ref.invalidate(friendRequestsProvider),
                           loading: const SkeletonList(item: SkeletonTile(leading: 44, circle: true, trailing: true, padding: EdgeInsets.symmetric(horizontal: 14, vertical: 10)), padding: EdgeInsets.fromLTRB(20, 0, 20, 24)),
                           data: (list) => list.isEmpty
-                              ? ListView(children: const [EmptyState(title: 'Nessuna richiesta in attesa')])
+                              ? ListView(children: const [EmptyState(icon: Icons.inbox_rounded, title: 'Nessuna richiesta in attesa')])
                               : ListView.separated(
                                   padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
                                   itemCount: list.length,

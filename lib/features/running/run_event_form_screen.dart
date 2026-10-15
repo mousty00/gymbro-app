@@ -140,6 +140,7 @@ class _RunEventFormScreenState extends ConsumerState<RunEventFormScreen> {
                       data: (list) {
                         if (list.isEmpty) {
                           return EmptyState(
+                            icon: Icons.route_rounded,
                             title: 'Nessun percorso',
                             message: 'Per correre insieme disegna prima il percorso.',
                             action: 'Disegna un percorso',

@@ -95,6 +95,7 @@ class _ExercisesScreenState extends ConsumerState<ExercisesScreen> {
                     if (filtered.isEmpty) {
                       return ListView(children: [
                         EmptyState(
+                          icon: Icons.fitness_center_rounded,
                           title: 'Nessun esercizio',
                           message: 'Crea un esercizio personalizzato da usare nelle tue schede.',
                           action: 'Crea esercizio',

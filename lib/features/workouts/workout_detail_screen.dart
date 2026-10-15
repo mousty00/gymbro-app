@@ -162,6 +162,7 @@ class WorkoutDetailScreen extends ConsumerWidget {
                         ),
                         if (w.exercises.isEmpty)
                           EmptyState(
+                            icon: Icons.playlist_add_rounded,
                             title: 'Scheda vuota',
                             message: mine ? 'Aggiungi il primo esercizio dalla libreria.' : null,
                             action: mine ? 'Aggiungi esercizio' : null,

@@ -39,6 +39,7 @@ class HistoryScreen extends ConsumerWidget {
                     if (list.isEmpty) {
                       return ListView(children: const [
                         EmptyState(
+                          icon: Icons.history_rounded,
                           title: 'Nessuna sessione',
                           message: 'Completa un allenamento e lo troverai qui.',
                         ),

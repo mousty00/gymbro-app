@@ -87,6 +87,7 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
                     if (list.isEmpty) {
                       return SliverToBoxAdapter(
                         child: EmptyState(
+                          icon: Icons.dynamic_feed_rounded,
                           title: _friends ? 'Ancora nessun post' : 'Nessun post per ora',
                           message: _friends
                               ? 'Quando i tuoi amici pubblicano un allenamento lo vedrai qui.'

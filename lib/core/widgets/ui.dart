@@ -5,7 +5,6 @@ import 'package:go_router/go_router.dart';
 import '../../features/auth/session.dart';
 import '../theme/app_theme.dart';
 import 'app_image.dart';
-import 'backgrounds.dart';
 
 /// Card bianca arrotondata con ombra morbida.
 class SoftCard extends StatelessWidget {
@@ -351,10 +350,12 @@ class Tag extends StatelessWidget {
   }
 }
 
-/// Stato vuoto col logo dell'app.
+/// Stato vuoto: un'icona che dice cosa manca (post, schede, amici…), titolo,
+/// messaggio e azione opzionali.
 class EmptyState extends StatelessWidget {
-  const EmptyState({super.key, required this.title, this.message, this.action, this.onAction});
+  const EmptyState({super.key, required this.icon, required this.title, this.message, this.action, this.onAction});
 
+  final IconData icon;
   final String title;
   final String? message;
   final String? action;
@@ -368,7 +369,12 @@ class EmptyState extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const BrandMark(size: 72),
+          Container(
+            width: 76,
+            height: 76,
+            decoration: BoxDecoration(color: AppColors.blueSoft, shape: BoxShape.circle),
+            child: Icon(icon, size: 36, color: AppColors.blue),
+          ),
           const SizedBox(height: 16),
           Text(title, style: t.titleLarge, textAlign: TextAlign.center),
           if (message != null) ...[

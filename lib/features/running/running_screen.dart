@@ -118,6 +118,7 @@ class _MyRoutes extends ConsumerWidget {
       data: (routes) => routes.isEmpty
           ? ListView(children: [
               EmptyState(
+                icon: Icons.route_rounded,
                 title: 'Nessun percorso',
                 message: 'Disegna sulla mappa il giro che vuoi fare: resta salvato per rifarlo quando vuoi.',
                 action: 'Disegna un percorso',
@@ -145,6 +146,7 @@ class _FriendsRoutes extends ConsumerWidget {
       data: (routes) => routes.isEmpty
           ? ListView(children: const [
               EmptyState(
+                icon: Icons.travel_explore_rounded,
                 title: 'Ancora niente',
                 message: 'Qui trovi i percorsi che i tuoi amici rendono pubblici. Puoi salvarli e correrli da solo.',
               ),
@@ -171,6 +173,7 @@ class _Events extends ConsumerWidget {
         if (events.isEmpty) {
           return ListView(children: const [
             EmptyState(
+              icon: Icons.event_rounded,
               title: 'Nessuna corsa di gruppo',
               message: 'Apri uno dei tuoi percorsi e organizza una corsa: scegli giorno, ora e amici da invitare.',
             ),
@@ -204,7 +207,7 @@ class _Runs extends ConsumerWidget {
       data: (runs) {
         if (runs.isEmpty) {
           return ListView(children: const [
-            EmptyState(title: 'Nessuna corsa', message: 'Le corse che registri compaiono qui, con mappa, tempi e passo.'),
+            EmptyState(icon: Icons.directions_run_rounded, title: 'Nessuna corsa', message: 'Le corse che registri compaiono qui, con mappa, tempi e passo.'),
           ]);
         }
         final total = runs.fold<int>(0, (sum, r) => sum + r.distanceM);

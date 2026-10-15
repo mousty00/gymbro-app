@@ -121,6 +121,7 @@ class _WorkoutsScreenState extends ConsumerState<WorkoutsScreen> {
                     if (shown.isEmpty) {
                       return SliverToBoxAdapter(
                         child: EmptyState(
+                          icon: _tab == 0 ? Icons.assignment_rounded : Icons.explore_rounded,
                           title: _tab == 0 ? 'Nessuna scheda' : 'Niente da esplorare',
                           message: _tab == 0
                               ? 'Crea la tua prima scheda: esercizi, serie, giorni e orario.'
