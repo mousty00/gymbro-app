@@ -102,17 +102,17 @@ class _ShareSheetState extends State<_ShareSheet> {
     return data!.buffer.asUint8List();
   }
 
-  Future<void> _shareOutside(BuildContext buttonContext) async {
+  Future<void> _shareOutside(BuildContext buttonContext, {required bool image}) async {
     final box = buttonContext.findRenderObject() as RenderBox?;
     setState(() => _busy = true);
     try {
-      final png = await _capture();
+      final png = image ? await _capture() : null;
       await SharePlus.instance.share(
         ShareParams(
           text: c.link == null ? c.message : '${c.message}\n${c.link}',
           subject: c.message,
-          files: [XFile.fromData(png, mimeType: 'image/png')],
-          fileNameOverrides: ['${c.fileName}.png'],
+          files: png == null ? null : [XFile.fromData(png, mimeType: 'image/png')],
+          fileNameOverrides: png == null ? null : ['${c.fileName}.png'],
           sharePositionOrigin: box == null ? null : box.localToGlobal(Offset.zero) & box.size,
         ),
       );
@@ -192,10 +192,10 @@ class _ShareSheetState extends State<_ShareSheet> {
               const SizedBox(height: 18),
               Builder(
                 builder: (buttonContext) => PrimaryButton(
-                  label: 'WhatsApp, Instagram e altre app',
+                  label: c.link == null ? 'WhatsApp, Instagram e altre app' : 'Invia link (WhatsApp, Telegram…)',
                   icon: Icons.ios_share_rounded,
                   loading: _busy,
-                  onPressed: () => _shareOutside(buttonContext),
+                  onPressed: () => _shareOutside(buttonContext, image: c.link == null),
                 ),
               ),
               const SizedBox(height: 8),
@@ -232,6 +232,15 @@ class _ShareSheetState extends State<_ShareSheet> {
                       color: AppColors.pink,
                       label: 'Pubblica nel feed',
                       onTap: _busy ? null : _postToFeed,
+                    ),
+                  if (c.outside && c.link != null)
+                    Builder(
+                      builder: (actionContext) => _Action(
+                        icon: Icons.image_rounded,
+                        color: AppColors.lilac,
+                        label: 'Condividi immagine (Instagram…)',
+                        onTap: _busy ? null : () => _shareOutside(actionContext, image: true),
+                      ),
                     ),
                   if (c.outside && c.link != null)
                     _Action(icon: Icons.link_rounded, color: AppColors.mint, label: 'Copia link', onTap: _copyLink),

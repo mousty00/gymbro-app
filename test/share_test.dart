@@ -204,7 +204,7 @@ void main() {
       await open(tester, (ctx) => shareWorkout(ctx, w, mine: true));
       expect(find.textContaining('La scheda è privata'), findsOneWidget);
       expect(find.text('Invia ad amici o gruppi'), findsOneWidget);
-      expect(find.text('WhatsApp, Instagram e altre app'), findsNothing);
+      expect(find.text('Invia link (WhatsApp, Telegram…)'), findsNothing);
       expect(find.text('Copia link'), findsNothing);
     });
 
@@ -216,7 +216,8 @@ void main() {
         user: SimpleUser(id: 'u1', username: 'mousty'),
       );
       await open(tester, (ctx) => shareWorkout(ctx, w, mine: true));
-      expect(find.text('WhatsApp, Instagram e altre app'), findsOneWidget);
+      expect(find.text('Invia link (WhatsApp, Telegram…)'), findsOneWidget);
+      expect(find.text('Condividi immagine (Instagram…)'), findsOneWidget);
       expect(find.text('Copia link'), findsOneWidget);
     });
 
