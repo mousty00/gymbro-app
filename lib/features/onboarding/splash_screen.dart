@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/sound/sounds.dart';
 import '../../core/l10n/l10n.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/rep_bird.dart';
@@ -40,6 +41,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with TickerProvider
   void didChangeDependencies() {
     super.didChangeDependencies();
     if (_intro.isAnimating || _intro.isCompleted) return;
+    Sounds.play(Sound.launch);
     if (MediaQuery.maybeDisableAnimationsOf(context) ?? false) {
       _intro.value = 1;
       _finish();

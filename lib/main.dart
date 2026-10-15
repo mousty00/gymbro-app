@@ -6,6 +6,7 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'core/l10n/l10n.dart';
 import 'core/push/push_service.dart';
 import 'core/router/app_router.dart';
+import 'core/sound/sounds.dart';
 import 'core/theme/app_theme.dart';
 import 'features/auth/session.dart';
 
@@ -13,6 +14,7 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initializeDateFormatting();
   await LanguageNotifier.load();
+  await SoundNotifier.load();
 
   final container = ProviderContainer();
   final push = container.read(pushServiceProvider);

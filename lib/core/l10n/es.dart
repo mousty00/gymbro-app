@@ -279,6 +279,7 @@ const es = <String, String>{
   'Iscritto da': 'Miembro desde',
   'Server': 'Servidor',
   'Lingua': 'Idioma',
+  'Suoni': 'Sonidos',
   'Lingua del dispositivo': 'Idioma del dispositivo',
   'Sessioni': 'Sesiones',
   '{duration} di allenamento': '{duration} de entrenamiento',

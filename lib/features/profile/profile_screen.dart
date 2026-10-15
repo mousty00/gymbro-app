@@ -6,6 +6,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/config/env.dart';
 import '../../core/l10n/l10n.dart';
+import '../../core/sound/sounds.dart';
 import '../../core/network/api_exception.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/utils/formatters.dart';
@@ -116,6 +117,26 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         color: AppColors.lilac,
                         label: tr('Lingua'),
                         onTap: () => go(_chooseLanguage),
+                      ),
+                      Consumer(
+                        builder: (context, ref, _) {
+                          final on = ref.watch(soundProvider);
+                          return Column(
+                            children: [
+                              SwitchListTile(
+                                value: on,
+                                onChanged: ref.read(soundProvider.notifier).set,
+                                secondary: IconChip(
+                                  icon: on ? Icons.volume_up_rounded : Icons.volume_off_rounded,
+                                  color: AppColors.amber,
+                                  size: 36,
+                                ),
+                                title: Text(tr('Suoni'), style: const TextStyle(fontWeight: FontWeight.w600)),
+                              ),
+                              const Divider(indent: 70, endIndent: 16),
+                            ],
+                          );
+                        },
                       ),
                       _MenuRow(
                         icon: Icons.privacy_tip_outlined,

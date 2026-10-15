@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/sound/sounds.dart';
 import '../../core/l10n/l10n.dart';
 import '../../core/network/api_exception.dart';
 import '../../core/theme/app_theme.dart';
@@ -48,7 +49,10 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
         _elapsed = DateTime.now().difference(_startedAt);
         if (_restLeft > 0) {
           _restLeft--;
-          if (_restLeft == 0) HapticFeedback.heavyImpact();
+          if (_restLeft == 0) {
+            HapticFeedback.heavyImpact();
+            Sounds.play(Sound.restEnd);
+          }
         }
       });
     });
@@ -68,6 +72,7 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
         _doneSets[e.id] = index;
       } else {
         _doneSets[e.id] = index + 1;
+        Sounds.play(Sound.rep);
         _restLeft = _restTotal = e.restSeconds;
       }
     });
@@ -94,6 +99,7 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
           );
       ref.invalidate(historyProvider);
       if (widget.groupId != null) ref.invalidate(groupHistoryProvider(widget.groupId!));
+      Sounds.play(Sound.finish);
       if (!mounted) return;
       showMessage(context, tr('Allenamento salvato. Grande! 💪'));
       context.pop();
