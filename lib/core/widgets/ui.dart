@@ -351,7 +351,7 @@ class Tag extends StatelessWidget {
   }
 }
 
-/// Stato vuoto con sfera iridescente.
+/// Stato vuoto col logo dell'app.
 class EmptyState extends StatelessWidget {
   const EmptyState({super.key, required this.title, this.message, this.action, this.onAction});
 
@@ -368,8 +368,8 @@ class EmptyState extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const GlassOrb(size: 64),
-          const SizedBox(height: 4),
+          const BrandMark(size: 72),
+          const SizedBox(height: 16),
           Text(title, style: t.titleLarge, textAlign: TextAlign.center),
           if (message != null) ...[
             const SizedBox(height: 8),

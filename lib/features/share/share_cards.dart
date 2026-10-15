@@ -387,15 +387,6 @@ class _CardFrame extends StatelessWidget {
         ),
         child: Stack(
           children: [
-            Positioned(
-              top: -60,
-              right: -50,
-              child: Container(
-                width: 200,
-                height: 200,
-                decoration: BoxDecoration(shape: BoxShape.circle, color: LightColors.lilac.withValues(alpha: 0.18)),
-              ),
-            ),
             Padding(
               padding: const EdgeInsets.fromLTRB(22, 20, 22, 16),
               child: Column(
