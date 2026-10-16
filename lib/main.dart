@@ -16,7 +16,7 @@ Future<void> main() async {
   await initializeDateFormatting();
   await LanguageNotifier.load();
   await SoundNotifier.load();
-  await ThemeModeNotifier.load();
+  await ThemeNotifier.load();
 
   final container = ProviderContainer();
   final push = container.read(pushServiceProvider);
@@ -35,14 +35,17 @@ class RepBirdsApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final theme = ref.watch(themeProvider);
+    final custom = theme.custom?.palette;
     return MaterialApp.router(
       title: 'RepBirds',
       debugShowCheckedModeBanner: false,
       // Di base segue il tema del dispositivo; si cambia dal profilo.
-      themeMode: ref.watch(themeModeProvider),
-      theme: buildAppTheme(AppPalette.light),
-      darkTheme: buildAppTheme(AppPalette.dark),
-      builder: (context, child) => AppThemeSync(child: child!),
+      // Un tema personalizzato sostituisce il chiaro o lo scuro, secondo la sua base.
+      themeMode: theme.themeMode,
+      theme: buildAppTheme(custom != null && !theme.custom!.dark ? custom : AppPalette.light),
+      darkTheme: buildAppTheme(custom != null && theme.custom!.dark ? custom : AppPalette.dark),
+      builder: (context, child) => AppThemeSync(custom: custom, child: child!),
       routerConfig: ref.watch(routerProvider),
       scaffoldMessengerKey: scaffoldMessengerKey,
       // Di base la lingua del dispositivo (inglese se non supportata); si cambia dal profilo.

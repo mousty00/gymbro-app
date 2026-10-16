@@ -47,7 +47,29 @@ class AppPalette {
     required this.lilacSoft,
     required this.pinkSoft,
     required this.mintSoft,
+    this.accent = const Color(0xFF6366F1),
   });
+
+  /// Tema personalizzato: parte dal chiaro o dallo scuro e cambia accento e
+  /// sfondo; card e bordi si ricavano dallo sfondo.
+  factory AppPalette.custom({required bool dark, required Color accent, required Color bg}) {
+    final base = dark ? AppPalette.dark : AppPalette.light;
+    return AppPalette(
+      brightness: base.brightness,
+      ink: base.ink,
+      inkSoft: base.inkSoft,
+      muted: base.muted,
+      bg: bg,
+      card: Color.lerp(bg, Colors.white, dark ? 0.07 : 0.8)!,
+      stroke: Color.lerp(bg, base.ink, 0.08)!,
+      onInk: base.onInk,
+      blueSoft: base.blueSoft,
+      lilacSoft: base.lilacSoft,
+      pinkSoft: base.pinkSoft,
+      mintSoft: base.mintSoft,
+      accent: accent,
+    );
+  }
 
   final Brightness brightness;
   final Color ink;
@@ -61,6 +83,9 @@ class AppPalette {
   final Color lilacSoft;
   final Color pinkSoft;
   final Color mintSoft;
+
+  /// Colore principale (pulsanti in evidenza, card di oggi).
+  final Color accent;
 
   static const light = AppPalette(
     brightness: Brightness.light,
@@ -123,8 +148,8 @@ abstract final class AppColors {
   /// entrambi i temi, col testo bianco sopra.
   static Color get inkCard => isDark ? const Color(0xFF252A41) : _palette.ink;
 
-  /// Colore del logo: sfondo dello splash.
-  static const brand = Color(0xFF6366F1);
+  /// Colore principale: quello del logo, o l'accento del tema personalizzato.
+  static Color get brand => _palette.accent;
 
   static const blue = Color(0xFF4C7CF5);
   static Color get blueSoft => _palette.blueSoft;
@@ -148,25 +173,30 @@ abstract final class AppColors {
 /// quando cambiano (chiaro/scuro, o la lingua) con l'app aperta,
 /// ridisegna tutte le schermate senza perdere navigazione e stato.
 class AppThemeSync extends StatefulWidget {
-  const AppThemeSync({super.key, required this.child});
+  const AppThemeSync({super.key, required this.child, this.custom});
 
   final Widget child;
+
+  /// Tema personalizzato attivo, se c'è.
+  final AppPalette? custom;
 
   @override
   State<AppThemeSync> createState() => _AppThemeSyncState();
 }
 
 class _AppThemeSyncState extends State<AppThemeSync> {
-  Brightness? _brightness;
+  AppPalette? _palette;
   String? _lang;
 
   @override
   Widget build(BuildContext context) {
     final brightness = Theme.of(context).brightness;
     final lang = Localizations.localeOf(context).languageCode;
-    AppColors.use(AppPalette.of(brightness));
+    final custom = widget.custom;
+    final palette = custom != null && custom.brightness == brightness ? custom : AppPalette.of(brightness);
+    AppColors.use(palette);
     L10n.lang = lang;
-    if ((_brightness != null && _brightness != brightness) || (_lang != null && _lang != lang)) {
+    if ((_palette != null && _palette != palette) || (_lang != null && _lang != lang)) {
       // Molti widget leggono AppColors e tr() in costruttori const o senza
       // dipendere da Theme/Localizations: dopo il cambio vanno ricostruiti tutti.
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -179,7 +209,7 @@ class _AppThemeSyncState extends State<AppThemeSync> {
         (context as Element).visitChildren(rebuild);
       });
     }
-    _brightness = brightness;
+    _palette = palette;
     _lang = lang;
     final dark = brightness == Brightness.dark;
     return AnnotatedRegion<SystemUiOverlayStyle>(

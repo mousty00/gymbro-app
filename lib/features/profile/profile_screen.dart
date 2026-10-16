@@ -9,7 +9,6 @@ import '../../core/l10n/l10n.dart';
 import '../../core/sound/sounds.dart';
 import '../../core/network/api_exception.dart';
 import '../../core/theme/app_theme.dart';
-import '../../core/theme/theme_mode.dart';
 import '../../core/utils/formatters.dart';
 import '../../core/widgets/async_view.dart';
 import '../../core/widgets/backgrounds.dart';
@@ -18,6 +17,7 @@ import '../../data/providers.dart';
 import '../../data/user_repository.dart';
 import '../../models/social.dart';
 import '../auth/session.dart';
+import 'themes.dart';
 import '../friends/user_profile_screen.dart';
 import '../share/share_actions.dart';
 import '../share/share_links.dart';
@@ -125,7 +125,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         icon: Icons.dark_mode_rounded,
                         color: AppColors.brand,
                         label: tr('Tema'),
-                        onTap: () => go(_chooseTheme),
+                        onTap: () => go(() => showThemePicker(context, ref)),
                       ),
                       Consumer(
                         builder: (context, ref, _) {
@@ -203,35 +203,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               children: [
                 RadioListTile<String?>(value: null, title: Text(tr('Lingua del dispositivo'))),
                 for (final e in L10n.languages.entries) RadioListTile<String?>(value: e.key, title: Text(e.value)),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  void _chooseTheme() {
-    showModalBottomSheet<void>(
-      context: context,
-      useRootNavigator: true,
-      useSafeArea: true,
-      builder: (ctx) {
-        void pick(ThemeMode? mode) {
-          Navigator.pop(ctx);
-          if (mode != null) ref.read(themeModeProvider.notifier).set(mode);
-        }
-
-        return SafeArea(
-          child: RadioGroup<ThemeMode>(
-            groupValue: ref.read(themeModeProvider),
-            onChanged: pick,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                RadioListTile<ThemeMode>(value: ThemeMode.system, title: Text(tr('Tema del dispositivo'))),
-                RadioListTile<ThemeMode>(value: ThemeMode.light, title: Text(tr('Chiaro'))),
-                RadioListTile<ThemeMode>(value: ThemeMode.dark, title: Text(tr('Scuro'))),
               ],
             ),
           ),
