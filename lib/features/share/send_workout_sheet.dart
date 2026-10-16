@@ -18,6 +18,7 @@ import '../auth/session.dart';
 Future<void> showSendWorkoutSheet(BuildContext context, Workout workout) {
   return showModalBottomSheet<void>(
     context: context,
+    useSafeArea: true,
     isScrollControlled: true,
     useRootNavigator: true,
     backgroundColor: AppColors.bg,
@@ -112,7 +113,6 @@ class _SendWorkoutSheetState extends ConsumerState<_SendWorkoutSheet> {
                                 onChanged: (v) => setState(() => v == true ? _groups.add(g.id) : _groups.remove(g.id)),
                                 secondary: const IconChip(icon: Icons.groups_rounded, color: AppColors.lilac, size: 40),
                                 title: Text(g.name, style: const TextStyle(fontWeight: FontWeight.w600)),
-                                subtitle: Text(g.workoutName, maxLines: 1, overflow: TextOverflow.ellipsis),
                               ),
                             const SizedBox(height: 8),
                           ],

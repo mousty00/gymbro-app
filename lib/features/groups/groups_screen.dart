@@ -30,6 +30,7 @@ class GroupsScreen extends ConsumerWidget {
           child: RefreshIndicator(
             onRefresh: () async {
               ref.invalidate(groupInvitesProvider);
+              ref.invalidate(upcomingSessionsProvider);
               return ref.refresh(groupsProvider.future);
             },
             child: CustomScrollView(
@@ -86,11 +87,11 @@ class GroupsScreen extends ConsumerWidget {
                         ),
                       );
                     }
-                    final sorted = [...list]..sort((a, b) {
-                        final ad = a.scheduledFor ?? DateTime(2100);
-                        final bd = b.scheduledFor ?? DateTime(2100);
-                        return ad.compareTo(bd);
-                      });
+                    // prima i gruppi con la sessione più vicina
+                    final sessions = ref.watch(upcomingSessionsProvider).value ?? const <GroupSession>[];
+                    DateTime nextOf(WorkoutGroup g) =>
+                        sessions.where((s) => s.groupId == g.id && s.scheduledFor != null).firstOrNull?.scheduledFor ?? DateTime(2100);
+                    final sorted = [...list]..sort((a, b) => nextOf(a).compareTo(nextOf(b)));
                     return SliverPadding(
                       padding: const EdgeInsets.fromLTRB(20, 0, 20, navBarClearance),
                       sliver: SliverList.separated(
@@ -110,7 +111,7 @@ class GroupsScreen extends ConsumerWidget {
   }
 }
 
-class GroupCard extends StatelessWidget {
+class GroupCard extends ConsumerWidget {
   const GroupCard({super.key, required this.group, this.index = 0});
 
   final WorkoutGroup group;
@@ -119,9 +120,12 @@ class GroupCard extends StatelessWidget {
   static List<Color> get _bgs => [AppColors.blueSoft, AppColors.lilacSoft, AppColors.pinkSoft, AppColors.mintSoft];
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final members = [group.createdBy, ...group.acceptedMembers.map((m) => m.user)];
-    final past = group.scheduledFor != null && !group.isUpcoming;
+    // la prossima sessione del gruppo, se c'è
+    final next = (ref.watch(upcomingSessionsProvider).value ?? const <GroupSession>[])
+        .where((s) => s.groupId == group.id)
+        .firstOrNull;
     return SoftCard(
       color: _bgs[index % _bgs.length],
       onTap: () => context.push('/group/${group.id}'),
@@ -131,10 +135,10 @@ class GroupCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              if (group.scheduledFor != null)
-                Tag(formatDayTime(group.scheduledFor), color: past ? AppColors.inkSoft : AppColors.ink, icon: Icons.schedule_rounded)
+              if (next?.scheduledFor != null)
+                Tag(formatDayTime(next!.scheduledFor!.toLocal()), color: AppColors.ink, icon: Icons.schedule_rounded)
               else
-                Tag(tr('Da programmare'), color: AppColors.inkSoft),
+                Tag(tr('Nessuna sessione in programma'), color: AppColors.inkSoft),
               const Spacer(),
               Container(
                 width: 38,
@@ -150,7 +154,7 @@ class GroupCard extends StatelessWidget {
           const SizedBox(height: 18),
           Text(group.name, style: Theme.of(context).textTheme.titleLarge),
           const SizedBox(height: 2),
-          Text(tr('Scheda: {name}', {'name': group.workoutName}), style: TextStyle(color: AppColors.inkSoft)),
+          if (next != null) Text(tr('Prossima: {name}', {'name': next.workoutName}), style: TextStyle(color: AppColors.inkSoft)),
           const SizedBox(height: 14),
           Row(
             children: [

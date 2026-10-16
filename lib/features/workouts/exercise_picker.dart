@@ -19,6 +19,8 @@ Future<WorkoutExerciseInput?> showExerciseEditor(
 }) {
   return showModalBottomSheet<WorkoutExerciseInput>(
     context: context,
+    useRootNavigator: true,
+    useSafeArea: true,
     isScrollControlled: true,
     builder: (_) => _ExerciseEditor(workoutId: workoutId, position: position, initial: initial),
   );

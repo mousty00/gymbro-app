@@ -58,6 +58,14 @@ final groupProvider = FutureProvider.autoDispose.family<WorkoutGroup, String>(
   (ref, id) => ref.watch(groupRepositoryProvider).byId(id),
 );
 
+final groupSessionsProvider = FutureProvider.autoDispose.family<List<GroupSession>, String>(
+  (ref, groupId) => ref.watch(groupRepositoryProvider).sessions(groupId),
+);
+
+final upcomingSessionsProvider = FutureProvider<List<GroupSession>>(
+  (ref) => ref.watch(groupRepositoryProvider).upcomingSessions(),
+);
+
 final groupHistoryProvider = FutureProvider.autoDispose.family<List<WorkoutHistory>, String>(
   (ref, id) => ref.watch(workoutRepositoryProvider).groupHistory(id),
 );

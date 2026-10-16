@@ -45,6 +45,8 @@ class RunEventDetailScreen extends ConsumerWidget {
   Future<void> _invite(BuildContext context, WidgetRef ref, RunEvent event) async {
     final username = await showModalBottomSheet<String>(
       context: context,
+      useRootNavigator: true,
+      useSafeArea: true,
       isScrollControlled: true,
       builder: (_) => _InviteSheet(event: event),
     );

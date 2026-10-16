@@ -67,6 +67,8 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
     final controller = TextEditingController(text: post.content);
     final saved = await showModalBottomSheet<String>(
       context: context,
+      useRootNavigator: true,
+      useSafeArea: true,
       isScrollControlled: true,
       builder: (ctx) => Padding(
         padding: EdgeInsets.fromLTRB(20, 0, 20, MediaQuery.of(ctx).viewInsets.bottom + 20),

@@ -21,6 +21,7 @@ class HomeScreen extends ConsumerWidget {
     ref.invalidate(myWorkoutsProvider);
     ref.invalidate(historyProvider);
     ref.invalidate(groupsProvider);
+    ref.invalidate(upcomingSessionsProvider);
     ref.invalidate(friendRequestsProvider);
     ref.invalidate(groupInvitesProvider);
     ref.invalidate(runEventsProvider);
@@ -103,7 +104,7 @@ class _TodaySection extends ConsumerWidget {
     final t = Theme.of(context).textTheme;
     final workouts = ref.watch(myWorkoutsProvider).value ?? const <Workout>[];
     final history = ref.watch(historyProvider).value ?? const <WorkoutHistory>[];
-    final groups = ref.watch(groupsProvider).value ?? const <WorkoutGroup>[];
+    final sessions = ref.watch(upcomingSessionsProvider).value ?? const <GroupSession>[];
     final events = ref.watch(runEventsProvider).value ?? const [];
 
     final doneToday = history.where((h) => h.startedAt != null && isSameDay(h.startedAt!.toLocal(), now)).toList();
@@ -113,8 +114,7 @@ class _TodaySection extends ConsumerWidget {
       ..sort((a, b) => (a.startTime?.label ?? '').compareTo(b.startTime?.label ?? ''));
     final next = today.where((w) => !doneIds.contains(w.id)).toList();
     final done = today.where((w) => doneIds.contains(w.id)).toList();
-    final groupsToday = groups.where((g) => g.scheduledFor != null && isSameDay(g.scheduledFor!.toLocal(), now)).toList()
-      ..sort((a, b) => a.scheduledFor!.compareTo(b.scheduledFor!));
+    final groupsToday = sessions.where((g) => g.scheduledFor != null && isSameDay(g.scheduledFor!.toLocal(), now)).toList();
     final runsToday = events
         .where((e) => e.canRun && e.startsAt != null && isSameDay(e.startsAt!.toLocal(), now))
         .toList()
@@ -131,9 +131,9 @@ class _TodaySection extends ConsumerWidget {
       for (final g in groupsToday)
         _Row(
           icon: Icons.groups_rounded,
-          title: g.name,
-          subtitle: tr('Di gruppo alle {time}', {'time': formatTime(g.scheduledFor!.toLocal())}),
-          onTap: () => context.push('/group/${g.id}'),
+          title: g.workoutName,
+          subtitle: tr('{group} alle {time}', {'group': g.groupName, 'time': formatTime(g.scheduledFor!.toLocal())}),
+          onTap: () => context.push('/group-session/${g.id}'),
         ),
       for (final e in runsToday)
         _Row(
@@ -378,8 +378,8 @@ class _Upcoming extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final now = DateTime.now();
-    final groups = (ref.watch(groupsProvider).value ?? const <WorkoutGroup>[])
-        .where((g) => g.isUpcoming && !isSameDay(g.scheduledFor!.toLocal(), now));
+    final groups = (ref.watch(upcomingSessionsProvider).value ?? const <GroupSession>[])
+        .where((g) => g.scheduledFor != null && g.scheduledFor!.isAfter(now) && !isSameDay(g.scheduledFor!.toLocal(), now));
     final runs = (ref.watch(runEventsProvider).value ?? const [])
         .where((e) => e.canRun && e.isUpcoming && e.startsAt != null && !isSameDay(e.startsAt!.toLocal(), now));
     final items = <(DateTime, Widget)>[
@@ -388,9 +388,9 @@ class _Upcoming extends ConsumerWidget {
           g.scheduledFor!,
           _Row(
             icon: Icons.groups_rounded,
-            title: g.name,
-            subtitle: formatDayTime(g.scheduledFor!.toLocal()),
-            onTap: () => context.push('/group/${g.id}'),
+            title: g.workoutName,
+            subtitle: tr('{group} · {when}', {'group': g.groupName, 'when': formatDayTime(g.scheduledFor!.toLocal())}),
+            onTap: () => context.push('/group-session/${g.id}'),
           ),
         ),
       for (final e in runs)
@@ -466,6 +466,7 @@ void showQuickCreate(BuildContext context) {
   // schermo è piccolo o i testi lunghi, scorrevole invece di tagliarsi.
   showModalBottomSheet<void>(
     context: context,
+    useSafeArea: true,
     useRootNavigator: true,
     isScrollControlled: true,
     builder: (ctx) {

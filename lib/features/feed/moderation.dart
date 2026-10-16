@@ -24,6 +24,8 @@ List<(String, String)> get _reasons => [
 Future<void> reportContent(BuildContext context, WidgetRef ref, {required String type, required String targetId}) async {
   final reason = await showModalBottomSheet<String>(
     context: context,
+    useRootNavigator: true,
+    useSafeArea: true,
     builder: (ctx) => SafeArea(
       child: Column(
         mainAxisSize: MainAxisSize.min,

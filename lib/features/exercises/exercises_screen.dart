@@ -172,6 +172,8 @@ class _ExercisesScreenState extends ConsumerState<ExercisesScreen> {
 Future<Exercise?> showCreateExerciseSheet(BuildContext context) {
   return showModalBottomSheet<Exercise>(
     context: context,
+    useRootNavigator: true,
+    useSafeArea: true,
     isScrollControlled: true,
     builder: (_) => const _CreateExerciseSheet(),
   );

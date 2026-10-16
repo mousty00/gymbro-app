@@ -295,12 +295,8 @@ void main() {
 
   group('gruppi', () {
     test('crea gruppo, invita, accetta, sessione di gruppo', () async {
-      wg = await a.groups.create(
-        name: 'Allenamento $run',
-        workoutId: workout.id,
-        scheduledFor: DateTime.now().add(const Duration(days: 2)),
-      );
-      expect(wg.workoutId, workout.id);
+      wg = await a.groups.create(name: 'Allenamento $run');
+      expect(wg.workoutId, isNull);
 
       await a.groups.invite(groupId: wg.id, username: b.username);
       await a.groups.invite(groupId: wg.id, username: c.username);
@@ -308,7 +304,6 @@ void main() {
       expect(invite.status, GroupMemberStatus.invited);
       expect(invite.groupName, 'Allenamento $run');
       expect(invite.groupCreatedBy, a.username);
-      expect(invite.groupScheduledFor, isNotNull);
       await b.groups.acceptInvite(invite.id);
       final cInvite = (await c.groups.myMemberships()).singleWhere((m) => m.groupId == wg.id);
       await c.groups.rejectInvite(cInvite.id);
@@ -317,6 +312,17 @@ void main() {
       final full = await b.groups.byId(wg.id);
       final bMember = full.members.singleWhere((m) => m.user.username == b.username);
       expect(bMember.status, GroupMemberStatus.accepted);
+
+      // sessione del gruppo: b risponde, a avvia, tutti leggono lo stesso inizio
+      final session = await a.groups.createSession(
+        groupId: wg.id,
+        workoutId: workout.id,
+        scheduledFor: DateTime.now().add(const Duration(days: 2)),
+      );
+      expect((await b.groups.answer(session.id, going: true)).myStatus, Attendance.going);
+      expect((await b.groups.upcomingSessions()).map((s) => s.id), contains(session.id));
+      final started = await a.groups.start(session.id);
+      expect((await b.groups.session(session.id)).startedAt, started.startedAt);
 
       final end = DateTime.now();
       await b.workouts.logSession(

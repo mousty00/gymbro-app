@@ -76,6 +76,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     final me = ref.read(currentUserProvider);
     showModalBottomSheet<void>(
       context: context,
+      useRootNavigator: true,
+      useSafeArea: true,
       isScrollControlled: true,
       builder: (ctx) {
         void go(VoidCallback action) {
@@ -177,6 +179,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   void _chooseLanguage() {
     showModalBottomSheet<void>(
       context: context,
+      useRootNavigator: true,
+      useSafeArea: true,
       builder: (ctx) {
         final current = ref.read(languageProvider);
         void pick(String? lang) {

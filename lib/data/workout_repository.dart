@@ -127,19 +127,37 @@ class GroupRepository {
   Future<WorkoutGroup> byId(String id) async =>
       WorkoutGroup.fromJson(await _api.get<Json>('/workout_groups/$id'));
 
-  Future<WorkoutGroup> create({
-    required String name,
-    required String workoutId,
-    DateTime? scheduledFor,
-  }) async {
-    final res = await _api.post<Json>('/workout_groups/create', data: {
-      'name': name,
-      'workoutId': workoutId,
-      'scheduledFor': scheduledFor?.toUtc().toIso8601String(),
-      'status': 'scheduled',
-    });
+  /// Un gruppo fisso: solo il nome, le schede vanno sulle sessioni.
+  Future<WorkoutGroup> create({required String name}) async {
+    final res = await _api.post<Json>('/workout_groups/create', data: {'name': name, 'status': 'active'});
     return WorkoutGroup.fromJson(Map<String, dynamic>.from(res['result'] as Map));
   }
+
+  // Sessioni del gruppo (`/group-sessions`)
+
+  Future<List<GroupSession>> sessions(String groupId) async =>
+      parseList(await _api.get<List<dynamic>>('/group-sessions/group/$groupId'), GroupSession.fromJson);
+
+  /// Le prossime sessioni di tutti i miei gruppi, non ancora partite.
+  Future<List<GroupSession>> upcomingSessions() async =>
+      parseList(await _api.get<List<dynamic>>('/group-sessions/upcoming'), GroupSession.fromJson);
+
+  /// Leggerla segna anche me come collegato (la schermata la rilegge mentre aspetta l'avvio).
+  Future<GroupSession> session(String id) async => GroupSession.fromJson(await _api.get<Json>('/group-sessions/$id'));
+
+  Future<GroupSession> createSession({required String groupId, required String workoutId, DateTime? scheduledFor}) async =>
+      GroupSession.fromJson(await _api.post<Json>('/group-sessions', data: {
+        'groupId': groupId,
+        'workoutId': workoutId,
+        'scheduledFor': scheduledFor?.toUtc().toIso8601String(),
+      }));
+
+  Future<GroupSession> answer(String id, {required bool going}) async =>
+      GroupSession.fromJson(await _api.post<Json>('/group-sessions/$id/attendance', data: {'going': going}));
+
+  Future<GroupSession> start(String id) async => GroupSession.fromJson(await _api.post<Json>('/group-sessions/$id/start'));
+
+  Future<void> deleteSession(String id) => _api.delete<dynamic>('/group-sessions/$id');
 
   Future<void> delete(String id) => _api.delete<dynamic>('/workout_groups/delete/$id');
 

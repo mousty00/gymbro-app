@@ -80,6 +80,7 @@ class MockBackend extends Interceptor {
   final _workouts = <Map<String, dynamic>>[];
   final _history = <Map<String, dynamic>>[];
   final _groups = <Map<String, dynamic>>[];
+  final _sessions = <Map<String, dynamic>>[];
   final _posts = <Map<String, dynamic>>[];
   final _friendships = <Map<String, dynamic>>[];
   final _notifications = <Map<String, dynamic>>[];
@@ -194,6 +195,14 @@ class MockBackend extends Interceptor {
       _group('g2', 'Push con Marco', 'w5', marco, _now.add(const Duration(days: 2, hours: 6)), [member('g2', _me, 'accepted')]),
       _group('g3', 'Corsa al parco', 'w4', sara, _now.add(const Duration(days: 8)), [member('g3', _me, 'invited')]),
     ]);
+    // ogni gruppo ha le sue sessioni: un giorno e una scheda ciascuna
+    for (final g in _groups) {
+      _sessions.add(_session(g, '${g['workoutId']}', DateTime.parse('${g['scheduledFor']}'), {
+        'giulia.fit': 'going',
+        'marco_lifts': g['id'] == 'g1' ? 'declined' : 'going',
+      }));
+    }
+    _sessions.add(_session(_groups.first, 'w1', _now.add(const Duration(days: 1, hours: 2)), {'giulia.fit': 'going'}));
 
     Map<String, dynamic> post(Map<String, dynamic> u, String text, int? img, int hoursAgo, List<String> likes,
         List<(String, String)> comments) {
@@ -291,6 +300,17 @@ class MockBackend extends Interceptor {
         'groupMembers': members,
       };
 
+  Map<String, dynamic> _session(Map<String, dynamic> g, String workoutId, DateTime? when, Map<String, String> answers) => {
+        'id': _id('s'),
+        'groupId': g['id'],
+        'workoutId': workoutId,
+        'scheduledFor': when == null ? null : _iso(when),
+        'startedAt': null,
+        'answers': answers,
+        // demo: le sessioni degli altri partono da sole poco dopo che dici "partecipo"
+        'autoStartAt': null,
+      };
+
   // ---------------------------------------------------------------- viste JSON
 
   /// Membro con il riepilogo del gruppo, come `GroupMemberDTO` del backend.
@@ -329,7 +349,45 @@ class MockBackend extends Interceptor {
         'numComments': (p['comments'] as List).length,
       };
 
+  Map<String, dynamic> _sessionView(Map<String, dynamic> s) {
+    final g = _groupById('${s['groupId']}');
+    final auto = s['autoStartAt'] as DateTime?;
+    if (s['startedAt'] == null && auto != null && !DateTime.now().isBefore(auto)) s['startedAt'] = _iso(auto);
+    final w = _workouts.firstWhere((w) => w['id'] == s['workoutId'], orElse: () => {'id': s['workoutId'], 'name': 'Scheda'});
+    final organizer = g['createdBy'] as Map<String, dynamic>;
+    final members = [
+      organizer,
+      for (final m in g['groupMembers'] as List)
+        if (m['status'] == 'accepted') m['user'] as Map<String, dynamic>,
+    ];
+    final answers = s['answers'] as Map<String, String>;
+    String status(String u) => u == organizer['username'] ? 'going' : answers[u] ?? 'pending';
+    return {
+      'id': s['id'],
+      'groupId': g['id'],
+      'groupName': g['name'],
+      'organizer': organizer,
+      'workout': {'id': w['id'], 'name': w['name']},
+      'scheduledFor': s['scheduledFor'],
+      'startedAt': s['startedAt'],
+      'myStatus': status(_meName),
+      'attendees': [
+        for (final u in members)
+          {
+            'user': u,
+            'status': status('${u['username']}'),
+            'connected': u['username'] == _meName || answers[u['username']] == 'going',
+            'organizer': u['username'] == organizer['username'],
+          },
+      ],
+    };
+  }
+
+  Map<String, dynamic> _sessionById(String id) =>
+      _sessions.firstWhere((s) => s['id'] == id, orElse: () => throw _MockError(404, 'Sessione non trovata'));
+
   Map<String, dynamic> _groupView(Map<String, dynamic> g) {
+    if (g['workoutId'] == null) return g;
     final w = _workouts.firstWhere((w) => w['id'] == g['workoutId'], orElse: () => {'id': g['workoutId'], 'name': 'Scheda'});
     return {
       ...g,
@@ -668,9 +726,9 @@ class MockBackend extends Interceptor {
     // Gruppi
     if (match('GET', '/workout_groups')) return _page(_groups.where(_canSeeGroup).map(_groupView).toList());
     if (match('POST', '/workout_groups/create')) {
-      final g = _group(_id('g'), '${body['name']}', '${body['workoutId']}', _me,
-          DateTime.tryParse('${body['scheduledFor']}') ?? DateTime.now().add(const Duration(days: 1)), []);
-      if (body['scheduledFor'] == null) g['scheduledFor'] = null;
+      final g = _group(_id('g'), '${body['name']}', '', _me, DateTime.now(), [])
+        ..['workoutId'] = null
+        ..['scheduledFor'] = null;
       _groups.add(g);
       return {'message': 'Group created', 'result': _groupView(g)};
     }
@@ -679,6 +737,40 @@ class MockBackend extends Interceptor {
       return _ok('Group deleted');
     }
     if (match('GET', '/workout_groups/:id')) return _groupView(_groupById(last));
+
+    // Sessioni dei gruppi
+    if (match('GET', '/group-sessions/upcoming')) {
+      return [
+        for (final s in _sessions)
+          if (_canSeeGroup(_groupById('${s['groupId']}')) && s['startedAt'] == null) _sessionView(s),
+      ]..sort((a, b) => '${a['scheduledFor']}'.compareTo('${b['scheduledFor']}'));
+    }
+    if (match('GET', '/group-sessions/group/:id')) {
+      return [for (final s in _sessions) if (s['groupId'] == last) _sessionView(s)];
+    }
+    if (match('POST', '/group-sessions')) {
+      final s = _session(_groupById('${body['groupId']}'), '${body['workoutId']}', DateTime.tryParse('${body['scheduledFor']}'), {});
+      _sessions.add(s);
+      return _sessionView(s);
+    }
+    if (match('POST', '/group-sessions/:id/attendance')) {
+      final s = _sessionById(seg[1]);
+      final going = body['going'] == true;
+      (s['answers'] as Map<String, String>)[_meName] = going ? 'going' : 'declined';
+      final organizer = (_groupById('${s['groupId']}')['createdBy'] as Map)['username'];
+      if (going && organizer != _meName && s['startedAt'] == null) s['autoStartAt'] = DateTime.now().add(const Duration(seconds: 8));
+      return _sessionView(s);
+    }
+    if (match('POST', '/group-sessions/:id/start')) {
+      final s = _sessionById(seg[1]);
+      s['startedAt'] ??= _iso(DateTime.now());
+      return _sessionView(s);
+    }
+    if (match('DELETE', '/group-sessions/:id')) {
+      _sessions.removeWhere((s) => s['id'] == last);
+      return _ok('Session deleted');
+    }
+    if (match('GET', '/group-sessions/:id')) return _sessionView(_sessionById(last));
 
     // Membri dei gruppi
     if (match('GET', '/group_members')) {

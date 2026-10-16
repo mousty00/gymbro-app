@@ -162,6 +162,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
 void _showChangeEmail(BuildContext context) {
   showModalBottomSheet<void>(
     context: context,
+    useSafeArea: true,
     useRootNavigator: true,
     isScrollControlled: true,
     builder: (_) => const _ChangeEmailSheet(),

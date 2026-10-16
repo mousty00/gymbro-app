@@ -14,6 +14,8 @@ enum NotificationKind {
   runInviteAccepted('RUN_INVITE_ACCEPTED'),
   routeSaved('ROUTE_SAVED'),
   workoutShared('WORKOUT_SHARED'),
+  groupSessionCreated('GROUP_SESSION_CREATED'),
+  groupSessionStarted('GROUP_SESSION_STARTED'),
   unknown('');
 
   const NotificationKind(this.wire);
@@ -75,6 +77,12 @@ class AppNotification {
         NotificationKind.workoutShared => detail != null
             ? tr('ti ha mandato la scheda {workout}', {'workout': detail})
             : tr('ti ha mandato la scheda'),
+        NotificationKind.groupSessionCreated => detail != null
+            ? tr('ha messo in programma un allenamento in {group}: ci sei?', {'group': detail})
+            : tr('ha messo in programma un allenamento: ci sei?'),
+        NotificationKind.groupSessionStarted => detail != null
+            ? tr('ha avviato la sessione di {workout}: entra!', {'workout': detail})
+            : tr('ha avviato la sessione: entra!'),
         NotificationKind.unknown => tr('ha interagito con te'),
       };
 
@@ -93,6 +101,9 @@ class AppNotification {
         return referenceId != null ? '/running/event/$referenceId' : '/running?tab=2';
       case NotificationKind.routeSaved:
         return referenceId != null ? '/running/route/$referenceId' : '/running';
+      case NotificationKind.groupSessionCreated:
+      case NotificationKind.groupSessionStarted:
+        return referenceId != null ? '/group-session/$referenceId' : '/groups';
       case NotificationKind.workoutShared:
         return referenceId != null ? '/workout/$referenceId' : null;
       case NotificationKind.friendAccepted:

@@ -14,11 +14,17 @@ import '../../models/workout.dart';
 import '../auth/auth_widgets.dart';
 import '../../core/widgets/skeleton.dart';
 
-/// Nuovo allenamento di gruppo: nome, scheda, data e ora.
+/// Nuovo gruppo fisso (solo il nome), oppure, con [groupId], nuova sessione del
+/// gruppo: scheda, data e ora.
 class GroupFormScreen extends ConsumerStatefulWidget {
-  const GroupFormScreen({super.key, this.workoutId});
+  const GroupFormScreen({super.key, this.groupId, this.workoutId});
 
+  final String? groupId;
+
+  /// Scheda già scelta (es. "Allenati con un gruppo" dalla scheda).
   final String? workoutId;
+
+  bool get isSession => groupId != null;
 
   @override
   ConsumerState<GroupFormScreen> createState() => _GroupFormScreenState();
@@ -56,19 +62,27 @@ class _GroupFormScreenState extends ConsumerState<GroupFormScreen> {
 
   Future<void> _save() async {
     if (!_form.currentState!.validate()) return;
-    if (_workoutId == null) {
+    if (widget.isSession && _workoutId == null) {
       showMessage(context, tr('Scegli la scheda da fare insieme'), error: true);
       return;
     }
     setState(() => _loading = true);
     try {
-      final group = await ref.read(groupRepositoryProvider).create(
-            name: _name.text.trim(),
-            workoutId: _workoutId!,
-            scheduledFor: _when,
-          );
+      final repo = ref.read(groupRepositoryProvider);
+      if (widget.isSession) {
+        final session = await repo.createSession(groupId: widget.groupId!, workoutId: _workoutId!, scheduledFor: _when);
+        ref.invalidate(groupSessionsProvider(widget.groupId!));
+        ref.invalidate(upcomingSessionsProvider);
+        if (mounted) context.pushReplacement('/group-session/${session.id}');
+        return;
+      }
+      final group = await repo.create(name: _name.text.trim());
       ref.invalidate(groupsProvider);
-      if (mounted) context.pushReplacement('/group/${group.id}');
+      if (!mounted) return;
+      // arrivato da una scheda: subito la prima sessione con quella scheda
+      context.pushReplacement(widget.workoutId == null
+          ? '/group/${group.id}'
+          : '/group/${group.id}/session/new?workout=${widget.workoutId}');
     } on ApiException catch (e) {
       if (mounted) showMessage(context, e.message, error: true);
     } finally {
@@ -83,19 +97,25 @@ class _GroupFormScreenState extends ConsumerState<GroupFormScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            TopBar(title: tr('Nuovo gruppo')),
+            TopBar(title: widget.isSession ? tr('Nuova sessione') : tr('Nuovo gruppo')),
             Expanded(
               child: Form(
                 key: _form,
                 child: ListView(
                   padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
                   children: [
-                    LabeledField(
-                      label: tr('Nome del gruppo'),
-                      controller: _name,
-                      hint: tr('es. Leg day del sabato'),
-                      validator: (v) => v == null || v.trim().isEmpty ? tr('Dai un nome al gruppo') : null,
-                    ),
+                    if (!widget.isSession) ...[
+                      LabeledField(
+                        label: tr('Nome del gruppo'),
+                        controller: _name,
+                        hint: tr('es. Squadra del martedì'),
+                        validator: (v) => v == null || v.trim().isEmpty ? tr('Dai un nome al gruppo') : null,
+                      ),
+                      Text(
+                        tr('Il gruppo resta fisso: dopo inviti gli amici e crei le sessioni, ognuna con il suo giorno e la sua scheda.'),
+                        style: TextStyle(color: AppColors.inkSoft),
+                      ),
+                    ] else ...[
                     SoftCard(
                       onTap: _pickWhen,
                       padding: const EdgeInsets.all(16),
@@ -167,13 +187,14 @@ class _GroupFormScreenState extends ConsumerState<GroupFormScreen> {
                         );
                       },
                     ),
+                    ],
                   ],
                 ),
               ),
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
-              child: PrimaryButton(label: tr('Crea gruppo'), loading: _loading, onPressed: _save),
+              child: PrimaryButton(label: widget.isSession ? tr('Crea sessione') : tr('Crea gruppo'), loading: _loading, onPressed: _save),
             ),
           ],
         ),

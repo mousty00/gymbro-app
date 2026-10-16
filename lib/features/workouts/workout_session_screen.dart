@@ -24,17 +24,20 @@ import 'session_progress.dart';
 /// recupero. Durata e recupero si calcolano dagli orari, quindi restano giusti
 /// anche se esci dall'app; a fine recupero arriva una notifica.
 class WorkoutSessionScreen extends ConsumerStatefulWidget {
-  const WorkoutSessionScreen({super.key, required this.workoutId, this.groupId});
+  const WorkoutSessionScreen({super.key, required this.workoutId, this.groupId, this.startedAt});
 
   final String workoutId;
   final String? groupId;
+
+  /// Inizio comune di una sessione di gruppo; altrimenti adesso.
+  final DateTime? startedAt;
 
   @override
   ConsumerState<WorkoutSessionScreen> createState() => _WorkoutSessionScreenState();
 }
 
 class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> with WidgetsBindingObserver {
-  DateTime _startedAt = DateTime.now();
+  late DateTime _startedAt = widget.startedAt?.toLocal() ?? DateTime.now();
   /// Sessione salvata da riprendere (stessa scheda), letta all'apertura.
   SavedSession? _resume;
   bool _resumeChecked = false;
@@ -216,6 +219,7 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> wit
   void _showList(Workout w, SessionProgress p) {
     showModalBottomSheet<void>(
       context: context,
+      useSafeArea: true,
       isScrollControlled: true,
       useRootNavigator: true,
       builder: (ctx) => _ExerciseListSheet(

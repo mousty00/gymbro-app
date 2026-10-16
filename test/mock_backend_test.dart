@@ -169,4 +169,21 @@ void main() {
     expect(event.isOwner, isTrue);
     expect(event.participants.single.status, RunParticipantStatus.invited);
   });
+
+  test('sessioni di gruppo: rispondo, l\'organizzatore avvia, tutti vedono lo stesso inizio', () async {
+    final group = (await post('/workout_groups/create', {'name': 'Squadra', 'status': 'active'}))['result'] as Map;
+    expect(group['workout'], isNull);
+    final created = await post('/group-sessions', {'groupId': group['id'], 'workoutId': 'w1'}) as Map;
+    expect(created['startedAt'], isNull);
+    final started = await post('/group-sessions/${created['id']}/start') as Map;
+    expect(started['startedAt'], isNotNull);
+    final read = await get('/group-sessions/${created['id']}') as Map;
+    expect(read['startedAt'], started['startedAt']);
+
+    // nella sessione di un altro gruppo dico "partecipo"
+    final other = ((await get('/group-sessions/upcoming')) as List).cast<Map>().firstWhere((s) => (s['organizer'] as Map)['username'] != 'mousty');
+    final answered = await post('/group-sessions/${other['id']}/attendance', {'going': true}) as Map;
+    expect(answered['myStatus'], 'going');
+    expect((answered['attendees'] as List).map((a) => (a as Map)['status']), contains('going'));
+  });
 }

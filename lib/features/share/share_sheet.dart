@@ -71,6 +71,7 @@ class ShareAction {
 Future<void> showShareSheet(BuildContext context, ShareContent content) {
   return showModalBottomSheet<void>(
     context: context,
+    useSafeArea: true,
     isScrollControlled: true,
     useRootNavigator: true,
     backgroundColor: AppColors.bg,

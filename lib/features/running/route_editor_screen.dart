@@ -145,6 +145,8 @@ class _EditorState extends ConsumerState<_Editor> {
     if (plan == null || _planning) return;
     final details = await showModalBottomSheet<_RouteDetails>(
       context: context,
+      useRootNavigator: true,
+      useSafeArea: true,
       isScrollControlled: true,
       builder: (_) => _DetailsSheet(initial: widget.initial),
     );

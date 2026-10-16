@@ -30,6 +30,8 @@ class GroupDetailScreen extends ConsumerWidget {
   Future<void> _invite(BuildContext context, WidgetRef ref, WorkoutGroup g) async {
     final username = await showModalBottomSheet<String>(
       context: context,
+      useRootNavigator: true,
+      useSafeArea: true,
       isScrollControlled: true,
       builder: (_) => _InviteSheet(group: g),
     );
@@ -91,6 +93,7 @@ class GroupDetailScreen extends ConsumerWidget {
               final isOwner = g.createdBy.username == me.username;
               final myMembership = g.members.where((m) => m.user.username == me.username).firstOrNull;
               final history = ref.watch(groupHistoryProvider(g.id));
+              final sessions = ref.watch(groupSessionsProvider(g.id));
               return Column(
                 children: [
                   TopBar(
@@ -111,39 +114,36 @@ class GroupDetailScreen extends ConsumerWidget {
                     child: RefreshIndicator(
                       onRefresh: () async {
                         ref.invalidate(groupHistoryProvider(g.id));
+                        ref.invalidate(groupSessionsProvider(g.id));
                         return ref.refresh(groupProvider(groupId).future);
                       },
                       child: ListView(
                         padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
                         children: [
-                          if (g.scheduledFor != null)
-                            Align(
-                              alignment: Alignment.centerLeft,
-                              child: Tag(formatDayTime(g.scheduledFor), icon: Icons.schedule_rounded, color: AppColors.ink),
-                            ),
-                          const SizedBox(height: 12),
                           Text(g.name, style: Theme.of(context).textTheme.displaySmall),
                           const SizedBox(height: 6),
                           Text(tr('Organizzato da @{username}', {'username': g.createdBy.username}), style: TextStyle(color: AppColors.inkSoft)),
-                          const SizedBox(height: 20),
-                          SoftCard(
-                            onTap: () => context.push('/workout/${g.workoutId}'),
-                            child: Row(
-                              children: [
-                                const IconChip(icon: Icons.fitness_center_rounded, color: AppColors.blue),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(tr('Scheda'), style: TextStyle(color: AppColors.muted, fontSize: 12)),
-                                      Text(g.workoutName, style: const TextStyle(fontWeight: FontWeight.w700)),
-                                    ],
-                                  ),
-                                ),
-                                Icon(Icons.chevron_right_rounded, color: AppColors.muted),
-                              ],
-                            ),
+                          const SizedBox(height: 22),
+                          SectionHeader(
+                            tr('Sessioni'),
+                            action: isOwner ? tr('+ Nuova') : null,
+                            onAction: () => context.push('/group/${g.id}/session/new'),
+                          ),
+                          AsyncView<List<GroupSession>>(
+                            value: sessions,
+                            loading: const SkeletonList(item: SkeletonTile(leading: 34), count: 2, spacing: 8, padding: EdgeInsets.zero),
+                            onRetry: () => ref.invalidate(groupSessionsProvider(g.id)),
+                            data: (list) => list.isEmpty
+                                ? Padding(
+                                    padding: const EdgeInsets.symmetric(vertical: 8),
+                                    child: Text(
+                                      isOwner
+                                          ? tr('Nessuna sessione: creane una con il giorno e la scheda da fare insieme.')
+                                          : tr('Nessuna sessione in programma.'),
+                                      style: TextStyle(color: AppColors.muted),
+                                    ),
+                                  )
+                                : Column(children: [for (final x in list) SessionCard(session: x)]),
                           ),
                           const SizedBox(height: 22),
                           SectionHeader(
@@ -157,7 +157,7 @@ class GroupDetailScreen extends ConsumerWidget {
                               username: m.user.username,
                               image: m.user.image,
                               status: switch (m.status) {
-                                GroupMemberStatus.accepted => tr('Partecipa'),
+                                GroupMemberStatus.accepted => tr('Membro'),
                                 GroupMemberStatus.invited => tr('Invitato'),
                                 GroupMemberStatus.rejected => tr('Ha rifiutato'),
                                 GroupMemberStatus.unknown => '',
@@ -166,7 +166,7 @@ class GroupDetailScreen extends ConsumerWidget {
                               onRemove: isOwner ? () => _removeMember(context, ref, m, self: false) : null,
                             ),
                           const SizedBox(height: 22),
-                          SectionHeader(tr('Sessioni del gruppo')),
+                          SectionHeader(tr('Allenamenti fatti')),
                           AsyncView<List<WorkoutHistory>>(
                             value: history,
                             loading: const SkeletonList(item: SkeletonTile(leading: 34), count: 2, spacing: 8, padding: EdgeInsets.zero),
@@ -199,14 +199,6 @@ class GroupDetailScreen extends ConsumerWidget {
                           ),
                         ],
                       ),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
-                    child: PillActionButton(
-                      label: tr('Inizia la sessione di gruppo'),
-                      icon: Icons.play_arrow_rounded,
-                      onPressed: () => context.push('/workout/${g.workoutId}/session?group=${g.id}'),
                     ),
                   ),
                 ],
@@ -332,6 +324,57 @@ class _InviteSheetState extends ConsumerState<_InviteSheet> {
                 },
               ),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Una sessione nella lista del gruppo: giorno, scheda e quanti ci sono.
+class SessionCard extends StatelessWidget {
+  const SessionCard({super.key, required this.session});
+
+  final GroupSession session;
+
+  @override
+  Widget build(BuildContext context) {
+    final s = session;
+    final going = s.withStatus(Attendance.going).length;
+    final declined = s.withStatus(Attendance.declined).length;
+    final pending = s.withStatus(Attendance.pending).length;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: SoftCard(
+        padding: const EdgeInsets.all(16),
+        radius: AppRadius.md,
+        onTap: () => context.push('/group-session/${s.id}'),
+        child: Row(
+          children: [
+            IconChip(icon: s.started ? Icons.play_circle_rounded : Icons.event_rounded, color: s.started ? AppColors.mint : AppColors.brand),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    s.scheduledFor != null ? formatDayTime(s.scheduledFor!.toLocal()) : tr('Da programmare'),
+                    style: const TextStyle(fontWeight: FontWeight.w700),
+                  ),
+                  Text(s.workoutName, style: TextStyle(color: AppColors.inkSoft)),
+                  const SizedBox(height: 2),
+                  Text(
+                    [
+                      if (going > 0) tr('{n} presenti', {'n': going}),
+                      if (declined > 0) tr('{n} assenti', {'n': declined}),
+                      if (pending > 0) tr('{n} da rispondere', {'n': pending}),
+                    ].join(' · '),
+                    style: TextStyle(color: AppColors.muted, fontSize: 12),
+                  ),
+                ],
+              ),
+            ),
+            Icon(Icons.chevron_right_rounded, color: AppColors.muted),
           ],
         ),
       ),

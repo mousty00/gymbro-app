@@ -14,6 +14,7 @@ import '../../features/friends/notifications_screen.dart';
 import '../../features/friends/user_profile_screen.dart';
 import '../../features/groups/group_detail_screen.dart';
 import '../../features/groups/group_form_screen.dart';
+import '../../features/groups/group_session_screen.dart';
 import '../../features/groups/groups_screen.dart';
 import '../../features/home/home_screen.dart';
 import '../../features/onboarding/splash_screen.dart';
@@ -139,6 +140,8 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (_, s) => WorkoutSessionScreen(
           workoutId: s.pathParameters['id']!,
           groupId: s.uri.queryParameters['group'],
+          // sessione di gruppo avviata dall'organizzatore: tutti contano dallo stesso istante
+          startedAt: DateTime.tryParse(s.uri.queryParameters['start'] ?? ''),
         ),
       ),
       GoRoute(
@@ -160,6 +163,16 @@ final routerProvider = Provider<GoRouter>((ref) {
         parentNavigatorKey: _rootKey,
         path: '/group/:id',
         builder: (_, s) => GroupDetailScreen(groupId: s.pathParameters['id']!),
+      ),
+      GoRoute(
+        parentNavigatorKey: _rootKey,
+        path: '/group/:id/session/new',
+        builder: (_, s) => GroupFormScreen(groupId: s.pathParameters['id'], workoutId: s.uri.queryParameters['workout']),
+      ),
+      GoRoute(
+        parentNavigatorKey: _rootKey,
+        path: '/group-session/:id',
+        builder: (_, s) => GroupSessionScreen(sessionId: s.pathParameters['id']!),
       ),
       GoRoute(
         parentNavigatorKey: _rootKey,
