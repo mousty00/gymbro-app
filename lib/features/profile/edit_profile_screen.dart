@@ -107,6 +107,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                         label: tr('Username'),
                         controller: _username,
                         autofillHints: const [AutofillHints.username],
+                        inputFormatters: usernameFormatters,
                         validator: (v) {
                           final u = v?.trim() ?? '';
                           if (u.isEmpty) return tr('Scegli uno username');

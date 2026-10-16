@@ -82,7 +82,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
             TopBar(title: tr('Amici'), titleWidget: widget.title),
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 8, 20, 14),
-              child: SearchPill(controller: _search, hint: tr('Cerca per username'), onChanged: _onSearch),
+              child: SearchPill(controller: _search, hint: tr('Cerca per username'), onChanged: _onSearch, inputFormatters: usernameFormatters),
             ),
             if (_query.isNotEmpty)
               Expanded(child: _SearchResults(future: _results, me: me.username))

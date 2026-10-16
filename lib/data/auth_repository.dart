@@ -15,7 +15,7 @@ class AuthRepository {
 
   Future<User> login(String username, String password) async {
     final res = await _api.post<Json>('/auth/login', data: {
-      'username': username,
+      'username': username.trim().toLowerCase(),
       'password': password,
     });
     await _tokens.save(
@@ -35,7 +35,7 @@ class AuthRepository {
     required DateTime birthDate,
   }) async {
     final res = await _api.post<Json>('/auth/signup', data: {
-      'username': username,
+      'username': username.trim().toLowerCase(),
       'email': email,
       'password': password,
       'firstName': firstName,
@@ -54,7 +54,7 @@ class AuthRepository {
     required DateTime birthDate,
   }) async {
     final res = await _api.put<Json>('/users/me', data: {
-      'username': username,
+      'username': username.trim().toLowerCase(),
       'firstName': firstName,
       'lastName': lastName,
       'birthDate': formatLocalDate(birthDate),
@@ -70,7 +70,7 @@ class AuthRepository {
       User.fromJson(await _api.post<Json>('/users/me/email/verify', data: {'otp': otp}));
 
   Future<void> verifyOtp({required String username, required String otp}) =>
-      _api.post<Json>('/auth/verify-otp', data: {'username': username, 'otp': otp});
+      _api.post<Json>('/auth/verify-otp', data: {'username': username.trim().toLowerCase(), 'otp': otp});
 
   Future<void> sendVerifyOtp(String email) =>
       _api.post<dynamic>('/auth/send-otp', query: {'email': email});

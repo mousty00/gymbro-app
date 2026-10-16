@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../../core/l10n/l10n.dart';
 import '../../core/theme/app_theme.dart';
@@ -68,6 +69,7 @@ class LabeledField extends StatelessWidget {
     this.maxLines = 1,
     this.autofillHints,
     this.onSubmitted,
+    this.inputFormatters,
   });
 
   final String label;
@@ -83,6 +85,9 @@ class LabeledField extends StatelessWidget {
   final int maxLines;
   final Iterable<String>? autofillHints;
   final ValueChanged<String>? onSubmitted;
+
+  /// Es. [usernameFormatters]; con questi niente correttore né suggerimenti.
+  final List<TextInputFormatter>? inputFormatters;
 
   @override
   Widget build(BuildContext context) {
@@ -106,6 +111,9 @@ class LabeledField extends StatelessWidget {
             maxLines: maxLines,
             autofillHints: autofillHints,
             onFieldSubmitted: onSubmitted,
+            inputFormatters: inputFormatters,
+            autocorrect: inputFormatters == null,
+            enableSuggestions: inputFormatters == null,
             decoration: InputDecoration(hintText: hint, suffixIcon: suffix),
           ),
         ],

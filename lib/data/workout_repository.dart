@@ -168,7 +168,7 @@ class GroupRepository {
   }
 
   Future<void> invite({required String groupId, required String username}) =>
-      _api.post<dynamic>('/group_members/create', data: {'groupId': groupId, 'invitedUsername': username});
+      _api.post<dynamic>('/group_members/create', data: {'groupId': groupId, 'invitedUsername': username.trim().toLowerCase()});
 
   Future<void> acceptInvite(String memberId) =>
       _api.post<dynamic>('/group_members/accept-invitation/$memberId');

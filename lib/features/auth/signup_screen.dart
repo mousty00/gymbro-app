@@ -99,6 +99,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                   controller: _username,
                   hint: tr('es. mario_lifts'),
                   autofillHints: const [AutofillHints.newUsername],
+                  inputFormatters: usernameFormatters,
                   validator: (v) {
                     final u = v?.trim() ?? '';
                     if (u.isEmpty) return tr('Scegli uno username');

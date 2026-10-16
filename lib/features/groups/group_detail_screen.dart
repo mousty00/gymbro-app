@@ -283,6 +283,8 @@ class _InviteSheetState extends ConsumerState<_InviteSheet> {
                   child: TextField(
                     controller: _username,
                     decoration: InputDecoration(hintText: tr('Username')),
+                    inputFormatters: usernameFormatters,
+                    autocorrect: false,
                     onSubmitted: (v) => v.trim().isEmpty ? null : Navigator.pop(context, v.trim()),
                   ),
                 ),

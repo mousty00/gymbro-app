@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -449,9 +450,10 @@ class MiniBars extends StatelessWidget {
 
 /// Barra di ricerca a pillola con pulsante circolare.
 class SearchPill extends StatelessWidget {
-  const SearchPill({super.key, this.controller, this.hint, this.onChanged, this.onSubmitted});
+  const SearchPill({super.key, this.controller, this.hint, this.onChanged, this.onSubmitted, this.inputFormatters});
 
   final TextEditingController? controller;
+  final List<TextInputFormatter>? inputFormatters;
   final String? hint;
   final ValueChanged<String>? onChanged;
   final ValueChanged<String>? onSubmitted;
@@ -472,6 +474,8 @@ class SearchPill extends StatelessWidget {
               controller: controller,
               onChanged: onChanged,
               onSubmitted: onSubmitted,
+              inputFormatters: inputFormatters,
+              autocorrect: inputFormatters == null,
               textInputAction: TextInputAction.search,
               decoration: InputDecoration(
                 hintText: hint ?? tr('Cerca…'),
@@ -568,4 +572,23 @@ Future<bool> confirm(BuildContext context, {required String title, String? messa
     ),
   );
   return res ?? false;
+}
+
+/// Campi username: sempre minuscolo e senza spazi, mentre scrivi (anche con il
+/// blocco maiuscole o l'autocompletamento).
+const usernameFormatters = <TextInputFormatter>[_LowerCaseFormatter()];
+
+class _LowerCaseFormatter extends TextInputFormatter {
+  const _LowerCaseFormatter();
+
+  @override
+  TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
+    final text = newValue.text.toLowerCase().replaceAll(RegExp(r'\s'), '');
+    if (text == newValue.text) return newValue;
+    final cut = newValue.text.length - text.length;
+    return TextEditingValue(
+      text: text,
+      selection: TextSelection.collapsed(offset: (newValue.selection.end - cut).clamp(0, text.length)),
+    );
+  }
 }

@@ -329,6 +329,8 @@ class _InviteSheetState extends ConsumerState<_InviteSheet> {
                   child: TextField(
                     controller: _username,
                     decoration: InputDecoration(hintText: tr('Username')),
+                    inputFormatters: usernameFormatters,
+                    autocorrect: false,
                     onSubmitted: _send,
                   ),
                 ),

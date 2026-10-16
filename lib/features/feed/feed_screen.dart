@@ -10,6 +10,7 @@ import '../../core/widgets/ui.dart';
 import '../../data/providers.dart';
 import '../../models/social.dart';
 import '../shell/app_shell.dart';
+import '../auth/session.dart';
 import '../shell/sections.dart';
 import 'post_card.dart';
 import '../../core/widgets/skeleton.dart';
@@ -76,7 +77,10 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
                     spacing: 14,
                     padding: EdgeInsets.symmetric(horizontal: 20),
                   ),
-                  data: (list) {
+                  data: (all) {
+                    // in Esplora solo gli altri: i miei post stanno nel profilo
+                    final me = ref.watch(currentUserProvider).username;
+                    final list = _friends ? all : all.where((p) => p.user.username != me).toList();
                     if (list.isEmpty) {
                       return SliverToBoxAdapter(
                         child: EmptyState(

@@ -113,6 +113,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   hint: tr('il_tuo_username'),
                   validator: requiredField,
                   autofillHints: const [AutofillHints.username],
+                  inputFormatters: usernameFormatters,
                 ),
                 PasswordField(controller: _password, validator: requiredField, onSubmitted: (_) => _submit()),
               ],

@@ -94,7 +94,7 @@ class RunningRepository {
   }
 
   Future<void> invite(String eventId, String username) =>
-      _api.post<dynamic>('/run-events/$eventId/invite', data: {'username': username});
+      _api.post<dynamic>('/run-events/$eventId/invite', data: {'username': username.trim().toLowerCase()});
 
   Future<void> accept(String eventId) => _api.post<dynamic>('/run-events/$eventId/accept');
 
