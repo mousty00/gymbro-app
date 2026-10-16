@@ -9,6 +9,9 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION"/>
     <uses-permission android:name="android.permission.WAKE_LOCK"/>
+    <!-- Fine recupero puntuale con l'app in background (se l'utente lo concede, altrimenti
+         la notifica può arrivare con un po' di ritardo) -->
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"/>
     <application
         android:label="RepBirds"
         android:name="${applicationName}"
@@ -51,6 +54,8 @@
                 <data android:pathPrefix="/p/"/>
             </intent-filter>
         </activity>
+        <!-- Notifica di fine recupero programmata (flutter_local_notifications) -->
+        <receiver android:exported="false" android:name="com.dexterous.flutterlocalnotifications.ScheduledNotificationReceiver" />
         <!-- Push with the app in foreground and token refreshes (see MainActivity.kt) -->
         <service
             android:name=".PushMessagingService"

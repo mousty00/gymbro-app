@@ -1,3 +1,4 @@
+import ActivityKit
 import Flutter
 import UIKit
 import UserNotifications
@@ -17,6 +18,9 @@ import UserNotifications
     GeneratedPluginRegistrant.register(with: engineBridge.pluginRegistry)
     if let registrar = engineBridge.pluginRegistry.registrar(forPlugin: "RepBirdsPush") {
       PushChannel.shared.attach(messenger: registrar.messenger())
+    }
+    if let registrar = engineBridge.pluginRegistry.registrar(forPlugin: "RepBirdsRestActivity") {
+      RestActivityChannel.attach(messenger: registrar.messenger())
     }
   }
 
@@ -122,5 +126,50 @@ final class PushChannel: NSObject, UNUserNotificationCenterDelegate {
       if let key = key as? String, key != "aps" { data[key] = "\(value)" }
     }
     return ["title": content.title, "body": content.body, "data": data]
+  }
+}
+
+/// Live Activity del recupero (`repbirds/rest_activity`, vedi lib/core/notifications/rest_alarm.dart):
+/// il conto alla rovescia resta visibile nella schermata di blocco e nella Dynamic Island.
+enum RestActivityChannel {
+  static func attach(messenger: FlutterBinaryMessenger) {
+    let channel = FlutterMethodChannel(name: "repbirds/rest_activity", binaryMessenger: messenger)
+    channel.setMethodCallHandler { call, result in
+      guard #available(iOS 16.2, *) else { return result(nil) }
+      switch call.method {
+      case "start":
+        let args = call.arguments as? [String: Any] ?? [:]
+        let ms = (args["endsAt"] as? NSNumber)?.doubleValue ?? 0
+        start(
+          endsAt: Date(timeIntervalSince1970: ms / 1000),
+          title: args["title"] as? String ?? "",
+          subtitle: args["subtitle"] as? String ?? "")
+        result(nil)
+      case "end":
+        endAll()
+        result(nil)
+      default:
+        result(FlutterMethodNotImplemented)
+      }
+    }
+  }
+
+  @available(iOS 16.2, *)
+  private static func start(endsAt: Date, title: String, subtitle: String) {
+    endAll()
+    guard ActivityAuthorizationInfo().areActivitiesEnabled else { return }
+    let content = ActivityContent(
+      state: RestActivityAttributes.ContentState(endsAt: endsAt),
+      // dopo la fine il sistema la mostra come scaduta
+      staleDate: endsAt)
+    _ = try? Activity.request(
+      attributes: RestActivityAttributes(title: title, subtitle: subtitle), content: content)
+  }
+
+  @available(iOS 16.2, *)
+  private static func endAll() {
+    for activity in Activity<RestActivityAttributes>.activities {
+      Task { await activity.end(nil, dismissalPolicy: .immediate) }
+    }
   }
 }

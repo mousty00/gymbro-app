@@ -3,12 +3,33 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/l10n/l10n.dart';
 import '../../core/theme/app_theme.dart';
+import '../workouts/saved_session.dart';
 
 /// Contenitore delle 5 tab con la barra di navigazione flottante a pillola.
-class AppShell extends StatelessWidget {
+class AppShell extends StatefulWidget {
   const AppShell({super.key, required this.shell});
 
   final StatefulNavigationShell shell;
+
+  @override
+  State<AppShell> createState() => _AppShellState();
+}
+
+class _AppShellState extends State<AppShell> {
+  /// Una volta per avvio: se il sistema aveva chiuso l'app a metà allenamento, lo riapre.
+  static bool _resumeChecked = false;
+
+  @override
+  void initState() {
+    super.initState();
+    if (_resumeChecked) return;
+    _resumeChecked = true;
+    SavedSession.load().then((s) {
+      if (s != null && mounted) context.push(s.route);
+    });
+  }
+
+  StatefulNavigationShell get shell => widget.shell;
 
   static List<(IconData, String)> get _items => [
         (Icons.home_rounded, tr('Home')),
