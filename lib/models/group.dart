@@ -105,8 +105,11 @@ class GroupSession {
     required this.groupId,
     required this.groupName,
     required this.organizer,
-    required this.workoutId,
+    this.workoutId,
     required this.workoutName,
+    this.routeId,
+    this.distanceM,
+    this.meetingPoint,
     this.scheduledFor,
     this.startedAt,
     this.myStatus = Attendance.pending,
@@ -117,14 +120,25 @@ class GroupSession {
   final String groupId;
   final String groupName;
   final SimpleUser organizer;
-  final String workoutId;
+  /// La scheda da fare insieme; null se la sessione è una corsa ([routeId]).
+  final String? workoutId;
+
+  /// Nome della scheda, o del percorso per una corsa.
   final String workoutName;
+
+  /// Corsa su questo percorso; null se è una scheda.
+  final String? routeId;
+  final int? distanceM;
+
+  /// Dove ritrovarsi (soprattutto per le corse).
+  final String? meetingPoint;
   final DateTime? scheduledFor;
   final DateTime? startedAt;
   final Attendance myStatus;
   final List<SessionAttendee> attendees;
 
   bool get started => startedAt != null;
+  bool get isRun => routeId != null;
   List<SessionAttendee> withStatus(Attendance a) => attendees.where((x) => x.status == a).toList();
 
   factory GroupSession.fromJson(Json j) => GroupSession(
@@ -132,8 +146,11 @@ class GroupSession {
         groupId: '${j['groupId']}',
         groupName: j['groupName'] as String? ?? '',
         organizer: SimpleUser.fromJson(Map<String, dynamic>.from(j['organizer'] as Map? ?? const {})),
-        workoutId: '${(j['workout'] as Map?)?['id']}',
-        workoutName: (j['workout'] as Map?)?['name'] as String? ?? '',
+        workoutId: (j['workout'] as Map?)?['id']?.toString(),
+        workoutName: ((j['workout'] ?? j['route']) as Map?)?['name'] as String? ?? '',
+        routeId: (j['route'] as Map?)?['id']?.toString(),
+        distanceM: ((j['route'] as Map?)?['distanceM'] as num?)?.toInt(),
+        meetingPoint: j['meetingPoint'] as String?,
         scheduledFor: parseInstant(j['scheduledFor']),
         startedAt: parseInstant(j['startedAt']),
         myStatus: _attendance(j['myStatus']),

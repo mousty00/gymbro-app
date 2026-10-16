@@ -120,9 +120,23 @@ class GroupDetailScreen extends ConsumerWidget {
                       child: ListView(
                         padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
                         children: [
-                          Text(g.name, style: Theme.of(context).textTheme.displaySmall),
-                          const SizedBox(height: 6),
-                          Text(tr('Organizzato da @{username}', {'username': g.createdBy.username}), style: TextStyle(color: AppColors.inkSoft)),
+                          Container(
+                            padding: const EdgeInsets.all(24),
+                            decoration: BoxDecoration(color: AppColors.lilac, borderRadius: BorderRadius.circular(32)),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Icon(Icons.groups_rounded, color: Colors.white, size: 30),
+                                const SizedBox(height: 14),
+                                Text(g.name, style: Theme.of(context).textTheme.displaySmall?.copyWith(color: Colors.white)),
+                                const SizedBox(height: 4),
+                                Text(
+                                  tr('Organizzato da @{username}', {'username': g.createdBy.username}),
+                                  style: const TextStyle(color: Colors.white70),
+                                ),
+                              ],
+                            ),
+                          ),
                           const SizedBox(height: 22),
                           SectionHeader(
                             tr('Sessioni'),
@@ -353,7 +367,7 @@ class SessionCard extends StatelessWidget {
         onTap: () => context.push('/group-session/${s.id}'),
         child: Row(
           children: [
-            IconChip(icon: s.started ? Icons.play_circle_rounded : Icons.event_rounded, color: s.started ? AppColors.mint : AppColors.brand),
+            IconChip(icon: s.started ? Icons.play_circle_rounded : s.isRun ? Icons.directions_run_rounded : Icons.event_rounded, color: s.started ? AppColors.mint : AppColors.brand),
             const SizedBox(width: 12),
             Expanded(
               child: Column(

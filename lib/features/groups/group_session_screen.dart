@@ -14,6 +14,7 @@ import '../../data/providers.dart';
 import '../../data/workout_repository.dart';
 import '../../models/group.dart';
 import '../auth/session.dart';
+import '../running/geo.dart';
 
 /// Una sessione del gruppo: chi c'è, chi no, chi non ha risposto. Mentre è
 /// aperta si rilegge ogni pochi secondi (e così si risulta "collegati"): quando
@@ -77,7 +78,9 @@ class _GroupSessionScreenState extends ConsumerState<GroupSessionScreen> {
     _entered = true;
     _timer?.cancel();
     context.pushReplacement(
-      '/workout/${s.workoutId}/session?group=${s.groupId}&start=${Uri.encodeComponent(s.startedAt!.toUtc().toIso8601String())}',
+      s.isRun
+          ? '/running/run?route=${s.routeId}'
+          : '/workout/${s.workoutId}/session?group=${s.groupId}&start=${Uri.encodeComponent(s.startedAt!.toUtc().toIso8601String())}',
     );
   }
 
@@ -209,7 +212,7 @@ class _HeroCard extends StatelessWidget {
       borderRadius: BorderRadius.circular(32),
       child: InkWell(
         borderRadius: BorderRadius.circular(32),
-        onTap: () => context.push('/workout/${s.workoutId}'),
+        onTap: () => context.push(s.isRun ? '/running/route/${s.routeId}' : '/workout/${s.workoutId}'),
         child: Padding(
           padding: const EdgeInsets.all(22),
           child: Column(
@@ -225,6 +228,15 @@ class _HeroCard extends StatelessWidget {
               ),
               const SizedBox(height: 6),
               Text(s.workoutName, style: Theme.of(context).textTheme.headlineMedium?.copyWith(color: Colors.white)),
+              if (s.isRun)
+                Text(
+                  [
+                    tr('Corsa'),
+                    if (s.distanceM != null) formatDistance(s.distanceM!),
+                    if (s.meetingPoint != null) tr('ritrovo: {place}', {'place': s.meetingPoint!}),
+                  ].join(' · '),
+                  style: soft,
+                ),
               const SizedBox(height: 4),
               Text(tr('Organizzata da @{username}', {'username': s.organizer.username}), style: soft),
             ],

@@ -130,7 +130,7 @@ class _RouteDetailScreenState extends ConsumerState<RouteDetailScreen> {
                         const SizedBox(height: 22),
                         if (mine)
                           OutlinedButton.icon(
-                            onPressed: () => context.push('/running/event/new?route=${route.id}'),
+                            onPressed: () => pickGroupForRun(context, ref, route.id),
                             icon: const Icon(Icons.groups_rounded),
                             label: Text(tr('Organizza una corsa di gruppo')),
                           )
@@ -177,4 +177,40 @@ class _Metric extends StatelessWidget {
           ],
         ),
       );
+}
+
+/// Corsa di gruppo: è una sessione di uno dei tuoi gruppi, su questo percorso.
+/// Scegli il gruppo (o creane uno) e poi giorno e ora.
+Future<void> pickGroupForRun(BuildContext context, WidgetRef ref, String routeId) async {
+  final me = ref.read(currentUserProvider).username;
+  final groups = (await ref.read(groupsProvider.future)).where((g) => g.createdBy.username == me).toList();
+  if (!context.mounted) return;
+  if (groups.isEmpty) {
+    showMessage(context, tr('Prima crea un gruppo: le corse di gruppo sono sessioni dei tuoi gruppi.'));
+    context.push('/group/new');
+    return;
+  }
+  final groupId = await showModalBottomSheet<String>(
+    context: context,
+    useRootNavigator: true,
+    useSafeArea: true,
+    builder: (ctx) => SafeArea(
+      child: ListView(
+        shrinkWrap: true,
+        padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+        children: [
+          Text(tr('Con quale gruppo?'), style: Theme.of(ctx).textTheme.headlineSmall),
+          const SizedBox(height: 12),
+          for (final g in groups)
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: const IconChip(icon: Icons.groups_rounded, color: AppColors.lilac),
+              title: Text(g.name, style: const TextStyle(fontWeight: FontWeight.w700)),
+              onTap: () => Navigator.pop(ctx, g.id),
+            ),
+        ],
+      ),
+    ),
+  );
+  if (groupId != null && context.mounted) context.push('/group/$groupId/session/new?route=$routeId');
 }

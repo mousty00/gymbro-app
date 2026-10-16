@@ -145,11 +145,20 @@ class GroupRepository {
   /// Leggerla segna anche me come collegato (la schermata la rilegge mentre aspetta l'avvio).
   Future<GroupSession> session(String id) async => GroupSession.fromJson(await _api.get<Json>('/group-sessions/$id'));
 
-  Future<GroupSession> createSession({required String groupId, required String workoutId, DateTime? scheduledFor}) async =>
+  /// Con una scheda ([workoutId]) o una corsa su un percorso ([routeId]).
+  Future<GroupSession> createSession({
+    required String groupId,
+    String? workoutId,
+    String? routeId,
+    DateTime? scheduledFor,
+    String? meetingPoint,
+  }) async =>
       GroupSession.fromJson(await _api.post<Json>('/group-sessions', data: {
         'groupId': groupId,
         'workoutId': workoutId,
+        'routeId': routeId,
         'scheduledFor': scheduledFor?.toUtc().toIso8601String(),
+        'meetingPoint': meetingPoint,
       }));
 
   Future<GroupSession> answer(String id, {required bool going}) async =>

@@ -69,3 +69,43 @@ class SimpleUser {
         isAccountVerified: j['isAccountVerified'] as bool?,
       );
 }
+
+/// Quello che il profilo di un altro mostra oltre ai post. Tempo di allenamento,
+/// attività recente (per la streak) e percorsi arrivano solo agli amici.
+class UserOverview {
+  const UserOverview({
+    this.training,
+    this.recentActivity,
+    this.mutualFriends = const [],
+    this.workouts = const [],
+    this.exercises = const [],
+    this.routes,
+  });
+
+  final Duration? training;
+  final List<DateTime>? recentActivity;
+  final List<SimpleUser> mutualFriends;
+  final List<({String id, String name, int exercises})> workouts;
+  final List<({String id, String name, String muscleGroup})> exercises;
+  final List<({String id, String name, int? distanceM})>? routes;
+
+  factory UserOverview.fromJson(Json j) {
+    List<Json> list(String k) => [for (final e in j[k] as List? ?? const []) e as Json];
+    return UserOverview(
+      training: j['trainingSeconds'] == null ? null : Duration(seconds: (j['trainingSeconds'] as num).toInt()),
+      recentActivity: j['recentActivity'] == null
+          ? null
+          : [for (final t in j['recentActivity'] as List) DateTime.parse('$t').toLocal()],
+      mutualFriends: list('mutualFriends').map(SimpleUser.fromJson).toList(),
+      workouts: [
+        for (final w in list('workouts')) (id: '${w['id']}', name: '${w['name']}', exercises: (w['exercises'] as num?)?.toInt() ?? 0),
+      ],
+      exercises: [
+        for (final e in list('exercises')) (id: '${e['id']}', name: '${e['name']}', muscleGroup: '${e['muscleGroup'] ?? ''}'),
+      ],
+      routes: j['routes'] == null
+          ? null
+          : [for (final r in list('routes')) (id: '${r['id']}', name: '${r['name']}', distanceM: (r['distanceM'] as num?)?.toInt())],
+    );
+  }
+}

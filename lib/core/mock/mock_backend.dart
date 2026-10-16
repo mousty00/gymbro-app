@@ -107,6 +107,40 @@ class MockBackend extends Interceptor {
   Map<String, dynamic> _simple(Map<String, dynamic> u) =>
       {'id': u['id'], 'username': u['username'], 'image': u['image'], 'isAccountVerified': u['isAccountVerified']};
 
+  Set<String> _friendsOf(String username) => {
+        for (final f in _friendships)
+          if (f['status'] == 'accepted' && (f['user']['username'] == username || f['friend']['username'] == username))
+            '${f['user']['username'] == username ? f['friend']['username'] : f['user']['username']}',
+      };
+
+  Map<String, dynamic> _overview(Map<String, dynamic> u) {
+    final name = '${u['username']}';
+    final close = name == _meName || _isFriend(name);
+    final mine = _friendsOf(_meName);
+    // ponytail: niente storico finto per gli altri, attività e ore derivate dal nome
+    final days = name.length % 5 + 1;
+    return {
+      'trainingSeconds': close ? days * 9000 : null,
+      'recentActivity': close ? [for (var i = 0; i < days; i++) _iso(_now.subtract(Duration(days: i, hours: 3)))] : null,
+      'mutualFriends': [for (final f in _friendsOf(name)) if (f != _meName && mine.contains(f)) _simple(_userBy(f))],
+      'workouts': [
+        for (final w in _workouts)
+          if (w['user']['username'] == name && w['isPublic'] == true)
+            {'id': w['id'], 'name': w['name'], 'exercises': (w['workoutExercises'] as List).length},
+      ],
+      'exercises': [
+        for (final e in _exercises)
+          if (e['createdBy']['username'] == name && e['isPublic'] == true) {'id': e['id'], 'name': e['name'], 'muscleGroup': e['muscleGroup']},
+      ],
+      'routes': close
+          ? [
+              for (final r in _runRoutes)
+                if (r['owner']['username'] == name && r['isPublic'] == true) {'id': r['id'], 'name': r['name'], 'distanceM': r['distanceM']},
+            ]
+          : null,
+    };
+  }
+
   Map<String, dynamic> _userBy(String username) =>
       _users.firstWhere((u) => u['username'] == username, orElse: () => throw _MockError(404, 'Utente non trovato'));
 
@@ -247,6 +281,9 @@ class MockBackend extends Interceptor {
         'status': 'pending',
         'createdAt': _iso(_now.subtract(const Duration(hours: 3))),
       },
+      // tra altri: servono per gli amici in comune
+      {'id': 'f4', 'user': _simple(giulia), 'friend': _simple(marco), 'status': 'accepted', 'createdAt': _iso(_now)},
+      {'id': 'f5', 'user': _simple(luca), 'friend': _simple(giulia), 'status': 'accepted', 'createdAt': _iso(_now)},
     ]);
 
     final myPost = _posts.firstWhere((p) => p['user'] == _me)['id'];
@@ -269,6 +306,9 @@ class MockBackend extends Interceptor {
       notification('FRIEND_ACCEPTED', giulia, 'f1', 48, read: true),
     ]);
     _seedRunning(giulia, marco, sara);
+    // una corsa di gruppo: sessione del gruppo su un percorso
+    _sessions.add(_session(_groups.first, null, _now.add(const Duration(days: 2, hours: 1)), {'giulia.fit': 'going'},
+        routeId: '${_runRoutes.first['id']}', meetingPoint: 'Ingresso del parco'));
   }
 
   Map<String, dynamic> _workout(String id, Map<String, dynamic> owner, String name, String? description, bool isPublic,
@@ -300,10 +340,14 @@ class MockBackend extends Interceptor {
         'groupMembers': members,
       };
 
-  Map<String, dynamic> _session(Map<String, dynamic> g, String workoutId, DateTime? when, Map<String, String> answers) => {
+  Map<String, dynamic> _session(Map<String, dynamic> g, String? workoutId, DateTime? when, Map<String, String> answers,
+          {String? routeId, String? meetingPoint}) =>
+      {
         'id': _id('s'),
         'groupId': g['id'],
         'workoutId': workoutId,
+        'routeId': routeId,
+        'meetingPoint': meetingPoint,
         'scheduledFor': when == null ? null : _iso(when),
         'startedAt': null,
         'answers': answers,
@@ -353,7 +397,10 @@ class MockBackend extends Interceptor {
     final g = _groupById('${s['groupId']}');
     final auto = s['autoStartAt'] as DateTime?;
     if (s['startedAt'] == null && auto != null && !DateTime.now().isBefore(auto)) s['startedAt'] = _iso(auto);
-    final w = _workouts.firstWhere((w) => w['id'] == s['workoutId'], orElse: () => {'id': s['workoutId'], 'name': 'Scheda'});
+    final w = s['workoutId'] == null
+        ? null
+        : _workouts.firstWhere((w) => w['id'] == s['workoutId'], orElse: () => {'id': s['workoutId'], 'name': 'Scheda'});
+    final r = s['routeId'] == null ? null : _runRoutes.firstWhere((r) => r['id'] == s['routeId']);
     final organizer = g['createdBy'] as Map<String, dynamic>;
     final members = [
       organizer,
@@ -367,7 +414,9 @@ class MockBackend extends Interceptor {
       'groupId': g['id'],
       'groupName': g['name'],
       'organizer': organizer,
-      'workout': {'id': w['id'], 'name': w['name']},
+      'workout': w == null ? null : {'id': w['id'], 'name': w['name']},
+      'route': r == null ? null : {'id': r['id'], 'name': r['name'], 'distanceM': r['distanceM']},
+      'meetingPoint': s['meetingPoint'],
       'scheduledFor': s['scheduledFor'],
       'startedAt': s['startedAt'],
       'myStatus': status(_meName),
@@ -461,6 +510,7 @@ class MockBackend extends Interceptor {
       final s = '${q['username'] ?? ''}'.toLowerCase();
       return _users.where((u) => '${u['username']}'.toLowerCase().contains(s)).map(_simple).toList();
     }
+    if (match('GET', '/users/username/:u/overview')) return _overview(_userBy(Uri.decodeComponent(seg[2])));
     if (match('GET', '/users/username/:u')) return _userBy(Uri.decodeComponent(last));
     if (match('GET', '/users/:id')) {
       return _users.firstWhere((u) => u['id'] == last, orElse: () => throw _MockError(404, 'Utente non trovato'));
@@ -749,7 +799,11 @@ class MockBackend extends Interceptor {
       return [for (final s in _sessions) if (s['groupId'] == last) _sessionView(s)];
     }
     if (match('POST', '/group-sessions')) {
-      final s = _session(_groupById('${body['groupId']}'), '${body['workoutId']}', DateTime.tryParse('${body['scheduledFor']}'), {});
+      if ((body['workoutId'] == null) == (body['routeId'] == null)) {
+        throw _MockError(400, 'A session is either a workout or a run: set workoutId or routeId');
+      }
+      final s = _session(_groupById('${body['groupId']}'), body['workoutId'] as String?, DateTime.tryParse('${body['scheduledFor']}'), {},
+          routeId: body['routeId'] as String?, meetingPoint: body['meetingPoint'] as String?);
       _sessions.add(s);
       return _sessionView(s);
     }

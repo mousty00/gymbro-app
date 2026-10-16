@@ -31,7 +31,8 @@ class RunningScreen extends ConsumerStatefulWidget {
 class _RunningScreenState extends ConsumerState<RunningScreen> {
   late int _tab = widget.initialTab;
 
-  static List<String> get _tabs => [tr('Percorsi'), tr('Amici'), tr('Di gruppo'), tr('Corse')];
+  // le corse di gruppo stanno in Insieme, con le sessioni
+  static List<String> get _tabs => [tr('Percorsi'), tr('Amici'), tr('Corse')];
 
   Future<void> _refresh() async {
     ref.invalidate(myRoutesProvider);
@@ -88,7 +89,6 @@ class _RunningScreenState extends ConsumerState<RunningScreen> {
                   child: switch (_tab) {
                     0 => const _MyRoutes(),
                     1 => const _FriendsRoutes(),
-                    2 => const _Events(),
                     _ => const _Runs(),
                   },
                 ),
@@ -161,41 +161,6 @@ class _FriendsRoutes extends ConsumerWidget {
               separatorBuilder: (_, _) => const SizedBox(height: 12),
               itemBuilder: (_, i) => RouteCard(route: routes[i], showAuthor: true),
             ),
-    );
-  }
-}
-
-class _Events extends ConsumerWidget {
-  const _Events();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return AsyncView<List<RunEvent>>(
-      value: ref.watch(runEventsProvider),
-      onRetry: () => ref.invalidate(runEventsProvider),
-      data: (events) {
-        if (events.isEmpty) {
-          return ListView(children: [
-            EmptyState(
-              icon: Icons.event_rounded,
-              title: tr('Nessuna corsa di gruppo'),
-              message: tr('Apri uno dei tuoi percorsi e organizza una corsa: scegli giorno, ora e amici da invitare.'),
-            ),
-          ]);
-        }
-        final upcoming = events.where((e) => e.isUpcoming).toList()
-          ..sort((a, b) => (a.startsAt ?? DateTime(2100)).compareTo(b.startsAt ?? DateTime(2100)));
-        final past = events.where((e) => !e.isUpcoming).toList();
-        return ListView(
-          padding: _listPadding,
-          children: [
-            if (upcoming.isNotEmpty) SectionHeader(tr('In programma')),
-            for (final e in upcoming) Padding(padding: const EdgeInsets.only(bottom: 12), child: RunEventCard(event: e)),
-            if (past.isNotEmpty) SectionHeader(tr('Passate')),
-            for (final e in past) Padding(padding: const EdgeInsets.only(bottom: 12), child: RunEventCard(event: e)),
-          ],
-        );
-      },
     );
   }
 }

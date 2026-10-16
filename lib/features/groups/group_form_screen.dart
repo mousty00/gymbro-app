@@ -10,19 +10,24 @@ import '../../core/widgets/async_view.dart';
 import '../../core/widgets/ui.dart';
 import '../../data/providers.dart';
 import '../../data/workout_repository.dart';
+import '../../models/running.dart';
 import '../../models/workout.dart';
+import '../running/geo.dart';
 import '../auth/auth_widgets.dart';
 import '../../core/widgets/skeleton.dart';
 
 /// Nuovo gruppo fisso (solo il nome), oppure, con [groupId], nuova sessione del
 /// gruppo: scheda, data e ora.
 class GroupFormScreen extends ConsumerStatefulWidget {
-  const GroupFormScreen({super.key, this.groupId, this.workoutId});
+  const GroupFormScreen({super.key, this.groupId, this.workoutId, this.routeId});
 
   final String? groupId;
 
   /// Scheda già scelta (es. "Allenati con un gruppo" dalla scheda).
   final String? workoutId;
+
+  /// Percorso già scelto: una corsa di gruppo (dal dettaglio del percorso).
+  final String? routeId;
 
   bool get isSession => groupId != null;
 
@@ -34,12 +39,17 @@ class _GroupFormScreenState extends ConsumerState<GroupFormScreen> {
   final _form = GlobalKey<FormState>();
   final _name = TextEditingController();
   late String? _workoutId = widget.workoutId;
+  late String? _routeId = widget.routeId;
+  /// Sessione di corsa (su un percorso) invece che con una scheda.
+  late bool _run = widget.routeId != null;
+  final _meeting = TextEditingController();
   DateTime? _when;
   bool _loading = false;
 
   @override
   void dispose() {
     _name.dispose();
+    _meeting.dispose();
     super.dispose();
   }
 
@@ -62,15 +72,21 @@ class _GroupFormScreenState extends ConsumerState<GroupFormScreen> {
 
   Future<void> _save() async {
     if (!_form.currentState!.validate()) return;
-    if (widget.isSession && _workoutId == null) {
-      showMessage(context, tr('Scegli la scheda da fare insieme'), error: true);
+    if (widget.isSession && (_run ? _routeId == null : _workoutId == null)) {
+      showMessage(context, _run ? tr('Scegli il percorso da correre insieme') : tr('Scegli la scheda da fare insieme'), error: true);
       return;
     }
     setState(() => _loading = true);
     try {
       final repo = ref.read(groupRepositoryProvider);
       if (widget.isSession) {
-        final session = await repo.createSession(groupId: widget.groupId!, workoutId: _workoutId!, scheduledFor: _when);
+        final session = await repo.createSession(
+          groupId: widget.groupId!,
+          workoutId: _run ? null : _workoutId,
+          routeId: _run ? _routeId : null,
+          scheduledFor: _when,
+          meetingPoint: _run && _meeting.text.trim().isNotEmpty ? _meeting.text.trim() : null,
+        );
         ref.invalidate(groupSessionsProvider(widget.groupId!));
         ref.invalidate(upcomingSessionsProvider);
         if (mounted) context.pushReplacement('/group-session/${session.id}');
@@ -116,6 +132,12 @@ class _GroupFormScreenState extends ConsumerState<GroupFormScreen> {
                         style: TextStyle(color: AppColors.inkSoft),
                       ),
                     ] else ...[
+                    SegmentedPill(
+                      options: [tr('Scheda'), tr('Corsa')],
+                      index: _run ? 1 : 0,
+                      onChanged: (i) => setState(() => _run = i == 1),
+                    ),
+                    const SizedBox(height: 16),
                     SoftCard(
                       onTap: _pickWhen,
                       padding: const EdgeInsets.all(16),
@@ -131,6 +153,34 @@ class _GroupFormScreenState extends ConsumerState<GroupFormScreen> {
                       ),
                     ),
                     const SizedBox(height: 22),
+                    if (_run) ...[
+                      LabeledField(label: tr('Punto di ritrovo (opzionale)'), controller: _meeting, hint: tr('es. Ingresso del parco')),
+                      SectionHeader(tr('Percorso')),
+                      AsyncView<List<RunRoute>>(
+                        value: ref.watch(myRoutesProvider),
+                        onRetry: () => ref.invalidate(myRoutesProvider),
+                        loading: const SkeletonList(item: SkeletonTile(leading: 0), count: 3, spacing: 8, padding: EdgeInsets.zero),
+                        data: (routes) => routes.isEmpty
+                            ? EmptyState(
+                                icon: Icons.route_rounded,
+                                title: tr('Nessun percorso'),
+                                message: tr('Per correre insieme serve un percorso.'),
+                                action: tr('Disegna un percorso'),
+                                onAction: () => context.push('/running/route/new'),
+                              )
+                            : Column(
+                                children: [
+                                  for (final r in routes)
+                                    _Choice(
+                                      title: r.name,
+                                      trailing: formatDistance(r.distanceM),
+                                      selected: r.id == _routeId,
+                                      onTap: () => setState(() => _routeId = r.id),
+                                    ),
+                                ],
+                              ),
+                      ),
+                    ] else ...[
                     SectionHeader(tr('Scheda')),
                     AsyncView<List<Workout>>(
                       value: workouts,
@@ -188,6 +238,7 @@ class _GroupFormScreenState extends ConsumerState<GroupFormScreen> {
                       },
                     ),
                     ],
+                    ],
                   ],
                 ),
               ),
@@ -201,4 +252,37 @@ class _GroupFormScreenState extends ConsumerState<GroupFormScreen> {
       ),
     );
   }
+}
+
+class _Choice extends StatelessWidget {
+  const _Choice({required this.title, required this.trailing, required this.selected, required this.onTap});
+
+  final String title;
+  final String trailing;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+        padding: const EdgeInsets.only(bottom: 8),
+        child: Material(
+          color: selected ? AppColors.ink : AppColors.card,
+          borderRadius: BorderRadius.circular(AppRadius.md),
+          child: InkWell(
+            borderRadius: BorderRadius.circular(AppRadius.md),
+            onTap: onTap,
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(title, style: TextStyle(fontWeight: FontWeight.w700, color: selected ? AppColors.onInk : AppColors.ink)),
+                  ),
+                  Text(trailing, style: TextStyle(fontSize: 12, color: selected ? AppColors.onInk.withValues(alpha: 0.7) : AppColors.muted)),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
 }

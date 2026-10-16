@@ -15,7 +15,6 @@ import '../../features/friends/user_profile_screen.dart';
 import '../../features/groups/group_detail_screen.dart';
 import '../../features/groups/group_form_screen.dart';
 import '../../features/groups/group_session_screen.dart';
-import '../../features/groups/groups_screen.dart';
 import '../../features/home/home_screen.dart';
 import '../../features/onboarding/splash_screen.dart';
 import '../../features/onboarding/welcome_screen.dart';
@@ -25,12 +24,13 @@ import '../../features/running/route_detail_screen.dart';
 import '../../features/running/route_editor_screen.dart';
 import '../../features/running/run_detail_screen.dart';
 import '../../features/running/run_event_detail_screen.dart';
-import '../../features/running/run_event_form_screen.dart';
 import '../../features/running/run_tracker_screen.dart';
 import '../../features/running/running_screen.dart';
 import '../../features/shell/app_shell.dart';
 import '../../features/profile/edit_profile_screen.dart';
-import '../../features/shell/sections.dart';
+import '../../features/together/search_screen.dart';
+import '../../features/together/together_screen.dart';
+import '../../features/workouts/workouts_screen.dart';
 import '../../features/workouts/workout_detail_screen.dart';
 import '../../features/workouts/workout_form_screen.dart';
 import '../../features/workouts/workout_session_screen.dart';
@@ -99,16 +99,29 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (_, _, shell) => AppShell(shell: shell),
         branches: [
           StatefulShellBranch(routes: [GoRoute(path: '/home', builder: (_, _) => const HomeScreen())]),
-          StatefulShellBranch(routes: [GoRoute(path: '/feed', builder: (_, _) => const BackToHome(child: CommunityScreen()))]),
-          StatefulShellBranch(routes: [GoRoute(path: '/workouts', builder: (_, _) => const BackToHome(child: TrainScreen()))]),
-          StatefulShellBranch(routes: [GoRoute(path: '/groups', builder: (_, _) => const BackToHome(child: GroupsScreen()))]),
+          StatefulShellBranch(routes: [GoRoute(path: '/workouts', builder: (_, _) => const BackToHome(child: WorkoutsScreen()))]),
+          StatefulShellBranch(routes: [GoRoute(path: '/together', builder: (_, _) => const BackToHome(child: TogetherScreen()))]),
           StatefulShellBranch(routes: [
             GoRoute(path: '/profile', builder: (_, _) => const BackToHome(child: ProfileScreen())),
           ]),
         ],
       ),
 
+      // Vecchi indirizzi delle tab (notifiche, link): ora è tutto in Insieme.
+      GoRoute(path: '/groups', redirect: (_, _) => '/together'),
+      GoRoute(path: '/feed', redirect: (_, _) => '/together'),
+
       // Schermate a tutto schermo sopra le tab.
+      GoRoute(
+        parentNavigatorKey: _rootKey,
+        path: '/search',
+        builder: (_, _) => const SearchScreen(),
+      ),
+      GoRoute(
+        parentNavigatorKey: _rootKey,
+        path: '/workouts/explore',
+        builder: (_, _) => const WorkoutsScreen(explore: true),
+      ),
       GoRoute(
         parentNavigatorKey: _rootKey,
         path: '/posts/new',
@@ -167,7 +180,11 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         parentNavigatorKey: _rootKey,
         path: '/group/:id/session/new',
-        builder: (_, s) => GroupFormScreen(groupId: s.pathParameters['id'], workoutId: s.uri.queryParameters['workout']),
+        builder: (_, s) => GroupFormScreen(
+          groupId: s.pathParameters['id'],
+          workoutId: s.uri.queryParameters['workout'],
+          routeId: s.uri.queryParameters['route'],
+        ),
       ),
       GoRoute(
         parentNavigatorKey: _rootKey,
@@ -193,11 +210,6 @@ final routerProvider = Provider<GoRouter>((ref) {
         parentNavigatorKey: _rootKey,
         path: '/running/route/:id/edit',
         builder: (_, s) => RouteEditorScreen(routeId: s.pathParameters['id']!),
-      ),
-      GoRoute(
-        parentNavigatorKey: _rootKey,
-        path: '/running/event/new',
-        builder: (_, s) => RunEventFormScreen(routeId: s.uri.queryParameters['route']),
       ),
       GoRoute(
         parentNavigatorKey: _rootKey,

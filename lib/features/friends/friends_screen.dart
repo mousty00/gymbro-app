@@ -15,7 +15,6 @@ import '../../data/user_repository.dart';
 import '../../models/social.dart';
 import '../../models/user.dart';
 import '../auth/session.dart';
-import '../feed/feed_screen.dart';
 import 'notifications_screen.dart';
 import '../../core/widgets/skeleton.dart';
 
@@ -118,7 +117,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
                                   separatorBuilder: (_, _) => const SizedBox(height: 10),
                                   itemBuilder: (_, i) {
                                     final other = list[i].other(me.username);
-                                    return _UserRow(
+                                    return UserRow(
                                       user: other,
                                       trailing: PopupMenuButton<String>(
                                         icon: Icon(Icons.more_horiz_rounded, color: AppColors.muted),
@@ -182,7 +181,7 @@ class _SearchResults extends ConsumerWidget {
           padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
           itemCount: users.length,
           separatorBuilder: (_, _) => const SizedBox(height: 10),
-          itemBuilder: (_, i) => _UserRow(
+          itemBuilder: (_, i) => UserRow(
             user: users[i],
             trailing: friendNames.contains(users[i].username)
                 ? Tag(tr('Amici'), color: AppColors.mint, icon: Icons.check_rounded)
@@ -194,8 +193,8 @@ class _SearchResults extends ConsumerWidget {
   }
 }
 
-class _UserRow extends StatelessWidget {
-  const _UserRow({required this.user, this.trailing});
+class UserRow extends StatelessWidget {
+  const UserRow({super.key, required this.user, this.trailing});
 
   final SimpleUser user;
   final Widget? trailing;

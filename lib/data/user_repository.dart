@@ -19,6 +19,9 @@ class UserRepository {
   Future<User> byUsername(String username) async =>
       User.fromJson(await _api.get<Json>('/users/username/${Uri.encodeComponent(username)}'));
 
+  Future<UserOverview> overview(String username) async =>
+      UserOverview.fromJson(await _api.get<Json>('/users/username/${Uri.encodeComponent(username)}/overview'));
+
   Future<User> byId(String id) async => User.fromJson(await _api.get<Json>('/users/$id'));
 
   Future<void> updateProfileImage(List<int> bytes, String filename) async {

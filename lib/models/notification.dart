@@ -98,7 +98,7 @@ class AppNotification {
         return referenceId != null ? '/group/$referenceId' : null;
       case NotificationKind.runInvite:
       case NotificationKind.runInviteAccepted:
-        return referenceId != null ? '/running/event/$referenceId' : '/running?tab=2';
+        return referenceId != null ? '/running/event/$referenceId' : '/together';
       case NotificationKind.routeSaved:
         return referenceId != null ? '/running/route/$referenceId' : '/running';
       case NotificationKind.groupSessionCreated:

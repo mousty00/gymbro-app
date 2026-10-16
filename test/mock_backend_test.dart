@@ -186,4 +186,26 @@ void main() {
     expect(answered['myStatus'], 'going');
     expect((answered['attendees'] as List).map((a) => (a as Map)['status']), contains('going'));
   });
+
+  test('una sessione di gruppo può essere una corsa su un percorso', () async {
+    final group = (await post('/workout_groups/create', {'name': 'Runner', 'status': 'active'}))['result'] as Map;
+    final route = ((await get('/routes')) as Map)['results'][0] as Map;
+    final s = await post('/group-sessions', {'groupId': group['id'], 'routeId': route['id'], 'meetingPoint': 'Parco'}) as Map;
+    expect(s['workout'], isNull);
+    expect((s['route'] as Map)['id'], route['id']);
+    expect(s['meetingPoint'], 'Parco');
+    await expectLater(post('/group-sessions', {'groupId': group['id']}), throwsA(anything));
+  });
+
+  test('profilo di un amico: numeri, amici in comune e contenuti pubblici', () async {
+    final friend = UserOverview.fromJson(await get('/users/username/giulia.fit/overview') as Map<String, dynamic>);
+    expect(friend.training, isNotNull);
+    expect(friend.recentActivity, isNotEmpty);
+    expect(friend.workouts.map((w) => w.name), contains('Full body 45\''));
+    expect(friend.mutualFriends.map((u) => u.username), contains('marco_lifts'));
+
+    final stranger = UserOverview.fromJson(await get('/users/username/luca.cali/overview') as Map<String, dynamic>);
+    expect(stranger.training, isNull);
+    expect(stranger.routes, isNull);
+  });
 }

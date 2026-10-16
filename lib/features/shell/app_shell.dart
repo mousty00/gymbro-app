@@ -1,21 +1,26 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/l10n/l10n.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/widgets/ui.dart';
+import '../auth/session.dart';
 import '../workouts/saved_session.dart';
+import 'create_sheet.dart';
 
-/// Contenitore delle 5 tab con la barra di navigazione flottante a pillola.
-class AppShell extends StatefulWidget {
+/// Le tab (Oggi, Allenati, Insieme e il profilo, con la tua foto) nella barra
+/// di navigazione flottante a pillola, con al centro il "+" per creare.
+class AppShell extends ConsumerStatefulWidget {
   const AppShell({super.key, required this.shell});
 
   final StatefulNavigationShell shell;
 
   @override
-  State<AppShell> createState() => _AppShellState();
+  ConsumerState<AppShell> createState() => _AppShellState();
 }
 
-class _AppShellState extends State<AppShell> {
+class _AppShellState extends ConsumerState<AppShell> {
   /// Una volta per avvio: se il sistema aveva chiuso l'app a metà allenamento, lo riapre.
   static bool _resumeChecked = false;
 
@@ -32,10 +37,9 @@ class _AppShellState extends State<AppShell> {
   StatefulNavigationShell get shell => widget.shell;
 
   static List<(IconData, String)> get _items => [
-        (Icons.home_rounded, tr('Home')),
-        (Icons.dynamic_feed_rounded, tr('Community')),
+        (Icons.home_rounded, tr('Oggi')),
         (Icons.fitness_center_rounded, tr('Allenati')),
-        (Icons.groups_rounded, tr('Gruppi')),
+        (Icons.groups_rounded, tr('Insieme')),
         (Icons.person_rounded, tr('Profilo')),
       ];
 
@@ -51,7 +55,14 @@ class _AppShellState extends State<AppShell> {
           child: FloatingNavBar(
             index: shell.currentIndex,
             items: _items,
+            avatar: Consumer(
+              builder: (_, ref, _) {
+                final me = ref.watch(sessionProvider).value;
+                return me == null ? const SizedBox.shrink() : UserAvatar(username: me.username, imageUrl: me.image, size: 48);
+              },
+            ),
             onTap: (i) => shell.goBranch(i, initialLocation: i == shell.currentIndex),
+            onCreate: () => showCreateSheet(context),
           ),
         ),
       ),
@@ -79,14 +90,21 @@ class BackToHome extends StatelessWidget {
 }
 
 class FloatingNavBar extends StatelessWidget {
-  const FloatingNavBar({super.key, required this.index, required this.items, required this.onTap});
+  const FloatingNavBar({super.key, required this.index, required this.items, required this.onTap, this.avatar, this.onCreate});
 
   final int index;
+
+  /// Al posto dell'icona dell'ultima voce (il profilo): la foto o le iniziali.
+  final Widget? avatar;
   final List<(IconData, String)> items;
   final ValueChanged<int> onTap;
 
+  /// Se c'è, un "+" in mezzo alle voci.
+  final VoidCallback? onCreate;
+
   @override
   Widget build(BuildContext context) {
+    final middle = items.length ~/ 2;
     return Container(
       padding: const EdgeInsets.all(6),
       decoration: BoxDecoration(
@@ -98,16 +116,35 @@ class FloatingNavBar extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          for (var i = 0; i < items.length; i++)
+          for (var i = 0; i < items.length; i++) ...[
+            if (onCreate != null && i == middle)
+              Padding(
+                padding: const EdgeInsets.only(left: 6),
+                child: Semantics(
+                  label: tr('Crea'),
+                  button: true,
+                  child: GestureDetector(
+                    onTap: onCreate,
+                    child: Container(
+                      width: 52,
+                      height: 52,
+                      decoration: const BoxDecoration(shape: BoxShape.circle, color: AppColors.brand),
+                      child: const Icon(Icons.add_rounded, color: Colors.white, size: 28),
+                    ),
+                  ),
+                ),
+              ),
             Padding(
               padding: EdgeInsets.only(left: i == 0 ? 0 : 6),
               child: _NavItem(
                 icon: items[i].$1,
                 label: items[i].$2,
+                picture: i == items.length - 1 ? avatar : null,
                 selected: i == index,
                 onTap: () => onTap(i),
               ),
             ),
+          ],
         ],
       ),
     );
@@ -115,9 +152,10 @@ class FloatingNavBar extends StatelessWidget {
 }
 
 class _NavItem extends StatelessWidget {
-  const _NavItem({required this.icon, required this.label, required this.selected, required this.onTap});
+  const _NavItem({required this.icon, required this.label, required this.selected, required this.onTap, this.picture});
 
   final IconData icon;
+  final Widget? picture;
   final String label;
   final bool selected;
   final VoidCallback onTap;
@@ -142,7 +180,10 @@ class _NavItem extends StatelessWidget {
                 ? [BoxShadow(color: AppColors.ink.withValues(alpha: 0.25), blurRadius: 16, offset: const Offset(0, 6))]
                 : null,
           ),
-          child: Icon(icon, color: selected ? AppColors.onInk : AppColors.inkSoft, size: 24),
+          padding: picture != null ? const EdgeInsets.all(3) : null,
+          child: picture != null
+              ? ClipOval(child: FittedBox(fit: BoxFit.cover, child: picture))
+              : Icon(icon, color: selected ? AppColors.onInk : AppColors.inkSoft, size: 24),
         ),
       ),
     );

@@ -16,8 +16,12 @@ import '../feed/moderation.dart';
 import '../share/share_actions.dart';
 import 'friends_screen.dart';
 import '../../core/widgets/skeleton.dart';
+import '../../core/utils/formatters.dart';
+import '../home/home_screen.dart' show streakDays;
+import '../running/geo.dart' show formatDistance;
 
-/// Profilo pubblico di un altro utente con i suoi post.
+/// Profilo pubblico di un altro utente: numeri (agli amici), amici in comune,
+/// schede, percorsi ed esercizi pubblici e i post.
 class UserProfileScreen extends ConsumerWidget {
   const UserProfileScreen({super.key, required this.username});
 
@@ -34,6 +38,7 @@ class UserProfileScreen extends ConsumerWidget {
     }
     final user = ref.watch(userProfileProvider(username));
     final posts = ref.watch(userPostsProvider(username));
+    final overview = ref.watch(userOverviewProvider(username)).value;
     final isFriend = (ref.watch(friendsProvider).value ?? const <Friendship>[])
         .any((f) => f.other(me.username).username == username);
 
@@ -75,13 +80,16 @@ class UserProfileScreen extends ConsumerWidget {
                         Center(child: Tag(tr('Siete amici'), color: AppColors.mint, icon: Icons.check_rounded))
                       else
                         AddFriendButton(username: u.username, large: true),
+                      if (overview != null) _Overview(overview: overview),
                       const SizedBox(height: 24),
-                      SectionHeader(tr('Post')),
-                      AsyncView<List<Post>>(
-                        value: posts,
-                        onRetry: () => ref.invalidate(userPostsProvider(username)),
-                        loading: const SkeletonGrid(),
-                        data: (list) => PostGrid(posts: list),
+                      _Tabs(
+                        overview: overview,
+                        posts: AsyncView<List<Post>>(
+                          value: posts,
+                          onRetry: () => ref.invalidate(userPostsProvider(username)),
+                          loading: const SkeletonGrid(),
+                          data: (list) => PostGrid(posts: list),
+                        ),
                       ),
                     ],
                   ),
@@ -208,5 +216,187 @@ class _TextTile extends StatelessWidget {
         padding: const EdgeInsets.all(8),
         alignment: Alignment.center,
         child: Text(text, maxLines: 4, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 12)),
+      );
+}
+
+class _Overview extends StatelessWidget {
+  const _Overview({required this.overview});
+
+  final UserOverview overview;
+
+  @override
+  Widget build(BuildContext context) {
+    final o = overview;
+    final streak = o.recentActivity == null ? null : streakDays(o.recentActivity!, DateTime.now());
+
+    Widget stat(String value, String label) => Expanded(
+          child: SoftCard(
+            radius: 24,
+            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
+            child: Column(
+              children: [
+                FittedBox(child: Text(value, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800))),
+                const SizedBox(height: 2),
+                Text(label, textAlign: TextAlign.center, maxLines: 2, style: TextStyle(color: AppColors.muted, fontSize: 12)),
+              ],
+            ),
+          ),
+        );
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const SizedBox(height: 20),
+        Row(
+          children: [
+            if (o.training != null) ...[
+              stat(o.training!.inMinutes == 0 ? '0' : formatDuration(o.training), tr('di allenamento')),
+              const SizedBox(width: 10),
+              stat('$streak', streak == 1 ? tr('giorno di fila') : tr('giorni di fila')),
+              const SizedBox(width: 10),
+            ],
+            stat('${o.mutualFriends.length}', tr('amici in comune')),
+          ],
+        ),
+        if (o.mutualFriends.isNotEmpty) ...[
+          const SizedBox(height: 22),
+          SectionHeader(tr('Amici in comune')),
+          SizedBox(
+            height: 78,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              itemCount: o.mutualFriends.length,
+              separatorBuilder: (_, _) => const SizedBox(width: 14),
+              itemBuilder: (_, i) {
+                final f = o.mutualFriends[i];
+                return GestureDetector(
+                  onTap: () => context.push('/u/${f.username}'),
+                  child: SizedBox(
+                    width: 64,
+                    child: Column(
+                      children: [
+                        UserAvatar(username: f.username, imageUrl: f.image, size: 52),
+                        const SizedBox(height: 4),
+                        Text(f.username, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 12)),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+/// Schede in alto: Post (aperta di base), Schede, Percorsi (solo agli amici) ed Esercizi.
+class _Tabs extends StatefulWidget {
+  const _Tabs({required this.overview, required this.posts});
+
+  final UserOverview? overview;
+  final Widget posts;
+
+  @override
+  State<_Tabs> createState() => _TabsState();
+}
+
+class _TabsState extends State<_Tabs> {
+  int _tab = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    final o = widget.overview;
+    final tabs = <(String, Widget Function())>[
+      (tr('Post'), () => widget.posts),
+      (
+        tr('Schede'),
+        () => _list([
+              for (final w in o?.workouts ?? const <({String id, String name, int exercises})>[])
+                _Item(
+                  icon: Icons.fitness_center_rounded,
+                  color: AppColors.brand,
+                  title: w.name,
+                  subtitle: w.exercises == 1 ? tr('{n} esercizio', {'n': 1}) : tr('{n} esercizi', {'n': w.exercises}),
+                  onTap: () => context.push('/workout/${w.id}'),
+                ),
+            ], tr('Nessuna scheda pubblica')),
+      ),
+      if (o?.routes != null)
+        (
+          tr('Percorsi'),
+          () => _list([
+                for (final r in o!.routes!)
+                  _Item(
+                    icon: Icons.route_rounded,
+                    color: AppColors.mint,
+                    title: r.name,
+                    subtitle: r.distanceM == null ? null : formatDistance(r.distanceM!),
+                    onTap: () => context.push('/running/route/${r.id}'),
+                  ),
+              ], tr('Nessun percorso pubblico')),
+        ),
+      (
+        tr('Esercizi'),
+        () => _list([
+              for (final e in o?.exercises ?? const <({String id, String name, String muscleGroup})>[])
+                _Item(icon: Icons.sports_gymnastics_rounded, color: AppColors.lilac, title: e.name, subtitle: e.muscleGroup),
+            ], tr('Nessun esercizio pubblico')),
+      ),
+    ];
+    final tab = _tab.clamp(0, tabs.length - 1);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        SegmentedPill(options: [for (final t in tabs) t.$1], index: tab, onChanged: (i) => setState(() => _tab = i)),
+        const SizedBox(height: 16),
+        tabs[tab].$2(),
+      ],
+    );
+  }
+
+  Widget _list(List<Widget> items, String empty) => items.isEmpty
+      ? Padding(
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          child: Center(child: Text(empty, style: TextStyle(color: AppColors.muted))),
+        )
+      : Column(children: items);
+}
+
+class _Item extends StatelessWidget {
+  const _Item({required this.icon, required this.color, required this.title, this.subtitle, this.onTap});
+
+  final IconData icon;
+  final Color color;
+  final String title;
+  final String? subtitle;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+        padding: const EdgeInsets.only(bottom: 10),
+        child: SoftCard(
+          padding: const EdgeInsets.all(14),
+          radius: AppRadius.md + 2,
+          onTap: onTap,
+          child: Row(
+            children: [
+              IconChip(icon: icon, color: color),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(title, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontWeight: FontWeight.w700, color: AppColors.ink)),
+                    if (subtitle != null && subtitle!.isNotEmpty)
+                      Text(subtitle!, style: TextStyle(color: AppColors.muted, fontSize: 12)),
+                  ],
+                ),
+              ),
+              if (onTap != null) Icon(Icons.chevron_right_rounded, color: AppColors.muted),
+            ],
+          ),
+        ),
       );
 }

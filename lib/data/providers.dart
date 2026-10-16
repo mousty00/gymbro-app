@@ -150,6 +150,10 @@ final userProfileProvider = FutureProvider.autoDispose.family<User, String>(
   (ref, username) => ref.watch(userRepositoryProvider).byUsername(username),
 );
 
+final userOverviewProvider = FutureProvider.autoDispose.family<UserOverview, String>(
+  (ref, username) => ref.watch(userRepositoryProvider).overview(username),
+);
+
 // Notifiche
 
 /// Attività recenti (like, commenti, richieste, inviti), più recenti prima.

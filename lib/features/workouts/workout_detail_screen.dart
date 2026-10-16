@@ -119,40 +119,43 @@ class WorkoutDetailScreen extends ConsumerWidget {
                     child: ListView(
                       padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
                       children: [
-                        Wrap(
-                          spacing: 8,
-                          children: [
-                            Tag(weekdaysLabel(w.dayOfWeek), icon: Icons.event_repeat_rounded),
-                            if (w.startTime != null)
-                              Tag(w.startTime!.label, icon: Icons.schedule_rounded, color: AppColors.lilac),
-                            Tag(w.isPublic ? tr('Pubblica') : tr('Privata'),
-                                icon: w.isPublic ? Icons.public_rounded : Icons.lock_outline_rounded,
-                                color: AppColors.inkSoft),
-                          ],
-                        ),
-                        const SizedBox(height: 14),
-                        Text(w.name, style: Theme.of(context).textTheme.displaySmall),
-                        if (!mine && w.user != null) ...[
-                          const SizedBox(height: 6),
-                          GestureDetector(
-                            onTap: () => context.push('/u/${w.user!.username}'),
-                            child: Text(tr('di @{username}', {'username': w.user!.username}),
-                                style: const TextStyle(color: AppColors.blue, fontWeight: FontWeight.w600)),
+                        // tutto quello che conta della scheda in una card grande
+                        Container(
+                          padding: const EdgeInsets.all(24),
+                          decoration: BoxDecoration(color: AppColors.brand, borderRadius: BorderRadius.circular(32)),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                [
+                                  weekdaysLabel(w.dayOfWeek),
+                                  if (w.startTime != null) w.startTime!.label,
+                                  w.isPublic ? tr('Pubblica') : tr('Privata'),
+                                ].join(' · '),
+                                style: const TextStyle(color: Colors.white70),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(w.name, style: Theme.of(context).textTheme.displaySmall?.copyWith(color: Colors.white)),
+                              if (!mine && w.user != null)
+                                GestureDetector(
+                                  onTap: () => context.push('/u/${w.user!.username}'),
+                                  child: Text(tr('di @{username}', {'username': w.user!.username}),
+                                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+                                ),
+                              if (w.description?.isNotEmpty == true) ...[
+                                const SizedBox(height: 8),
+                                Text(w.description!, style: const TextStyle(color: Colors.white70)),
+                              ],
+                              const SizedBox(height: 18),
+                              Row(
+                                children: [
+                                  _Metric(value: '${w.exercises.length}', label: tr('Esercizi')),
+                                  _Metric(value: '$totalSets', label: tr('Serie')),
+                                  _Metric(value: estMinutes > 0 ? '~$estMinutes' : '—', label: tr('Minuti')),
+                                ],
+                              ),
+                            ],
                           ),
-                        ],
-                        if (w.description?.isNotEmpty == true) ...[
-                          const SizedBox(height: 10),
-                          Text(w.description!, style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: AppColors.inkSoft)),
-                        ],
-                        const SizedBox(height: 20),
-                        Row(
-                          children: [
-                            _Metric(value: '${w.exercises.length}', label: tr('Esercizi')),
-                            const SizedBox(width: 10),
-                            _Metric(value: '$totalSets', label: tr('Serie')),
-                            const SizedBox(width: 10),
-                            _Metric(value: estMinutes > 0 ? '~$estMinutes' : '—', label: tr('Minuti')),
-                          ],
                         ),
                         const SizedBox(height: 22),
                         SectionHeader(
@@ -215,21 +218,15 @@ class _Metric extends StatelessWidget {
   final String label;
 
   @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      child: SoftCard(
-        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 14),
-        radius: AppRadius.md,
+  Widget build(BuildContext context) => Expanded(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(value, style: Theme.of(context).textTheme.headlineSmall),
-            Text(label, style: TextStyle(color: AppColors.muted, fontSize: 12)),
+            Text(value, style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.w800)),
+            Text(label, style: const TextStyle(color: Colors.white70, fontSize: 12)),
           ],
         ),
-      ),
-    );
-  }
+      );
 }
 
 class _ExerciseRow extends StatelessWidget {

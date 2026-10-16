@@ -8,6 +8,7 @@ import 'core/push/push_service.dart';
 import 'core/router/app_router.dart';
 import 'core/sound/sounds.dart';
 import 'core/theme/app_theme.dart';
+import 'core/theme/theme_mode.dart';
 import 'features/auth/session.dart';
 
 Future<void> main() async {
@@ -15,6 +16,7 @@ Future<void> main() async {
   await initializeDateFormatting();
   await LanguageNotifier.load();
   await SoundNotifier.load();
+  await ThemeModeNotifier.load();
 
   final container = ProviderContainer();
   final push = container.read(pushServiceProvider);
@@ -36,8 +38,8 @@ class RepBirdsApp extends ConsumerWidget {
     return MaterialApp.router(
       title: 'RepBirds',
       debugShowCheckedModeBanner: false,
-      // Segue il tema chiaro/scuro del dispositivo.
-      themeMode: ThemeMode.system,
+      // Di base segue il tema del dispositivo; si cambia dal profilo.
+      themeMode: ref.watch(themeModeProvider),
       theme: buildAppTheme(AppPalette.light),
       darkTheme: buildAppTheme(AppPalette.dark),
       builder: (context, child) => AppThemeSync(child: child!),

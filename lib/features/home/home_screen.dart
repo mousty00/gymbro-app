@@ -5,22 +5,22 @@ import 'package:go_router/go_router.dart';
 import '../../core/l10n/l10n.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/utils/formatters.dart';
-import '../../core/widgets/backgrounds.dart';
 import '../../core/widgets/ui.dart';
 import '../../data/providers.dart';
 import '../../models/group.dart';
-import '../../models/user.dart';
 import '../../models/workout.dart';
 import '../auth/session.dart';
 import '../shell/app_shell.dart';
+import 'upcoming.dart';
 
+/// Tab Oggi: una card grande con la cosa da fare adesso, tre numeri della
+/// settimana e, sotto, inviti e sessioni in programma con gli altri.
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
   Future<void> _refresh(WidgetRef ref) async {
     ref.invalidate(myWorkoutsProvider);
     ref.invalidate(historyProvider);
-    ref.invalidate(groupsProvider);
     ref.invalidate(upcomingSessionsProvider);
     ref.invalidate(friendRequestsProvider);
     ref.invalidate(groupInvitesProvider);
@@ -35,58 +35,49 @@ class HomeScreen extends ConsumerWidget {
     final notifications = ref.watch(notificationCountProvider);
 
     return Scaffold(
-      body: SkyBackground(
-        child: SafeArea(
-          bottom: false,
-          child: RefreshIndicator(
-            onRefresh: () => _refresh(ref),
-            child: ListView(
-              padding: const EdgeInsets.fromLTRB(20, 8, 20, navBarClearance),
-              children: [
-                Row(
+      body: SafeArea(
+        bottom: false,
+        child: RefreshIndicator(
+          onRefresh: () => _refresh(ref),
+          child: ListView(
+            padding: const EdgeInsets.fromLTRB(0, 8, 0, navBarClearance),
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Column(
                   children: [
-                    GestureDetector(
-                      onTap: () => context.go('/profile'),
-                      child: UserAvatar(username: user.username, imageUrl: user.image, size: 48, ring: true),
+              Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(greeting(), style: t.bodyMedium?.copyWith(color: AppColors.muted)),
+                        Text(
+                          user.firstName?.isNotEmpty == true ? user.firstName! : user.username,
+                          style: t.headlineMedium,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
                     ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(greeting(), style: t.bodyMedium),
-                          Text(
-                            user.firstName?.isNotEmpty == true ? user.firstName! : user.username,
-                            style: t.titleLarge,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ],
-                      ),
-                    ),
-                    CircleIconButton(
-                      icon: Icons.notifications_none_rounded,
-                      badge: notifications > 0,
-                      tooltip: tr('Notifiche'),
-                      onTap: () => context.push('/notifications'),
-                    ),
-                    const SizedBox(width: 10),
-                    CircleIconButton(
-                      icon: Icons.add_rounded,
-                      dark: true,
-                      tooltip: tr('Crea'),
-                      onTap: () => showQuickCreate(context),
-                    ),
+                  ),
+                  CircleIconButton(
+                    icon: Icons.notifications_none_rounded,
+                    badge: notifications > 0,
+                    tooltip: tr('Notifiche'),
+                    onTap: () => context.push('/notifications'),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
+              const _Now(),
+              const SizedBox(height: 14),
+              const _WeekTiles(),
                   ],
                 ),
-                const SizedBox(height: 28),
-                // Una cosa alla volta: cosa fare oggi, la settimana, cosa arriva.
-                const _TodaySection(),
-                const SizedBox(height: 32),
-                const _WeekCard(),
-                const SizedBox(height: 32),
-                const _Upcoming(),
-              ],
-            ),
+              ),
+              const Upcoming(),
+            ],
           ),
         ),
       ),
@@ -94,425 +85,184 @@ class HomeScreen extends ConsumerWidget {
   }
 }
 
-/// Cosa c'è da fare oggi: la prossima scheda in grande, il resto in righe compatte.
-class _TodaySection extends ConsumerWidget {
-  const _TodaySection();
+/// La cosa da fare adesso: la sessione di gruppo di oggi, altrimenti la prossima
+/// scheda di oggi. Se non c'è niente, un invito a scegliere una scheda.
+class _Now extends ConsumerWidget {
+  const _Now();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final now = DateTime.now();
-    final t = Theme.of(context).textTheme;
     final workouts = ref.watch(myWorkoutsProvider).value ?? const <Workout>[];
     final history = ref.watch(historyProvider).value ?? const <WorkoutHistory>[];
     final sessions = ref.watch(upcomingSessionsProvider).value ?? const <GroupSession>[];
-    final events = ref.watch(runEventsProvider).value ?? const [];
 
-    final doneToday = history.where((h) => h.startedAt != null && isSameDay(h.startedAt!.toLocal(), now)).toList();
-    final doneIds = doneToday.map((h) => h.workoutId).toSet();
-    final minutesToday = doneToday.fold<int>(0, (a, h) => a + (h.duration?.inMinutes ?? 0));
+    final doneIds = {
+      for (final h in history)
+        if (h.startedAt != null && isSameDay(h.startedAt!.toLocal(), now)) h.workoutId,
+    };
     final today = workouts.where((w) => w.isScheduledOn(now)).toList()
       ..sort((a, b) => (a.startTime?.label ?? '').compareTo(b.startTime?.label ?? ''));
-    final next = today.where((w) => !doneIds.contains(w.id)).toList();
-    final done = today.where((w) => doneIds.contains(w.id)).toList();
-    final groupsToday = sessions.where((g) => g.scheduledFor != null && isSameDay(g.scheduledFor!.toLocal(), now)).toList();
-    final runsToday = events
-        .where((e) => e.canRun && e.startsAt != null && isSameDay(e.startsAt!.toLocal(), now))
-        .toList()
-      ..sort((a, b) => a.startsAt!.compareTo(b.startsAt!));
+    final next = today.where((w) => !doneIds.contains(w.id)).firstOrNull;
+    final session = sessions
+        .where((s) => s.scheduledFor != null && isSameDay(s.scheduledFor!.toLocal(), now) && s.myStatus != Attendance.declined)
+        .firstOrNull;
 
-    final rows = <Widget>[
-      for (final w in next.skip(1))
-        _Row(
-          icon: Icons.fitness_center_rounded,
-          title: w.name,
-          subtitle: w.startTime != null ? tr('Alle {time}', {'time': w.startTime!.label}) : tr('Scheda'),
-          onTap: () => context.push('/workout/${w.id}'),
-        ),
-      for (final g in groupsToday)
-        _Row(
-          icon: Icons.groups_rounded,
-          title: g.workoutName,
-          subtitle: tr('{group} alle {time}', {'group': g.groupName, 'time': formatTime(g.scheduledFor!.toLocal())}),
-          onTap: () => context.push('/group-session/${g.id}'),
-        ),
-      for (final e in runsToday)
-        _Row(
-          icon: Icons.directions_run_rounded,
-          title: e.title,
-          subtitle: tr('Corsa alle {time}', {'time': formatTime(e.startsAt!.toLocal())}),
-          onTap: () => context.push('/running/event/${e.id}'),
-        ),
-      for (final w in done)
-        _Row(
-          icon: Icons.check_rounded,
-          done: true,
-          title: w.name,
-          subtitle: tr('Fatta oggi'),
-          onTap: () => context.push('/workout/${w.id}'),
-        ),
-    ];
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Text(tr('Oggi'), style: t.headlineMedium),
-        const SizedBox(height: 2),
-        Text(
-          doneToday.isEmpty
-              ? formatDay(now)
-              : tr('{day} · {amount} fatto', {
-                  'day': formatDay(now),
-                  'amount': minutesToday > 0 ? formatDuration(Duration(minutes: minutesToday)) : tr('allenamento'),
-                }),
-          style: t.bodyMedium?.copyWith(color: AppColors.muted),
-        ),
-        const SizedBox(height: 16),
-        if (next.isNotEmpty)
-          TodayWorkoutCard(workout: next.first)
-        else
-          _RestDay(allDone: done.isNotEmpty),
-        if (rows.isNotEmpty) ...[
-          const SizedBox(height: 10),
-          SoftCard(
-            padding: const EdgeInsets.symmetric(vertical: 4),
-            child: Column(children: [
-              for (var i = 0; i < rows.length; i++) ...[
-                if (i > 0) const Divider(indent: 60, endIndent: 16),
-                rows[i],
-              ],
-            ]),
-          ),
-        ],
-      ],
-    );
-  }
-}
-
-/// Niente in programma (o tutto fatto): una sola card tranquilla.
-class _RestDay extends StatelessWidget {
-  const _RestDay({required this.allDone});
-
-  final bool allDone;
-
-  @override
-  Widget build(BuildContext context) {
-    return SoftCard(
+    if (session != null) {
+      return _Hero(
+        label: tr('{group} alle {time}', {'group': session.groupName, 'time': formatTime(session.scheduledFor!.toLocal())}),
+        title: session.workoutName,
+        detail: tr('Allenamento di gruppo'),
+        action: tr('Apri'),
+        onTap: () => context.push('/group-session/${session.id}'),
+      );
+    }
+    if (next != null) {
+      return _Hero(
+        label: next.startTime != null ? tr('Alle {time}', {'time': next.startTime!.label}) : tr('Oggi'),
+        title: next.name,
+        detail: next.exercises.length == 1 ? tr('{n} esercizio', {'n': 1}) : tr('{n} esercizi', {'n': next.exercises.length}),
+        action: tr('Inizia'),
+        onTap: () => context.push('/workout/${next.id}/session'),
+        onCard: () => context.push('/workout/${next.id}'),
+      );
+    }
+    final allDone = today.isNotEmpty;
+    return _Hero(
+      label: formatDay(now),
+      title: allDone ? tr('Hai finito per oggi') : tr('Giorno libero'),
+      detail: allDone ? tr('Ottimo lavoro!') : tr('Niente in programma: scegli una scheda se ti va.'),
+      action: allDone ? null : tr('Scegli una scheda'),
+      color: allDone ? AppColors.mint : AppColors.inkCard,
       onTap: () => context.go('/workouts'),
-      padding: const EdgeInsets.all(18),
-      child: Row(
-        children: [
-          IconChip(
-            icon: allDone ? Icons.check_rounded : Icons.self_improvement_rounded,
-            color: allDone ? AppColors.mint : AppColors.blue,
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Text(
-              allDone ? tr('Hai finito per oggi. Ottimo lavoro!') : tr('Niente in programma. Scegli una scheda.'),
-              style: const TextStyle(fontWeight: FontWeight.w600, height: 1.35),
-            ),
-          ),
-          Icon(Icons.chevron_right_rounded, color: AppColors.muted),
-        ],
-      ),
     );
   }
 }
 
-/// Riga compatta dentro una card (attività di oggi, prossimi appuntamenti).
-class _Row extends StatelessWidget {
-  const _Row({required this.icon, required this.title, required this.subtitle, required this.onTap, this.done = false});
+class _Hero extends StatelessWidget {
+  const _Hero({
+    required this.label,
+    required this.title,
+    required this.detail,
+    required this.onTap,
+    this.action,
+    this.onCard,
+    this.color,
+  });
 
-  final IconData icon;
+  final String label;
   final String title;
-  final String subtitle;
+  final String detail;
+  final String? action;
   final VoidCallback onTap;
-  final bool done;
+  final VoidCallback? onCard;
+  final Color? color;
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      onTap: onTap,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-      leading: IconChip(icon: icon, color: done ? AppColors.mint : AppColors.ink, size: 36),
-      title: Text(title,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: TextStyle(
-            fontWeight: FontWeight.w600,
-            color: done ? AppColors.muted : AppColors.ink,
-          )),
-      subtitle: Text(subtitle, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(color: AppColors.muted, fontSize: 13)),
-      trailing: Icon(Icons.chevron_right_rounded, color: AppColors.muted),
-    );
-  }
-}
-
-/// Card scura della prossima scheda di oggi, con il pulsante per iniziare.
-class TodayWorkoutCard extends StatelessWidget {
-  const TodayWorkoutCard({super.key, required this.workout});
-
-  final Workout workout;
-
-  @override
-  Widget build(BuildContext context) {
-    final details = [
-      if (workout.startTime != null) tr('Alle {time}', {'time': workout.startTime!.label}),
-      workout.exercises.length == 1 ? tr('{n} esercizio', {'n': 1}) : tr('{n} esercizi', {'n': workout.exercises.length}),
-    ].join(' · ');
-    return SoftCard(
-      color: AppColors.inkCard,
-      onTap: () => context.push('/workout/${workout.id}'),
-      padding: const EdgeInsets.fromLTRB(20, 20, 16, 20),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  workout.name,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w700),
+    const soft = TextStyle(color: Colors.white70);
+    return Material(
+      color: color ?? AppColors.brand,
+      borderRadius: BorderRadius.circular(32),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(32),
+        onTap: onCard ?? onTap,
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(label, style: soft),
+              const SizedBox(height: 8),
+              Text(title, style: Theme.of(context).textTheme.displaySmall?.copyWith(color: Colors.white)),
+              const SizedBox(height: 6),
+              Text(detail, style: soft),
+              if (action != null) ...[
+                const SizedBox(height: 28),
+                SizedBox(
+                  width: double.infinity,
+                  child: Material(
+                    color: Colors.white,
+                    shape: const StadiumBorder(),
+                    child: InkWell(
+                      customBorder: const StadiumBorder(),
+                      onTap: onTap,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        child: Text(
+                          action!,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(color: color ?? AppColors.brand, fontWeight: FontWeight.w800, fontSize: 16),
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
-                const SizedBox(height: 6),
-                Text(details, style: TextStyle(color: Colors.white.withValues(alpha: 0.65), fontSize: 14)),
               ],
-            ),
+            ],
           ),
-          const SizedBox(width: 12),
-          Material(
-            color: AppColors.lilac,
-            shape: const StadiumBorder(),
-            child: InkWell(
-              customBorder: const StadiumBorder(),
-              onTap: () => context.push('/workout/${workout.id}/session'),
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 12, 20, 12),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(Icons.play_arrow_rounded, color: Colors.white),
-                    const SizedBox(width: 4),
-                    Text(tr('Inizia'), style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
 }
 
-/// La settimana in una card sola: barre lun → dom, sessioni e tempo.
-class _WeekCard extends ConsumerWidget {
-  const _WeekCard();
+/// Tre numeri della settimana; toccandoli si apre lo storico.
+class _WeekTiles extends ConsumerWidget {
+  const _WeekTiles();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final history = ref.watch(historyProvider).value ?? const <WorkoutHistory>[];
     final start = startOfWeek(DateTime.now());
-    final perDay = List<double>.filled(7, 0);
-    var sessions = 0;
-    for (final h in history) {
+    final week = history.where((h) {
       final d = h.startedAt?.toLocal();
-      if (d == null || d.isBefore(start) || !d.isBefore(start.add(const Duration(days: 7)))) continue;
-      perDay[d.weekday - 1] += (h.duration?.inMinutes ?? 30).toDouble();
-      sessions++;
-    }
-    final minutes = perDay.fold<double>(0, (a, b) => a + b).round();
-    final t = Theme.of(context).textTheme;
+      return d != null && !d.isBefore(start);
+    }).toList();
+    final minutes = week.fold<int>(0, (a, h) => a + (h.duration?.inMinutes ?? 0));
+    final streak = streakDays(history.map((h) => h.startedAt?.toLocal()).whereType<DateTime>(), DateTime.now());
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        SectionHeader(tr('Questa settimana'), action: tr('Storico'), onAction: () => context.push('/history')),
-        SoftCard(
-          onTap: () => context.push('/history'),
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text('$sessions', style: t.headlineMedium),
-                  const SizedBox(width: 6),
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 4),
-                    child: Text(sessions == 1 ? tr('allenamento') : tr('allenamenti'),
-                        style: const TextStyle(fontWeight: FontWeight.w600)),
-                  ),
-                  const Spacer(),
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 4),
-                    child: Text(formatDuration(Duration(minutes: minutes)),
-                        style: TextStyle(color: AppColors.muted, fontWeight: FontWeight.w600)),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              MiniBars(
-                values: perDay,
-                highlight: DateTime.now().weekday - 1,
-                color: AppColors.lilacSoft,
-                highlightColor: AppColors.lilac,
-                labels: weekdayShort.map((d) => d.substring(0, 1)).toList(),
-                height: 56,
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-/// I prossimi appuntamenti (gruppi e corse dei giorni successivi), al massimo tre.
-class _Upcoming extends ConsumerWidget {
-  const _Upcoming();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final now = DateTime.now();
-    final groups = (ref.watch(upcomingSessionsProvider).value ?? const <GroupSession>[])
-        .where((g) => g.scheduledFor != null && g.scheduledFor!.isAfter(now) && !isSameDay(g.scheduledFor!.toLocal(), now));
-    final runs = (ref.watch(runEventsProvider).value ?? const [])
-        .where((e) => e.canRun && e.isUpcoming && e.startsAt != null && !isSameDay(e.startsAt!.toLocal(), now));
-    final items = <(DateTime, Widget)>[
-      for (final g in groups)
-        (
-          g.scheduledFor!,
-          _Row(
-            icon: Icons.groups_rounded,
-            title: g.workoutName,
-            subtitle: tr('{group} · {when}', {'group': g.groupName, 'when': formatDayTime(g.scheduledFor!.toLocal())}),
-            onTap: () => context.push('/group-session/${g.id}'),
-          ),
-        ),
-      for (final e in runs)
-        (
-          e.startsAt!,
-          _Row(
-            icon: Icons.directions_run_rounded,
-            title: e.title,
-            subtitle: formatDayTime(e.startsAt!.toLocal()),
-            onTap: () => context.push('/running/event/${e.id}'),
-          ),
-        ),
-    ]..sort((a, b) => a.$1.compareTo(b.$1));
-    if (items.isEmpty) return const SizedBox.shrink();
-    final shown = items.take(3).map((i) => i.$2).toList();
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        SectionHeader(tr('In programma'), action: tr('Gruppi'), onAction: () => context.go('/groups')),
-        SoftCard(
-          padding: const EdgeInsets.symmetric(vertical: 4),
-          child: Column(children: [
-            for (var i = 0; i < shown.length; i++) ...[
-              if (i > 0) const Divider(indent: 60, endIndent: 16),
-              shown[i],
-            ],
-          ]),
-        ),
-      ],
-    );
-  }
-}
-
-/// Avatar sovrapposti (max 4 + contatore).
-class AvatarStack extends StatelessWidget {
-  const AvatarStack({super.key, required this.users, this.size = 28});
-
-  final List<SimpleUser> users;
-  final double size;
-
-  @override
-  Widget build(BuildContext context) {
-    final shown = users.take(4).toList();
-    final extra = users.length - shown.length;
-    return SizedBox(
-      height: size,
-      child: Stack(
-        children: [
-          for (var i = 0; i < shown.length; i++)
-            Positioned(
-              left: i * size * 0.65,
-              child: Container(
-                decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: AppColors.card, width: 2)),
-                child: UserAvatar(username: shown[i].username, imageUrl: shown[i].image, size: size - 4),
-              ),
-            ),
-          if (extra > 0)
-            Positioned(
-              left: shown.length * size * 0.65 + 4,
-              top: (size - 18) / 2,
-              child: Text('+$extra', style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 12)),
-            ),
-        ],
-      ),
-    );
-  }
-}
-
-/// Bottom sheet "Crea": post, scheda, gruppo, percorso.
-void showQuickCreate(BuildContext context) {
-  // Sopra la barra di navigazione (root navigator), alto quanto serve e, se lo
-  // schermo è piccolo o i testi lunghi, scorrevole invece di tagliarsi.
-  showModalBottomSheet<void>(
-    context: context,
-    useSafeArea: true,
-    useRootNavigator: true,
-    isScrollControlled: true,
-    builder: (ctx) {
-      Widget item(IconData icon, Color color, String title, String subtitle, String route) => Padding(
-            padding: const EdgeInsets.only(bottom: 10),
+    Widget tile(String value, String label) => Expanded(
+          child: AspectRatio(
+            aspectRatio: 1,
             child: SoftCard(
-              padding: const EdgeInsets.all(14),
-              onTap: () {
-                Navigator.pop(ctx);
-                context.push(route);
-              },
-              child: Row(
+              radius: 28,
+              padding: const EdgeInsets.all(12),
+              onTap: () => context.push('/history'),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  IconChip(icon: icon, color: color),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(title, style: const TextStyle(fontWeight: FontWeight.w700)),
-                        Text(subtitle, style: TextStyle(color: AppColors.muted, fontSize: 13)),
-                      ],
-                    ),
-                  ),
-                  Icon(Icons.chevron_right_rounded, color: AppColors.muted),
+                  FittedBox(child: Text(value, style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w800))),
+                  const SizedBox(height: 2),
+                  Text(label, textAlign: TextAlign.center, maxLines: 2, style: TextStyle(color: AppColors.muted, fontSize: 12)),
                 ],
               ),
             ),
-          );
-      return SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(tr('Crea'), style: Theme.of(ctx).textTheme.headlineSmall),
-              const SizedBox(height: 16),
-              item(Icons.photo_camera_rounded, AppColors.pink, tr('Nuovo post'), tr('Condividi il tuo allenamento'), '/posts/new'),
-              item(Icons.fitness_center_rounded, AppColors.blue, tr('Nuova scheda'), tr('Esercizi, giorni e orario'), '/workout/new'),
-              item(Icons.groups_rounded, AppColors.lilac, tr('Allenamento di gruppo'), tr('Invita i tuoi amici'), '/group/new'),
-              item(Icons.add_road_rounded, AppColors.blue, tr('Percorso di corsa'), tr('Disegnalo sulla mappa'), '/running/route/new'),
-            ],
           ),
-        ),
-      );
-    },
-  );
+        );
+
+    return Row(
+      children: [
+        tile('${week.length}', week.length == 1 ? tr('allenamento') : tr('allenamenti')),
+        const SizedBox(width: 12),
+        tile(minutes == 0 ? '0' : formatDuration(Duration(minutes: minutes)), tr('questa settimana')),
+        const SizedBox(width: 12),
+        tile('$streak', streak == 1 ? tr('giorno di fila') : tr('giorni di fila')),
+      ],
+    );
+  }
+}
+
+/// Giorni consecutivi con almeno un allenamento, fino a oggi (o ieri, se oggi
+/// non ti sei ancora allenato).
+int streakDays(Iterable<DateTime> days, DateTime today) {
+  final set = {for (final d in days) DateTime(d.year, d.month, d.day)};
+  var day = DateTime(today.year, today.month, today.day);
+  if (!set.contains(day)) day = day.subtract(const Duration(days: 1));
+  var n = 0;
+  while (set.contains(day)) {
+    n++;
+    day = day.subtract(const Duration(days: 1));
+  }
+  return n;
 }

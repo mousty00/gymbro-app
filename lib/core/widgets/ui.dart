@@ -450,10 +450,11 @@ class MiniBars extends StatelessWidget {
 
 /// Barra di ricerca a pillola con pulsante circolare.
 class SearchPill extends StatelessWidget {
-  const SearchPill({super.key, this.controller, this.hint, this.onChanged, this.onSubmitted, this.inputFormatters});
+  const SearchPill({super.key, this.controller, this.hint, this.onChanged, this.onSubmitted, this.inputFormatters, this.autofocus = false});
 
   final TextEditingController? controller;
   final List<TextInputFormatter>? inputFormatters;
+  final bool autofocus;
   final String? hint;
   final ValueChanged<String>? onChanged;
   final ValueChanged<String>? onSubmitted;
@@ -475,6 +476,7 @@ class SearchPill extends StatelessWidget {
               onChanged: onChanged,
               onSubmitted: onSubmitted,
               inputFormatters: inputFormatters,
+              autofocus: autofocus,
               autocorrect: inputFormatters == null,
               textInputAction: TextInputAction.search,
               decoration: InputDecoration(
@@ -589,6 +591,53 @@ class _LowerCaseFormatter extends TextInputFormatter {
     return TextEditingValue(
       text: text,
       selection: TextSelection.collapsed(offset: (newValue.selection.end - cut).clamp(0, text.length)),
+    );
+  }
+}
+
+/// Selettore a pillola (es. Amici · Richieste).
+class SegmentedPill extends StatelessWidget {
+  const SegmentedPill({super.key, required this.options, required this.index, required this.onChanged});
+
+  final List<String> options;
+  final int index;
+  final ValueChanged<int> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(5),
+      decoration: BoxDecoration(
+        color: AppColors.card.withValues(alpha: 0.8),
+        borderRadius: BorderRadius.circular(40),
+        boxShadow: AppShadows.soft,
+      ),
+      child: Row(
+        children: [
+          for (var i = 0; i < options.length; i++)
+            Expanded(
+              child: GestureDetector(
+                onTap: () => onChanged(i),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  decoration: BoxDecoration(
+                    color: i == index ? AppColors.ink : Colors.transparent,
+                    borderRadius: BorderRadius.circular(40),
+                  ),
+                  alignment: Alignment.center,
+                  child: Text(
+                    options[i],
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      color: i == index ? AppColors.onInk : AppColors.inkSoft,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
     );
   }
 }

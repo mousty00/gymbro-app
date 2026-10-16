@@ -9,6 +9,7 @@ import '../../core/l10n/l10n.dart';
 import '../../core/sound/sounds.dart';
 import '../../core/network/api_exception.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/theme/theme_mode.dart';
 import '../../core/utils/formatters.dart';
 import '../../core/widgets/async_view.dart';
 import '../../core/widgets/backgrounds.dart';
@@ -21,7 +22,6 @@ import '../friends/user_profile_screen.dart';
 import '../share/share_actions.dart';
 import '../share/share_links.dart';
 import '../shell/app_shell.dart';
-import '../shell/sections.dart';
 import '../../core/widgets/skeleton.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
@@ -121,6 +121,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         label: tr('Lingua'),
                         onTap: () => go(_chooseLanguage),
                       ),
+                      _MenuRow(
+                        icon: Icons.dark_mode_rounded,
+                        color: AppColors.brand,
+                        label: tr('Tema'),
+                        onTap: () => go(_chooseTheme),
+                      ),
                       Consumer(
                         builder: (context, ref, _) {
                           final on = ref.watch(soundProvider);
@@ -205,6 +211,35 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     );
   }
 
+  void _chooseTheme() {
+    showModalBottomSheet<void>(
+      context: context,
+      useRootNavigator: true,
+      useSafeArea: true,
+      builder: (ctx) {
+        void pick(ThemeMode? mode) {
+          Navigator.pop(ctx);
+          if (mode != null) ref.read(themeModeProvider.notifier).set(mode);
+        }
+
+        return SafeArea(
+          child: RadioGroup<ThemeMode>(
+            groupValue: ref.read(themeModeProvider),
+            onChanged: pick,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                RadioListTile<ThemeMode>(value: ThemeMode.system, title: Text(tr('Tema del dispositivo'))),
+                RadioListTile<ThemeMode>(value: ThemeMode.light, title: Text(tr('Chiaro'))),
+                RadioListTile<ThemeMode>(value: ThemeMode.dark, title: Text(tr('Scuro'))),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final me = ref.watch(currentUserProvider);
@@ -279,10 +314,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                           _Counter(
                             value: '${friends.length}',
                             label: tr('Amici'),
-                            onTap: () {
-                              ref.read(communitySectionProvider.notifier).show(CommunitySection.friends);
-                              context.go('/feed');
-                            },
+                            onTap: () => context.push('/friends'),
                           ),
                         ],
                       ),
